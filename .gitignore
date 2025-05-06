@@ -1,0 +1,46 @@
+
+*.hex
+*.map
+*.lst
+*.scvd
+# *.uvoptx
+*.uvguix.*
+*.emProject
+*.emSession
+.vscode
+.vs
+*.o
+*.d
+*.exe
+
+# Forder
+Objects
+build
+DebugConfig
+Listings
+Output
+Debug
+Exe
+Obj
+cmake-build-debug
+CubeMx
+
+# File
+JLinkLog.txt
+setting.ini
+.sconsign.dblite
+kconfig-mconf
+
+# vscode
+.vscode
+*.code-workspace
+
+# 临时文件
+.backup
+temp
+
+# python 缓存
+__pycache__
+xf.egg-info
+xf_build.egg-info
+.venv
