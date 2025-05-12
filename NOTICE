@@ -1,0 +1,22 @@
+# NOTICE
+
+本项目包含以下开源项目的代码：
+
+## CMSIS_6
+
+-   License: Apache-2.0
+-   Copyright: Copyright (c) 2013-2023 Arm Limited.
+-   Origin: https://github.com/ARM-software/CMSIS_6
+-   branches/tags(commit): v6.1.0 (b0bbb0423b278ca632cfe1474eb227961d835fd2)
+-   Path:
+    -   components/system/osal/CMSIS_6
+
+## STM32CubeWL
+
+-   Part: STM32CubeWL/STM32 Utilities
+-   License: BSD-3-Clause
+-   Copyright: Copyright 2019-2021 STMicroelectronics.
+-   Origin: https://github.com/STMicroelectronics/STM32CubeWL
+-   branches/tags(commit): main (406f7a204c0409fd029458d54e0288e55620e65f)
+-   Path:
+    -   components/std/src/stdio/STM32_Utilities_misc
