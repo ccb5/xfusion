@@ -4,18 +4,20 @@
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------------
 
-menu "XFusion"
+menu "Components"
 
-    config XF_ENABLE_components
-        bool
-        default y
-    orsource "components/Kconfig"
-
-    config XF_ENABLE_examples
-        bool "examples"
+    config XF_ENABLE_algo
+        bool "algo"
         default n
-    if XF_ENABLE_examples
-        orsource "examples/Kconfig"
+    if XF_ENABLE_algo
+        orsource "algo/Kconfig"
+    endif
+
+    config XF_ENABLE_common
+        bool "common"
+        default y
+    if XF_ENABLE_common
+        orsource "common/Kconfig"
     endif
 
 endmenu
