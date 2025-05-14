@@ -4,18 +4,60 @@
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------------
 
+# @attention 目前 XFusion 所有配置暂定只写在此文件中，
+#            如有必要，后续再拆分到各个组件的 Kconfig 文件中。
+
 menu "XFusion"
+
+    # Define CONFIG_XF_CONF_SKIP so we can use XFusion
+    # without xf_conf.h file, the xf_conf_internal.h and
+    # xf_conf_kconfig.h files are used instead.
+    config XF_CONF_SKIP
+        bool "Check this to not use custom xf_conf.h"
+        default y
 
     config XF_ENABLE_components
         bool
         default y
-    orsource "components/Kconfig"
+
+    menu "Components"
+
+        depends on XF_ENABLE_components
+
+        config XF_ENABLE_algo
+            bool "algo"
+            default y
+
+        menu "algo"
+
+            depends on XF_ENABLE_algo
+
+        endmenu # common
+
+        config XF_ENABLE_common
+            bool "common"
+            default y
+
+        menu "common"
+
+            depends on XF_ENABLE_common
+
+            config XF_ENABLE_ERR_TO_NAME_LOOKUP
+                bool "Enable Error Code to Name Lookup"
+                default y
+
+        endmenu # common
+
+    endmenu # Components
 
     config XF_ENABLE_examples
         bool "examples"
         default n
-    if XF_ENABLE_examples
-        orsource "examples/Kconfig"
-    endif
+
+    menu "examples"
+
+        depends on XF_ENABLE_examples
+
+    endmenu # examples
 
 endmenu
