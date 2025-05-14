@@ -616,7 +616,7 @@ static_assertion_failure \
  */
 #   define xf_container_of(ptr, type, member) \
                                         ({ \
-                                            const _typeof_(((type *)0)->member) *__mptr = (ptr); \
+                                            const _typeof_(((type *)0)->member) *__mptr = (const _typeof_(((type *)0)->member) *)(ptr); \
                                             (type *)((char *)__mptr - xf_offsetof(type, member)); \
                                         })
 #elif !defined(xf_container_of)
