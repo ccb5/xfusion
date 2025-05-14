@@ -35,9 +35,9 @@ idf_component_register(
     SRCS 
         "${XF_SRCS_ALL}"
     INCLUDE_DIRS 
-       " ${XF_ROOT_DIR}"
-       " ${XF_ROOT_DIR}/../"
-       " ${XF_INCS_PUB_ALL}"
+        "${XF_ROOT_DIR}"
+        "${XF_ROOT_DIR}/../"
+        "${XF_INCS_PUB_ALL}"
     # REQUIRES # TODO
     WHOLE_ARCHIVE
 )
