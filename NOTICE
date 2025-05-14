@@ -1,6 +1,6 @@
 # NOTICE
 
-本项目包含以下开源项目的代码：
+本项目包含以下开源项目的代码，排名不分先后：
 
 ## CMSIS_6
 
@@ -20,3 +20,14 @@
 -   branches/tags(commit): main (406f7a204c0409fd029458d54e0288e55620e65f)
 -   Path:
     -   components/std/src/stdio/STM32_Utilities_misc
+
+## lvgl
+
+-   License: MIT licence
+-   Copyright: Copyright (c) 2021 LVGL Kft
+-   Origin: https://github.com/lvgl/lvgl
+-   branches/tags(commit): v9.2.2 (7f07a129e8d77f4984fff8e623fd5be18ff42e74)
+-   Path:
+    -   None
+-   Note:
+    -   参考模块化设计思想。
