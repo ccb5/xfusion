@@ -1,9 +1,13 @@
 /**
  * @file xf_dstruct.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2025-05-14
+ *
+ * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
+ * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 #ifndef __XF_DSTRUCT_H__
@@ -12,6 +16,7 @@
 /* ==================== [Includes] ========================================== */
 
 #include "xf_list.h"
+#include "xf_ringbuf.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -48,6 +48,16 @@ menu "XFusion"
 
         endmenu # common
 
+        config XF_ENABLE_dstruct
+            bool "dstruct"
+            default y
+
+        menu "dstruct"
+
+            depends on XF_ENABLE_dstruct
+
+        endmenu # dstruct
+
     endmenu # Components
 
     config XF_ENABLE_examples
