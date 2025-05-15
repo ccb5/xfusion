@@ -31,3 +31,22 @@
     -   None
 -   Note:
     -   参考模块化设计思想。
+
+## FreeRTOS-Kernel
+
+-   License: MIT licence
+-   Copyright: Copyright (C) 2021 Amazon.com, Inc. or its affiliates.
+-   Origin: https://github.com/FreeRTOS/FreeRTOS-Kernel
+-   branches/tags(commit): V11.2.0 (0adc196d4bd52a2d91102b525b0aafc1e14a2386)
+-   Path:
+    -   xf_project/components/freertos/FreeRTOS-Kernel
+
+## CMSIS-FreeRTOS
+
+-   License: Apache-2.0 AND MIT
+-   Copyright: Copyright (c) 2013-2024 Arm Limited.
+-   Copyright: Copyright (C) 2021 Amazon.com, Inc. or its affiliates.
+-   Origin: https://github.com/ARM-software/CMSIS-FreeRTOS
+-   branches/tags(commit): v11.2.0 (c7e7294e78a80be862340d8d50edd515ac3c41fd)
+-   Path:
+    -   xf_project/components/cmsis_freertos/CMSIS
