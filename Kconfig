@@ -102,6 +102,26 @@ menu "XFusion"
 
         endmenu # log
 
+        config XF_ENABLE_system
+            bool "system"
+            default y
+
+        menu "system"
+
+            depends on XF_ENABLE_system
+
+            config XF_ENABLE_osal
+                bool "osal"
+                default y
+
+            menu "osal"
+
+                depends on XF_ENABLE_osal
+
+            endmenu # system
+
+        endmenu # system
+
     endmenu # Components
 
     config XF_ENABLE_examples

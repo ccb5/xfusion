@@ -9,7 +9,7 @@
 -   Origin: https://github.com/ARM-software/CMSIS_6
 -   branches/tags(commit): v6.1.0 (b0bbb0423b278ca632cfe1474eb227961d835fd2)
 -   Path:
-    -   components/system/osal/CMSIS_6
+    -   components/system/osal/cmsis_rtos2
 
 ## STM32CubeWL
 

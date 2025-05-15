@@ -19,3 +19,7 @@ endif()
 if(CONFIG_XF_ENABLE_log)
     xf_component_append_if_exists(log)
 endif()
+
+if(CONFIG_XF_ENABLE_system)
+    xf_collect_if_exists(system)
+endif()
