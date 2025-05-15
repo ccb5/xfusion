@@ -1,0 +1,17 @@
+menu "FreeRTOS"
+
+    config FREERTOS_HZ
+        int "configTICK_RATE_HZ"
+        range 1 1000
+        default 1000
+        help
+            Sets the FreeRTOS tick interrupt frequency in Hz (see configTICK_RATE_HZ documentation for more
+            details).
+
+    config TOTAL_HEAP_SIZE
+        int "configTOTAL_HEAP_SIZE"
+        default 16777216 # 16MB
+        help
+            Sets the total heap size in bytes (see configTOTAL_HEAP_SIZE documentation for more details).
+
+endmenu # FreeRTOS
