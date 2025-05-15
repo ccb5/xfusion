@@ -22,9 +22,11 @@
 
 #include <string.h>
 
-#include "cmsis_os2.h"                  // ::CMSIS:RTOS2
-#include "cmsis_compiler.h"             // Compiler agnostic definitions
-#include "os_tick.h"                    // OS Tick API
+#include "xf_osal.h"
+
+// #include "cmsis_os2.h"                  // ::CMSIS:RTOS2
+// #include "cmsis_compiler.h"             // （已复制所需部分） Compiler agnostic definitions 
+// #include "os_tick.h"                    // OS Tick API
 
 #include "FreeRTOS.h"                   // ARM.FreeRTOS::RTOS:Core
 #include "task.h"                       // ARM.FreeRTOS::RTOS:Core
@@ -36,6 +38,96 @@
 #include "freertos_os2.h"               // Configuration check and setup
 
 /*---------------------------------------------------------------------------*/
+
+/* Fallback for __has_builtin */
+#ifndef __has_builtin
+  #define __has_builtin(x) (0)
+#endif
+
+/* CMSIS compiler specific defines */
+#ifndef   __ASM
+  #define __ASM                                  __asm
+#endif
+#ifndef   __INLINE
+  #define __INLINE                               inline
+#endif
+#ifndef   __STATIC_INLINE
+  #define __STATIC_INLINE                        static inline
+#endif
+#ifndef   __STATIC_FORCEINLINE
+  #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+#endif
+#ifndef   __NO_RETURN
+  #define __NO_RETURN                            __attribute__((__noreturn__))
+#endif
+#ifndef   CMSIS_DEPRECATED
+  #define CMSIS_DEPRECATED                       __attribute__((deprecated))
+#endif
+#ifndef   __USED
+  #define __USED                                 __attribute__((used))
+#endif
+#ifndef   __WEAK
+  #define __WEAK                                 __attribute__((weak))
+#endif
+#ifndef   __PACKED
+  #define __PACKED                               __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __PACKED_STRUCT
+  #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __PACKED_UNION
+  #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+#endif
+#ifndef   __UNALIGNED_UINT16_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT16_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(addr))->v)
+#endif
+#ifndef   __UNALIGNED_UINT32_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT32_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(addr))->v)
+#endif
+#ifndef   __ALIGNED
+  #define __ALIGNED(x)                           __attribute__((aligned(x)))
+#endif
+#ifndef   __RESTRICT
+  #define __RESTRICT                             __restrict
+#endif
+#ifndef   __COMPILER_BARRIER
+  #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+#endif
+#ifndef __NO_INIT
+  #define __NO_INIT                              __attribute__ ((section (".noinit")))
+#endif
+#ifndef __ALIAS
+  #define __ALIAS(x)                             __attribute__ ((alias(x)))
+#endif
+
+#if XF_TODO
+
 #ifndef __ARM_ARCH_6M__
   #define __ARM_ARCH_6M__         0
 #endif
@@ -76,6 +168,14 @@
 #else
 #define IS_IRQ_MODE()             (__get_IPSR() != 0U)
 #endif
+
+#endif /* XF_TODO */
+
+/* TODO Linux freertos cmsis 对接，中断处理需要更好的方式 */
+#define IS_IRQ_MASKED()           (0U)
+#define IS_IRQ_MODE()             (0U)
+#define __disable_irq()
+#define __enable_irq()
 
 /* Limits */
 #define MAX_BITS_TASK_NOTIFY      31U
@@ -1223,7 +1323,7 @@ static void TimerCallback (TimerHandle_t hTimer) {
   callb = (TimerCallback_t *)pvTimerGetTimerID (hTimer);
 
   /* Remove dynamic allocation flag */
-  callb = (TimerCallback_t *)((uint32_t)callb & ~1U);
+  callb = (TimerCallback_t *)((uintptr_t)callb & ~1U);
 
   if (callb != NULL) {
     callb->func (callb->arg);
@@ -1252,7 +1352,7 @@ osTimerId_t osTimerNew (osTimerFunc_t func, osTimerType_t type, void *argument, 
       /* is provided and if it also contains space for callback and its argument  */
       if ((attr != NULL) && (attr->cb_mem != NULL)) {
         if (attr->cb_size >= (sizeof(StaticTimer_t) + sizeof(TimerCallback_t))) {
-          callb = (TimerCallback_t *)((uint32_t)attr->cb_mem + sizeof(StaticTimer_t));
+          callb = (TimerCallback_t *)((uintptr_t)attr->cb_mem + sizeof(StaticTimer_t));
         }
       }
     #endif
@@ -1303,7 +1403,7 @@ osTimerId_t osTimerNew (osTimerFunc_t func, osTimerType_t type, void *argument, 
         mem = 0;
       }
       /* Store callback memory dynamic allocation flag */
-      callb = (TimerCallback_t *)((uint32_t)callb | callb_dyn);
+      callb = (TimerCallback_t *)((uintptr_t)callb | callb_dyn);
       /*
         TimerCallback function is always provided as a callback and is used to call application
         specified function with its argument both stored in structure callb.
@@ -1324,7 +1424,7 @@ osTimerId_t osTimerNew (osTimerFunc_t func, osTimerType_t type, void *argument, 
       #if (configSUPPORT_DYNAMIC_ALLOCATION == 1)
       if ((hTimer == NULL) && (callb != NULL) && (callb_dyn == 1U)) {
         /* Failed to create a timer, release allocated resources */
-        callb = (TimerCallback_t *)((uint32_t)callb & ~1U);
+        callb = (TimerCallback_t *)((uintptr_t)callb & ~1U);
 
         vPortFree (callb);
       }
@@ -1455,9 +1555,9 @@ osStatus_t osTimerDelete (osTimerId_t timer_id) {
 
     if (xTimerDelete (hTimer, 0) == pdPASS) {
       #if (configSUPPORT_DYNAMIC_ALLOCATION == 1)
-        if ((uint32_t)callb & 1U) {
+        if ((uintptr_t)callb & 1U) {
           /* Callback memory was allocated from dynamic pool, clear flag */
-          callb = (TimerCallback_t *)((uint32_t)callb & ~1U);
+          callb = (TimerCallback_t *)((uintptr_t)callb & ~1U);
 
           /* Return allocated memory to dynamic pool */
           vPortFree (callb);
@@ -1810,7 +1910,7 @@ osMutexId_t osMutexNew (const osMutexAttr_t *attr) {
 
       if ((hMutex != NULL) && (rmtx != 0U)) {
         /* Set LSB as 'recursive mutex flag' */
-        hMutex = (SemaphoreHandle_t)((uint32_t)hMutex | 1U);
+        hMutex = (SemaphoreHandle_t)((uintptr_t)hMutex | 1U);
       }
     }
   }
@@ -1827,10 +1927,10 @@ osStatus_t osMutexAcquire (osMutexId_t mutex_id, uint32_t timeout) {
   osStatus_t stat;
   uint32_t rmtx;
 
-  hMutex = (SemaphoreHandle_t)((uint32_t)mutex_id & ~1U);
+  hMutex = (SemaphoreHandle_t)((uintptr_t)mutex_id & ~1U);
 
   /* Extract recursive mutex flag */
-  rmtx = (uint32_t)mutex_id & 1U;
+  rmtx = (uintptr_t)mutex_id & 1U;
 
   stat = osOK;
 
@@ -1875,10 +1975,10 @@ osStatus_t osMutexRelease (osMutexId_t mutex_id) {
   osStatus_t stat;
   uint32_t rmtx;
 
-  hMutex = (SemaphoreHandle_t)((uint32_t)mutex_id & ~1U);
+  hMutex = (SemaphoreHandle_t)((uintptr_t)mutex_id & ~1U);
 
   /* Extract recursive mutex flag */
-  rmtx = (uint32_t)mutex_id & 1U;
+  rmtx = (uintptr_t)mutex_id & 1U;
 
   stat = osOK;
 
@@ -1914,7 +2014,7 @@ osThreadId_t osMutexGetOwner (osMutexId_t mutex_id) {
   SemaphoreHandle_t hMutex;
   osThreadId_t owner;
 
-  hMutex = (SemaphoreHandle_t)((uint32_t)mutex_id & ~1U);
+  hMutex = (SemaphoreHandle_t)((uintptr_t)mutex_id & ~1U);
 
   if ((IRQ_Context() != 0U) || (hMutex == NULL)) {
     owner = NULL;
@@ -1934,7 +2034,7 @@ osStatus_t osMutexDelete (osMutexId_t mutex_id) {
 #ifndef USE_FreeRTOS_HEAP_1
   SemaphoreHandle_t hMutex;
 
-  hMutex = (SemaphoreHandle_t)((uint32_t)mutex_id & ~1U);
+  hMutex = (SemaphoreHandle_t)((uintptr_t)mutex_id & ~1U);
 
   if (IRQ_Context() != 0U) {
     stat = osErrorISR;
@@ -2507,7 +2607,7 @@ osMemoryPoolId_t osMemoryPoolNew (uint32_t block_count, uint32_t block_size, con
       else {
         if (attr->mp_mem != NULL) {
           /* Check if array is 4-byte aligned */
-          if (((uint32_t)attr->mp_mem & 3U) == 0U) {
+          if (((uintptr_t)attr->mp_mem & 3U) == 0U) {
             /* Check if array big enough */
             if (attr->mp_size >= sz) {
               /* Static memory pool array is provided */
