@@ -1,25 +1,18 @@
 /**
- * @file xf_main.c
+ * @file app_main.c
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2025-05-15
- * 
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  */
 
 /* ==================== [Includes] ========================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "xf_common.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
-
 #include "xf_osal.h"
 
 /* ==================== [Defines] =========================================== */
@@ -28,16 +21,19 @@
 
 /* ==================== [Static Prototypes] ================================= */
 
+extern void xf_main(void);
+
 /* ==================== [Static Variables] ================================== */
 
 /* ==================== [Macros] ============================================ */
 
 /* ==================== [Global Functions] ================================== */
 
-void xf_main(void)
+void app_main(void *arg)
 {
-    printf("hello_world\r\n");
-    printf("%s\r\n", xf_err_to_name(XF_OK));
+    (void)arg;
+    xf_main();
+    osThreadExit();
 }
 
 /* ==================== [Static Functions] ================================== */

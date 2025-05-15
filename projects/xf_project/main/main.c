@@ -1,25 +1,18 @@
 /**
- * @file xf_main.c
+ * @file main.c
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2025-05-15
- * 
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  */
 
 /* ==================== [Includes] ========================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "xf_common.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
-
 #include "xf_osal.h"
 
 /* ==================== [Defines] =========================================== */
@@ -28,16 +21,33 @@
 
 /* ==================== [Static Prototypes] ================================= */
 
+extern void app_main(void *arg);
+
 /* ==================== [Static Variables] ================================== */
 
 /* ==================== [Macros] ============================================ */
 
 /* ==================== [Global Functions] ================================== */
 
-void xf_main(void)
+int main(void)
 {
-    printf("hello_world\r\n");
-    printf("%s\r\n", xf_err_to_name(XF_OK));
+    osKernelInitialize();
+
+    osThreadAttr_t attr = {
+        .name       = "app_main",
+        .stack_size = 8 * 1024,
+        .priority   = osPriorityNormal,
+        .cb_mem     = NULL,
+        .cb_size    = 0,
+    };
+
+    osKernelLock();
+    osThreadNew(app_main, NULL, &attr);
+    osKernelUnlock();
+
+    osKernelStart();
+
+    return 0;
 }
 
 /* ==================== [Static Functions] ================================== */
