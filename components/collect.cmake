@@ -15,3 +15,7 @@ endif()
 if(CONFIG_XF_ENABLE_dstruct)
     xf_component_append_if_exists(dstruct)
 endif()
+
+if(CONFIG_XF_ENABLE_log)
+    xf_component_append_if_exists(log)
+endif()
