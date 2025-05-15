@@ -61,7 +61,7 @@ extern uint32_t SystemCoreClock;
 //  <o>Total heap size [bytes] <0-0xFFFFFFFF>
 //  <i> Heap memory size in bytes.
 //  <i> Default: 8192
-#define configTOTAL_HEAP_SIZE                     ( ( size_t ) ( CONFIG_TOTAL_HEAP_SIZE ) )/* ((size_t)8192) */
+#define configTOTAL_HEAP_SIZE                     ( ( size_t ) ( CONFIG_TOTAL_HEAP_SIZE ) ) /* ((size_t)8192) */
 
 //  <o>Kernel tick frequency [Hz] <0-0xFFFFFFFF>
 //  <i> Kernel tick rate in Hz.
@@ -324,13 +324,15 @@ extern uint32_t SystemCoreClock;
 
 //------------- <<< end of configuration section >>> ---------------------------
 
-/* Define to trap errors during development */
-#define configASSERT(x)                           do {                \
-                                                    if ((x) == 0) {   \
-                                                      /* __BKPT(0); */      \
-                                                      while (1);      \
-                                                    }                 \
-                                                  } while(0)
+extern void vAssertCalled( const char * const pcFileName,
+                           unsigned long ulLine );
+
+/* It is a good idea to define configASSERT() while developing.  configASSERT()
+ * uses the same semantics as the standard C assert() macro.  Don't define
+ * configASSERT() when performing code coverage tests though, as it is not
+ * intended to asserts() to fail, some some code is intended not to run if no
+ * errors are present. */
+#define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
 
 /* Defines needed by FreeRTOS to implement CMSIS RTOS2 API. Do not change! */
 #define configCPU_CLOCK_HZ                        (SystemCoreClock)
@@ -399,5 +401,28 @@ extern uint32_t SystemCoreClock;
 #endif
 
 #endif /* XF_TODO */
+
+/* Prototype for the function used to print out.  In this case it prints to the
+ * console before the network is connected then a UDP port after the network has
+ * connected. */
+extern void vLoggingPrintf( const char * pcFormatString,
+                            ... );
+
+/* Set to 1 to print out debug messages.  If ipconfigHAS_DEBUG_PRINTF is set to
+ * 1 then FreeRTOS_debug_printf should be defined to the function used to print
+ * out the debugging messages. */
+#define ipconfigHAS_DEBUG_PRINTF    1
+#if ( ipconfigHAS_DEBUG_PRINTF == 1 )
+    #define FreeRTOS_debug_printf( X )    vLoggingPrintf X
+#endif
+
+/* Set to 1 to print out non debugging messages, for example the output of the
+ * FreeRTOS_netstat() command, and ping replies.  If ipconfigHAS_PRINTF is set to 1
+ * then FreeRTOS_printf should be set to the function used to print out the
+ * messages. */
+#define ipconfigHAS_PRINTF    0
+#if ( ipconfigHAS_PRINTF == 1 )
+    #define FreeRTOS_printf( X )    vLoggingPrintf X
+#endif
 
 #endif /* FREERTOS_CONFIG_H */

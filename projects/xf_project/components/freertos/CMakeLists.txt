@@ -9,8 +9,9 @@ set(FREERTOS_PORT GCC_POSIX CACHE STRING "Port for FreeRTOS on Posix environment
 
 file(GLOB FREERTOS_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/*.c"
-    "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/MemMang/heap_4.c"
+    "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/MemMang/heap_3.c"
     "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/Posix/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel/portable/ThirdParty/GCC/Posix/utils/*.c"
 )
 
 idf_component_register(
