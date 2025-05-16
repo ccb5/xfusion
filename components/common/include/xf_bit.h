@@ -107,7 +107,7 @@ extern "C" {
  *
  * @details
  * 位操作宏名称类似于:
- *      BIT[S]_<[GET]/[GET_MOD]/[SET]/[FLIP]><[0]/[1]/null>
+ *      BIT[S]_<[GET]/[GET_MDF]/[SET]/[FLIP]><[0]/[1]/null>
  * 1. 命名空间
  *    1. BIT_:       表示对**一个**位的操作.
  *    2. BITS_:      表示对**多个**位的操作.
@@ -119,9 +119,9 @@ extern "C" {
  *       2. SET0、SET1 表示需要目标值是 0、1. 不带后缀表示目标值由用户输入.
  *       3. FLIP 表示翻转.
  *    2. 获取
- *          GET、GET_MOD、MASK、WIDTH
+ *          GET、GET_MDF、MASK、WIDTH
  *       1. 不会改变原值, 源可以是常数.
- *       2. GET_MOD 表示获取获取修改后的值, 不修改原值.
+ *       2. GET_MDF 表示获取获取修改后的值, 不修改原值.
  *       3. MASK 只用于获取低 n 位为 1 的掩码.
  *       4. WIDTH 只用于获取容纳给定值所需要的二进制位数.
  *    3. BIT 中的 n
@@ -154,7 +154,7 @@ extern "C" {
 #   define BIT_GET(src, n)              (((src) >> (n)) & BIT0)
 #endif
 
-#if !defined(BIT_GET_MOD0)
+#if !defined(BIT_GET_MDF0)
 /**
  * @brief 获取将 src 的 bit_n 置 0 后的值.
  *
@@ -163,10 +163,10 @@ extern "C" {
  *
  * @return src 的 bit_n 置 0 后的值.
  */
-#   define BIT_GET_MOD0(src, n)         ((src) & ~BIT(n))
+#   define BIT_GET_MDF0(src, n)         ((src) & ~BIT(n))
 #endif
 
-#if !defined(BIT_GET_MOD1)
+#if !defined(BIT_GET_MDF1)
 /**
  * @brief 获取将 src 的 bit_n 置 1 后的值.
  *
@@ -175,10 +175,10 @@ extern "C" {
  *
  * @return src 的 bit_n 置 1 后的值.
  */
-#   define BIT_GET_MOD1(src, n)         ((src) | BIT(n))
+#   define BIT_GET_MDF1(src, n)         ((src) | BIT(n))
 #endif
 
-#if !defined(BIT_GET_MOD)
+#if !defined(BIT_GET_MDF)
 /**
  * @brief 获取将 src 的 bit_n 置 value 后的值.
  *
@@ -188,7 +188,7 @@ extern "C" {
  *
  * @return src 的 bit_n 置 value 后的值.
  */
-#   define BIT_GET_MOD(src, n, value)   (BIT_GET_MOD0(src, n) | (!!(value) << (n)))
+#   define BIT_GET_MDF(src, n, value)   (BIT_GET_MDF0(src, n) | (!!(value) << (n)))
 #endif
 
 #if !defined(BIT_GET_FLIP)
@@ -210,7 +210,7 @@ extern "C" {
  * @param src 被读写的变量.
  * @param n 比特下标, 从 0 开始.
  */
-#   define BIT_SET0(src, n)             ((src) = BIT_GET_MOD0(src, n))
+#   define BIT_SET0(src, n)             ((src) = BIT_GET_MDF0(src, n))
 #endif
 
 #if !defined(BIT_SET1)
@@ -220,7 +220,7 @@ extern "C" {
  * @param src 被读写的变量.
  * @param n 比特下标, 从 0 开始.
  */
-#   define BIT_SET1(src, n)             ((src) = BIT_GET_MOD1(src, n))
+#   define BIT_SET1(src, n)             ((src) = BIT_GET_MDF1(src, n))
 #endif
 
 #if !defined(BIT_SET)
@@ -231,7 +231,7 @@ extern "C" {
  * @param n 比特下标, 从 0 开始.
  * @param value 0 或 1.
  */
-#   define BIT_SET(src, n, value)       ((val) = BIT_GET_MOD(src, n, value))
+#   define BIT_SET(src, n, value)       ((val) = BIT_GET_MDF(src, n, value))
 #endif
 
 #if !defined(BIT_FLIP)
@@ -296,7 +296,7 @@ extern "C" {
 #   define BIT_MASK_LSH(n, offset)      (BIT_MASK(n) << (offset))
 #endif
 
-#if !defined(BITS_GET_MOD0)
+#if !defined(BITS_GET_MDF0)
 /**
  * @brief 获取设置 src 的对应位掩码 bitmask 为 1 的地方为 0 后的值.
  *
@@ -306,10 +306,10 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 0 的位.
  */
-#   define BITS_GET_MOD0(src, bitmask)  ((src) & ~(bitmask))
+#   define BITS_GET_MDF0(src, bitmask)  ((src) & ~(bitmask))
 #endif
 
-#if !defined(BITS_GET_MOD1)
+#if !defined(BITS_GET_MDF1)
 /**
  * @brief 获取设置 src 的对应位掩码 bitmask 为 1 的地方为 1 后的值.
  *
@@ -319,10 +319,10 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 1 的位.
  */
-#   define BITS_GET_MOD1(src, bitmask)  ((src) | (bitmask))
+#   define BITS_GET_MDF1(src, bitmask)  ((src) | (bitmask))
 #endif
 
-#if !defined(BITS_GET_MOD_FLIP)
+#if !defined(BITS_GET_MDF_FLIP)
 /**
  * @brief 获取翻转 src 的 bitmask 为 1 的位后的值.
  *
@@ -332,7 +332,7 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被翻转的位.
  */
-#   define BITS_GET_MOD_FLIP(src, bitmask) \
+#   define BITS_GET_MDF_FLIP(src, bitmask) \
                                         ((src) ^ (bitmask))
 #endif
 
@@ -352,7 +352,7 @@ extern "C" {
  * src = 0xffff;
  * BITS_SET0(src, BIT_MASK(4) << 3)     == 0b11111111 10000111
  */
-#   define BITS_SET0(src, bitmask)      ((src) = BITS_GET_MOD0(src, bitmask))
+#   define BITS_SET0(src, bitmask)      ((src) = BITS_GET_MDF0(src, bitmask))
 #endif
 
 #if !defined(BITS_SET1)
@@ -371,7 +371,7 @@ extern "C" {
  * src = 0x0000;
  * BITS_SET1(src, BIT_MASK(4) << 3)     == 0b00000000 01111000
  */
-#   define BITS_SET1(src, bitmask)      ((src) = BITS_GET_MOD1(src, bitmask))
+#   define BITS_SET1(src, bitmask)      ((src) = BITS_GET_MDF1(src, bitmask))
 #endif
 
 #if !defined(BITS_FLIP)
@@ -384,7 +384,7 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被翻转的位.
  */
-#   define BITS_FLIP(src, bitmask)      ((src) = BITS_GET_MOD_FLIP(src, bitmask))
+#   define BITS_FLIP(src, bitmask)      ((src) = BITS_GET_MDF_FLIP(src, bitmask))
 #endif
 
 #if !defined(BITSn_GET_LSH)
@@ -429,7 +429,7 @@ extern "C" {
                                         (((src) >> (offset)) & BIT_MASK(n))
 #endif
 
-#if !defined(BITSn_GET_MOD)
+#if !defined(BITSn_GET_MDF)
 /**
  * @brief 获取将 src 的 offset 位起共 n 位修改为 value 后的值.
  *
@@ -441,8 +441,8 @@ extern "C" {
  * @return src 的 offset 位起 n 位修改为 value 的值.
  *
  * @example
- *  BITSn_GET_MOD(src       , n, offset, value     )
- *  BITSn_GET_MOD(0x4c5ca6d2, 8, 13    , 0b10101111)
+ *  BITSn_GET_MDF(src       , n, offset, value     )
+ *  BITSn_GET_MDF(0x4c5ca6d2, 8, 13    , 0b10101111)
  *
  *  src:    0100 1100 0101 1100 1010 0110 1101 0010 == 0x4c5ca6d2
  *                       1 0101 111                 == ((value & BIT_MASK(8)) << 13)
@@ -452,8 +452,8 @@ extern "C" {
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT_IE 为 1ULL）.
  */
-#   define BITSn_GET_MOD(src, n, offset, value) \
-                                        (BITS_GET_MOD0((src), BIT_MASK_LSH((n), (offset))) \
+#   define BITSn_GET_MDF(src, n, offset, value) \
+                                        (BITS_GET_MDF0((src), BIT_MASK_LSH((n), (offset))) \
                                             | BITSn_GET_LSH((value), (n), (offset)))
 #endif
 
@@ -461,12 +461,12 @@ extern "C" {
 /**
  * @brief 设置 src 的 offset 位起共 n 位为 value.
  *
- * @see BITSn_GET_MOD @ref BITSn_GET_MOD
+ * @see BITSn_GET_MDF @ref BITSn_GET_MDF
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT_IE 为 1ULL）.
  */
 #   define BITSn_SET(src, n, offset, value) \
-                                        ((src) = BITSn_GET_MOD((src), (n), (offset), (value)))
+                                        ((src) = BITSn_GET_MDF((src), (n), (offset), (value)))
 #endif
 
 /* 1111111111111111111111111111111111111111111 */
@@ -487,7 +487,7 @@ extern "C" {
 #   define BIT64_GET(src, n)              (((src) >> (n)) & BIT0)
 #endif
 
-#if !defined(BIT64_GET_MOD0)
+#if !defined(BIT64_GET_MDF0)
 /**
  * @brief 获取将 src 的 bit64_n 置 0 后的值.
  *
@@ -496,10 +496,10 @@ extern "C" {
  *
  * @return src 的 bit64_n 置 0 后的值.
  */
-#   define BIT64_GET_MOD0(src, n)         ((src) & ~BIT(n))
+#   define BIT64_GET_MDF0(src, n)         ((src) & ~BIT(n))
 #endif
 
-#if !defined(BIT64_GET_MOD1)
+#if !defined(BIT64_GET_MDF1)
 /**
  * @brief 获取将 src 的 bit64_n 置 1 后的值.
  *
@@ -508,10 +508,10 @@ extern "C" {
  *
  * @return src 的 bit64_n 置 1 后的值.
  */
-#   define BIT64_GET_MOD1(src, n)         ((src) | BIT(n))
+#   define BIT64_GET_MDF1(src, n)         ((src) | BIT(n))
 #endif
 
-#if !defined(BIT64_GET_MOD)
+#if !defined(BIT64_GET_MDF)
 /**
  * @brief 获取将 src 的 bit64_n 置 value 后的值.
  *
@@ -521,7 +521,7 @@ extern "C" {
  *
  * @return src 的 bit64_n 置 value 后的值.
  */
-#   define BIT64_GET_MOD(src, n, value)   (BIT64_GET_MOD0(src, n) | (!!(value) << (n)))
+#   define BIT64_GET_MDF(src, n, value)   (BIT64_GET_MDF0(src, n) | (!!(value) << (n)))
 #endif
 
 #if !defined(BIT64_GET_FLIP)
@@ -543,7 +543,7 @@ extern "C" {
  * @param src 被读写的变量.
  * @param n 比特下标, 从 0 开始.
  */
-#   define BIT64_SET0(src, n)             ((src) = BIT64_GET_MOD0(src, n))
+#   define BIT64_SET0(src, n)             ((src) = BIT64_GET_MDF0(src, n))
 #endif
 
 #if !defined(BIT64_SET1)
@@ -553,7 +553,7 @@ extern "C" {
  * @param src 被读写的变量.
  * @param n 比特下标, 从 0 开始.
  */
-#   define BIT64_SET1(src, n)             ((src) = BIT64_GET_MOD1(src, n))
+#   define BIT64_SET1(src, n)             ((src) = BIT64_GET_MDF1(src, n))
 #endif
 
 #if !defined(BIT64_SET)
@@ -564,7 +564,7 @@ extern "C" {
  * @param n 比特下标, 从 0 开始.
  * @param value 0 或 1.
  */
-#   define BIT64_SET(src, n, value)       ((val) = BIT64_GET_MOD(src, n, value))
+#   define BIT64_SET(src, n, value)       ((val) = BIT64_GET_MDF(src, n, value))
 #endif
 
 #if !defined(BIT64_FLIP)
@@ -629,7 +629,7 @@ extern "C" {
 #   define BIT64_MASK_LSH(n, offset)      (BIT64_MASK(n) << (offset))
 #endif
 
-#if !defined(BITS64_GET_MOD0)
+#if !defined(BITS64_GET_MDF0)
 /**
  * @brief 获取设置 src 的对应位掩码 bitmask 为 1 的地方为 0 后的值.
  *
@@ -639,10 +639,10 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 0 的位.
  */
-#   define BITS64_GET_MOD0(src, bitmask)  ((src) & ~(bitmask))
+#   define BITS64_GET_MDF0(src, bitmask)  ((src) & ~(bitmask))
 #endif
 
-#if !defined(BITS64_GET_MOD1)
+#if !defined(BITS64_GET_MDF1)
 /**
  * @brief 获取设置 src 的对应位掩码 bitmask 为 1 的地方为 1 后的值.
  *
@@ -652,10 +652,10 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 1 的位.
  */
-#   define BITS64_GET_MOD1(src, bitmask)  ((src) | (bitmask))
+#   define BITS64_GET_MDF1(src, bitmask)  ((src) | (bitmask))
 #endif
 
-#if !defined(BITS64_GET_MOD_FLIP)
+#if !defined(BITS64_GET_MDF_FLIP)
 /**
  * @brief 获取翻转 src 的 bitmask 为 1 的位后的值.
  *
@@ -665,7 +665,7 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被翻转的位.
  */
-#   define BITS64_GET_MOD_FLIP(src, bitmask) \
+#   define BITS64_GET_MDF_FLIP(src, bitmask) \
                                         ((src) ^ (bitmask))
 #endif
 
@@ -685,7 +685,7 @@ extern "C" {
  * src = 0xffff;
  * BITS64_SET0(src, BIT64_MASK(4) << 3)     == 0b11111111 10000111
  */
-#   define BITS64_SET0(src, bitmask)      ((src) = BITS64_GET_MOD0(src, bitmask))
+#   define BITS64_SET0(src, bitmask)      ((src) = BITS64_GET_MDF0(src, bitmask))
 #endif
 
 #if !defined(BITS64_SET1)
@@ -704,7 +704,7 @@ extern "C" {
  * src = 0x0000;
  * BITS64_SET1(src, BIT64_MASK(4) << 3)     == 0b00000000 01111000
  */
-#   define BITS64_SET1(src, bitmask)      ((src) = BITS64_GET_MOD1(src, bitmask))
+#   define BITS64_SET1(src, bitmask)      ((src) = BITS64_GET_MDF1(src, bitmask))
 #endif
 
 #if !defined(BITS64_FLIP)
@@ -717,7 +717,7 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被翻转的位.
  */
-#   define BITS64_FLIP(src, bitmask)      ((src) = BITS64_GET_MOD_FLIP(src, bitmask))
+#   define BITS64_FLIP(src, bitmask)      ((src) = BITS64_GET_MDF_FLIP(src, bitmask))
 #endif
 
 #if !defined(BITSn64_GET_LSH)
@@ -762,7 +762,7 @@ extern "C" {
                                         (((src) >> (offset)) & BIT64_MASK(n))
 #endif
 
-#if !defined(BITSn64_GET_MOD)
+#if !defined(BITSn64_GET_MDF)
 /**
  * @brief 获取将 src 的 offset 位起共 n 位修改为 value 后的值.
  *
@@ -774,8 +774,8 @@ extern "C" {
  * @return src 的 offset 位起 n 位修改为 value 的值.
  *
  * @example
- *  BITSn64_GET_MOD(src       , n, offset, value     )
- *  BITSn64_GET_MOD(0x4c5ca6d2, 8, 13    , 0b10101111)
+ *  BITSn64_GET_MDF(src       , n, offset, value     )
+ *  BITSn64_GET_MDF(0x4c5ca6d2, 8, 13    , 0b10101111)
  *
  *  src:    0100 1100 0101 1100 1010 0110 1101 0010 == 0x4c5ca6d2
  *                       1 0101 111                 == ((value & BIT64_MASK(8)) << 13)
@@ -785,8 +785,8 @@ extern "C" {
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT64_IE 为 1ULL）.
  */
-#   define BITSn64_GET_MOD(src, n, offset, value) \
-                                        (BITS64_GET_MOD0((src), BIT64_MASK_LSH((n), (offset))) \
+#   define BITSn64_GET_MDF(src, n, offset, value) \
+                                        (BITS64_GET_MDF0((src), BIT64_MASK_LSH((n), (offset))) \
                                             | BITSn64_GET_LSH((value), (n), (offset)))
 #endif
 
@@ -794,12 +794,12 @@ extern "C" {
 /**
  * @brief 设置 src 的 offset 位起共 n 位为 value.
  *
- * @see BITSn64_GET_MOD @ref BITSn64_GET_MOD
+ * @see BITSn64_GET_MDF @ref BITSn64_GET_MDF
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT64_IE 为 1ULL）.
  */
 #   define BITSn64_SET(src, n, offset, value) \
-                                        ((src) = BITSn64_GET_MOD((src), (n), (offset), (value)))
+                                        ((src) = BITSn64_GET_MDF((src), (n), (offset), (value)))
 #endif
 
 #if !defined(FLS32) && XF_COM_USE_BUILTIN
