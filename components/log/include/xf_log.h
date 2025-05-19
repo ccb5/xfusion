@@ -76,8 +76,10 @@ char xf_log_level_to_prompt(uint32_t level);
 #endif
 
 /* MODULE TAG */
-#define MTAG                            xf_this_module
-#define XF_LOG_DEFINE_THIS_MODULE()     static const char *MTAG = (__FILENAME__)
+#define MTAG                                xf_this_module
+#define XF_LOG_DEFINE_THIS_MODULE(_name)    static const char *const MTAG = (_name)
+#define XF_LOG_DEFINE_THIS_FILE()           static const char *const MTAG = (__FILENAME__)
+#define XF_MLOG_DEFINE()                    XF_LOG_DEFINE_THIS_FILE()
 
 #if XF_LOG_LEVEL >= XF_LOG_USER
 /**
