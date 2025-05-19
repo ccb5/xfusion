@@ -231,7 +231,7 @@ extern "C" {
  * @param n 比特下标, 从 0 开始.
  * @param value 0 或 1.
  */
-#   define BIT_SET(src, n, value)       ((val) = BIT_GET_MDF(src, n, value))
+#   define BIT_SET(src, n, value)       ((src) = BIT_GET_MDF(src, n, value))
 #endif
 
 #if !defined(BIT_FLIP)
@@ -274,9 +274,10 @@ extern "C" {
  *
  * @return 低 n 位为 1 的位掩码.
  *
- * @example
+ * @code{markdown}
  * BIT_MASK(6)  == 0x003f ==          0b00111111
  * BIT_MASK(13) == 0x1fff == 0b00011111 11111111
+ * @endcode
  */
 #   define BIT_MASK(n)                 (((n) < (8 * sizeof(BIT_IE))) ? (BIT(n) - 1) : ~(BIT_IE - 1))
 #endif
@@ -289,9 +290,10 @@ extern "C" {
  *
  * @return 低 n 位为 1 的位掩码.
  *
- * @example
+ * @code{markdown}
  * BIT_MASK(6)  == 0x003f ==          0b00111111
  * BIT_MASK(13) == 0x1fff == 0b00011111 11111111
+ * @endcode
  */
 #   define BIT_MASK_LSH(n, offset)      (BIT_MASK(n) << (offset))
 #endif
@@ -346,11 +348,12 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 0 的位.
  *
- * @example
+ * @code{markdown}
  * uint32_t src = 0xffff;
  * BITS_SET0(src, 0b0011 0110 0101 1010) == 0b11001001 10100101
  * src = 0xffff;
- * BITS_SET0(src, BIT_MASK(4) << 3)     == 0b11111111 10000111
+ * BITS_SET0(src, BIT_MASK(4) << 3)      == 0b11111111 10000111
+ * @endcode
  */
 #   define BITS_SET0(src, bitmask)      ((src) = BITS_GET_MDF0(src, bitmask))
 #endif
@@ -365,11 +368,12 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 1 的位.
  *
- * @example
+ * @code{markdown}
  * uint32_t src = 0x0000;
  * BITS_SET1(src, 0b0011 0110 0101 1010) == 0b00110110 01011010
  * src = 0x0000;
- * BITS_SET1(src, BIT_MASK(4) << 3)     == 0b00000000 01111000
+ * BITS_SET1(src, BIT_MASK(4) << 3)      == 0b00000000 01111000
+ * @endcode
  */
 #   define BITS_SET1(src, bitmask)      ((src) = BITS_GET_MDF1(src, bitmask))
 #endif
@@ -415,7 +419,7 @@ extern "C" {
  *
  * @return src 内, 从 offset 位起, 共 n 位数据.
  *
- * @example
+ * @code{markdown}
  * BITS_GET_RSH(0b0011 1010 1111 0010, 7, 5) == 0x57 == 0b01010111
  *
  * bit:                54 3210  : bit == 5
@@ -424,6 +428,7 @@ extern "C" {
  * num:         7654 321        : n   == 7
  * ————————————————————————————————————————————
  * ret:     0b0 1010 111        : ret == 0x57
+ * @endcode
  */
 #   define BITSn_GET_RSH(src, n, offset) \
                                         (((src) >> (offset)) & BIT_MASK(n))
@@ -440,7 +445,7 @@ extern "C" {
  *
  * @return src 的 offset 位起 n 位修改为 value 的值.
  *
- * @example
+ * @code{markdown}
  *  BITSn_GET_MDF(src       , n, offset, value     )
  *  BITSn_GET_MDF(0x4c5ca6d2, 8, 13    , 0b10101111)
  *
@@ -448,6 +453,7 @@ extern "C" {
  *                       1 0101 111                 == ((value & BIT_MASK(8)) << 13)
  *                       ↓ ↓↓↓↓ ↓↓↓
  *  ret:    0100 1100 0101 0101 1110 0110 1101 0010 == 0x4c55e6d2
+ * @endcode
  *
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT_IE 为 1ULL）.
@@ -468,8 +474,6 @@ extern "C" {
 #   define BITSn_SET(src, n, offset, value) \
                                         ((src) = BITSn_GET_MDF((src), (n), (offset), (value)))
 #endif
-
-/* 1111111111111111111111111111111111111111111 */
 
 #if !defined(BIT64)
 #   define BIT64(n)                     (BIT64_IE << (n))
@@ -564,7 +568,7 @@ extern "C" {
  * @param n 比特下标, 从 0 开始.
  * @param value 0 或 1.
  */
-#   define BIT64_SET(src, n, value)       ((val) = BIT64_GET_MDF(src, n, value))
+#   define BIT64_SET(src, n, value)       ((src) = BIT64_GET_MDF(src, n, value))
 #endif
 
 #if !defined(BIT64_FLIP)
@@ -607,9 +611,10 @@ extern "C" {
  *
  * @return 低 n 位为 1 的位掩码.
  *
- * @example
+ * @code{markdown}
  * BIT64_MASK(6)  == 0x003f ==          0b00111111
  * BIT64_MASK(13) == 0x1fff == 0b00011111 11111111
+ * @endcode
  */
 #   define BIT64_MASK(n)                 (((n) < (8 * sizeof(BIT64_IE))) ? (BIT(n) - 1) : ~(BIT64_IE - 1))
 #endif
@@ -622,9 +627,10 @@ extern "C" {
  *
  * @return 低 n 位为 1 的位掩码.
  *
- * @example
+ * @code{markdown}
  * BIT64_MASK(6)  == 0x003f ==          0b00111111
  * BIT64_MASK(13) == 0x1fff == 0b00011111 11111111
+ * @endcode
  */
 #   define BIT64_MASK_LSH(n, offset)      (BIT64_MASK(n) << (offset))
 #endif
@@ -679,11 +685,12 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 0 的位.
  *
- * @example
+ * @code{markdown}
  * uint32_t src = 0xffff;
  * BITS64_SET0(src, 0b0011 0110 0101 1010) == 0b11001001 10100101
  * src = 0xffff;
  * BITS64_SET0(src, BIT64_MASK(4) << 3)     == 0b11111111 10000111
+ * @endcode
  */
 #   define BITS64_SET0(src, bitmask)      ((src) = BITS64_GET_MDF0(src, bitmask))
 #endif
@@ -698,11 +705,12 @@ extern "C" {
  * @note
  * 1. 位掩码为 1 的位表示需要被设为 1 的位.
  *
- * @example
+ * @code{markdown}
  * uint32_t src = 0x0000;
  * BITS64_SET1(src, 0b0011 0110 0101 1010) == 0b00110110 01011010
  * src = 0x0000;
  * BITS64_SET1(src, BIT64_MASK(4) << 3)     == 0b00000000 01111000
+ * @endcode
  */
 #   define BITS64_SET1(src, bitmask)      ((src) = BITS64_GET_MDF1(src, bitmask))
 #endif
@@ -748,7 +756,7 @@ extern "C" {
  *
  * @return src 内, 从 offset 位起, 共 n 位数据.
  *
- * @example
+ * @code{markdown}
  * BITS64_GET_RSH(0b0011 1010 1111 0010, 7, 5) == 0x57 == 0b01010111
  *
  * bit:                54 3210  : bit == 5
@@ -757,6 +765,7 @@ extern "C" {
  * num:         7654 321        : n   == 7
  * ————————————————————————————————————————————
  * ret:     0b0 1010 111        : ret == 0x57
+ * @endcode
  */
 #   define BITSn64_GET_RSH(src, n, offset) \
                                         (((src) >> (offset)) & BIT64_MASK(n))
@@ -773,7 +782,7 @@ extern "C" {
  *
  * @return src 的 offset 位起 n 位修改为 value 的值.
  *
- * @example
+ * @code{markdown}
  *  BITSn64_GET_MDF(src       , n, offset, value     )
  *  BITSn64_GET_MDF(0x4c5ca6d2, 8, 13    , 0b10101111)
  *
@@ -781,6 +790,7 @@ extern "C" {
  *                       1 0101 111                 == ((value & BIT64_MASK(8)) << 13)
  *                       ↓ ↓↓↓↓ ↓↓↓
  *  ret:    0100 1100 0101 0101 1110 0110 1101 0010 == 0x4c55e6d2
+ * @endcode
  *
  * @note
  * 1. n + offset 不要大于 32 位（如果没有设 BIT64_IE 为 1ULL）.
