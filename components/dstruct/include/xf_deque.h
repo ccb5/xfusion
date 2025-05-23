@@ -10,7 +10,7 @@
  *
  * @note
  * - fifo: back_push + front_pop
- * - lifo: front_pop + front_pop
+ * - lifo: back_push + back_pop
  */
 
 /*
