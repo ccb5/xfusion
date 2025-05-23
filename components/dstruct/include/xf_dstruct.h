@@ -18,6 +18,7 @@
 #include "xf_bitmap.h"
 #include "xf_list.h"
 #include "xf_ringbuf.h"
+#include "xf_deque.h"
 
 #ifdef __cplusplus
 extern "C" {

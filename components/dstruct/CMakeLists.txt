@@ -11,6 +11,7 @@ include("$ENV{XF_ROOT_DIR}/tools/cmake/xf_tools.cmake")
 xf_component_register(
     SRCS                    # 源文件列表
         "${CMAKE_CURRENT_LIST_DIR}/xf_ringbuf.c"
+        "${CMAKE_CURRENT_LIST_DIR}/xf_deque.c"
     INCS_PUB                # 头文件目录列表
         "${CMAKE_CURRENT_LIST_DIR}"
         "${CMAKE_CURRENT_LIST_DIR}/include"
