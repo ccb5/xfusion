@@ -521,9 +521,26 @@ extern "C" {
  *
  * @param e 需要断言的常量表达式(const expression)。
  *          当 e 不成立时编译报错。必须是字面常量。
- * @param ... 提示消息。
  */
-#define STATIC_ASSERT(e, ...) \
+#define STATIC_ASSERT(e) \
+    extern char ( \
+    *O_o( \
+        char \
+static_assertion_failure \
+            [1 - 2 * !CHOOSE_CONST_EXPR(e)] \
+        ) \
+    )
+#endif
+
+#if !defined(STATIC_ASSERT_MSG)
+/**
+ * @brief 带有提示消息的静态断言。
+ *
+ * @param e 需要断言的常量表达式(const expression)。
+ *          当 e 不成立时编译报错。必须是字面常量。
+ * @param msg 提示消息。
+ */
+#define STATIC_ASSERT_MSG(e, msg) \
     extern char ( \
     *O_o( \
         char \
