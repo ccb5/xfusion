@@ -57,7 +57,11 @@ char xf_log_level_to_prompt(uint32_t level);
 /* ==================== [Macros] ============================================ */
 
 #if !defined(xf_log_printf)
-#   define xf_log_printf(format, ...)   printf(format, ##__VA_ARGS__)
+#include <stdio.h>
+#   define xf_log_printf(format, ...)   do { \
+                                            printf(format, ##__VA_ARGS__); \
+                                            fflush(stdout); \
+                                        } while (0)
 #endif
 
 #if !defined(xf_log_timestamp)
@@ -77,9 +81,9 @@ char xf_log_level_to_prompt(uint32_t level);
 
 /* MODULE TAG */
 #define MTAG                                xf_this_module
-#define XF_LOG_DEFINE_THIS_MODULE(_name)    static const char *const MTAG = (_name)
-#define XF_LOG_DEFINE_THIS_FILE()           static const char *const MTAG = (__FILENAME__)
-#define XF_MLOG_DEFINE()                    XF_LOG_DEFINE_THIS_FILE()
+#define XF_MLOG_DEFINE_THIS_MODULE(_name)   static const char *const MTAG = (_name)
+#define XF_MLOG_DEFINE_THIS_FILE()          static const char *const MTAG = (__FILENAME__)
+#define XF_MLOG_DEFINE()                    XF_MLOG_DEFINE_THIS_FILE()
 
 #if XF_LOG_LEVEL >= XF_LOG_USER
 /**
