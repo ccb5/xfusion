@@ -10,6 +10,43 @@
  *
  */
 
+/*
+    NOTE 镜像标志+双向队列原理
+
+    1.  空满条件：
+
+        - empty: h == t && h_mirror == t_mirror
+        - full:  h == t && h_mirror != t_mirror
+
+    1.  非空非满时，已填充或未填充的大小：
+
+        - filled_size:
+            t >= h, size = t - h
+            t <  h, size = buf_size + t - h
+        - empty_size = buf_size - filled_size
+            t >= h, size = buf_size - (t - h) = buf_size + h - t
+            t <  h, size = -(t - h)           = h - t
+
+    1.  head tail 所在位置数据的有效性
+
+        - !empty => (h -> filled)     // 如果队列不为空，head 所在位置总是已填充数据
+        - !full  => (t -> empty)      // 如果队列不为满，tail 所在位置总是未填充数据
+
+    1.  方向：
+
+        +---+---+---+---+---+
+        |buf| 0 | 1 | 2 | 3 |   (index)
+        +---+---+---+---+---+
+        |val| A0| A1| A2|   |   (val == buf[index])
+        +---+---+---+---+---+
+              ^       ^
+              h       t
+        - back_push     t ->
+        - front_pop     h ->
+        - front_push    <- h
+        - back_pop      <- t
+ */
+
 /* ==================== [Includes] ========================================== */
 
 #include "xf_deque.h"
@@ -89,6 +126,32 @@ xf_dq_size_t xf_deque_get_empty(const xf_dq_t *p_dq)
     return p_dq->buf_size - xf_deque_get_filled(p_dq);
 }
 
+/*
+    +---+---+---+---+---+
+    |src| 0 | 1 | 2 | 3 |
+    +---+---+---+---+---+
+    |val| B0| B1| B2|   |
+    +---+---+---+---+---+
+
+    front_push(dq, src, 3);
+                            STEP1                   STEP2
+    +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+
+    |buf| 0 | 1 | 2 | 3 |   |buf| 0 | 1 | 2 | 3 |   |buf| 0 | 1 | 2 | 3 |
+    +---+---+---+---+---+ > +---+---+---+---+---+ > +---+---+---+---+---+
+    |val|   |   | A0|   |   |val| B1| B2| A0|   |   |val| B1| B2| A0| B0|
+    +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+
+                  ^   ^           ^           ^                      ^ ^
+                  h   t           h           t                      t h    (h_m^=1)
+
+    for (i = 0; i < 3; i++) { front_push(dq, src + i, 1); }
+    +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+
+    |buf| 0 | 1 | 2 | 3 |   |buf| 0 | 1 | 2 | 3 |   |buf| 0 | 1 | 2 | 3 |   |buf| 0 | 1 | 2 | 3 |
+    +---+---+---+---+---+ > +---+---+---+---+---+ > +---+---+---+---+---+ > +---+---+---+---+---+
+    |val|   |   | A0|   |   |val|   | B0| A0|   |   |val| B1| B0| A0|   |   |val| B1| B0| A0| B2|
+    +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+   +---+---+---+---+---+
+                  ^   ^               ^       ^           ^           ^                      ^ ^
+                  h   t               h       t           h           t                      t h    (h_m^=1)
+ */
 xf_dq_size_t xf_deque_front_push(xf_dq_t *p_dq, const void *src, xf_dq_size_t size_bytes)
 {
     xf_dq_size_t first_part;
