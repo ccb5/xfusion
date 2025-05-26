@@ -114,6 +114,8 @@ typedef uint64_t    xf_bitmap64_t;
 #define XF_BITMAP64_SET(_bitmap, _bit, _value)          (XF_BITMAP64_GET_BLK(_bitmap, _bit) = XF_BITMAP64_GET_MDF(_bitmap, _bit, _value))
 #define XF_BITMAP64_SET_FLIP(_bitmap, _bit)             (XF_BITMAP64_GET_BLK(_bitmap, _bit) = XF_BITMAP64_GET_MDF_FLIP(_bitmap, _bit))
 
+typedef XCAT3(xf_bitmap, XF_BITMAP_BLK_SIZE, _t)        xf_bitmap_t;
+
 #if 1
 #define XF_BITMAP_GET_BLK_SIZE(_bit_size)               XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _GET_BLK_SIZE) (_bit_size)
 #define XF_BITMAP_DECLARE(_bitmap, _bit_size)           XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _DECLARE) (_bitmap, (_bit_size))
