@@ -15,6 +15,11 @@
 
 /* ==================== [Includes] ========================================== */
 
+#include "xf_algo.h"
+#include "xf_dstruct.h"
+#include "xf_log.h"
+#include "xf_event.h"
+
 #include "xf_co_def.h"
 
 #ifdef __cplusplus
@@ -82,54 +87,108 @@ __STATIC_INLINE xf_co_timestamp_t _xf_co_get_ms(void)
 #define xf_co_get_us()              _xf_co_get_us()
 #define xf_co_get_ms()              _xf_co_get_ms()
 
-xf_err_t xf_co_sched_co_add(xf_co_t *const co);
-xf_err_t xf_co_sched_co_del(xf_co_t *const co);
+typedef xf_bitmap32_t xf_co_bitmap_t;
 
-xf_err_t xf_co_sched_co_add_to(xf_co_t *const co_sched, xf_co_t *const co);
-xf_err_t xf_co_sched_co_del_from(xf_co_t *const co_sched, xf_co_t *const co);
+typedef struct xf_co_subscr_list {
+    xf_co_bitmap_t co_bm[XF_BITMAP_GET_BLK_SIZE(XF_CO_NUM_MAX)];
+} xf_co_subscr_list_t;
+
+typedef uint8_t xf_co_tim_attr_t;
+typedef uint32_t xf_co_tim_timestamp_t;
+
+typedef struct xf_co_timer_event {
+    xf_event_t              base;
+    xf_co_tim_attr_t        attr;
+#define XF_TIM_ATTR_ONESHOOT_B  (0x00)
+    xf_co_tim_timestamp_t   ts_wakeup;
+    xf_co_tim_timestamp_t   ts_interval;
+} xf_co_tim_event_t;
+
+#define xf_te_cast(_e)                  ((xf_co_tim_event_t *)(_e))
+
+#define xf_co_tim_get_attr_oneshoot(_e) BIT_GET(xf_te_cast(_e)->attr, \
+                                                XF_CO_FLAGS_AWAIT_B)
+#define xf_co_tim_set_attr_oneshoot(_e, _value) \
+                                        BIT_SET(xf_te_cast(_e)->attr, \
+                                                XF_TIM_ATTR_ONESHOOT_B, \
+                                                (_value))
+
+__STATIC_INLINE xf_co_id_t xf_co_bm_blk_find_max(xf_co_bitmap_t bitmap_blk)
+{
+    STATIC_ASSERT(sizeof(xf_co_bitmap_t) <= sizeof(uint32_t));
+    return (xf_co_id_t)xf_log2((uint32_t)bitmap_blk);
+}
+
+xf_err_t xf_co_sched_init(void);
+xf_err_t xf_co_sched_deinit(void);
+xf_err_t xf_co_sched_run(xf_event_t **pp_e);
+
+xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co);
+#define xf_co_create(_func, _user_data) xf_co_create_(xf_co_func_cast(_func), \
+                                                      ((void *)(_user_data)), NULL)
+
+#define XF_EVENT_ID_INVALID     (~(xf_event_id_t)0)
+/* 获取唯一事件 id */
+xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid);
+__STATIC_INLINE xf_event_id_t xf_event_acquire_id(void);
+xf_err_t xf_event_release_id(xf_event_id_t eid);
+
+xf_co_tim_event_t *xf_co_tim_acquire_oneshoot(xf_co_tim_timestamp_t ts_wakeup);
+xf_err_t xf_co_tim_release(xf_co_tim_event_t *cte);
+
+/* me 之后用于追溯发布事件的协程 */
+xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e);
+#define xf_co_publish(_e) (xf_co_publish_(NULL, (xf_event_t *)(_e)))
+xf_err_t xf_co_subscribe(xf_co_t *const me, xf_event_id_t id);
+xf_err_t xf_co_unsubscribe(xf_co_t *const me, xf_event_id_t id);
+
+// xf_err_t xf_co_sched_co_add(xf_co_t *const co);
+// xf_err_t xf_co_sched_co_del(xf_co_t *const co);
+
+// xf_err_t xf_co_sched_co_add_to(xf_co_t *const co_sched, xf_co_t *const co);
+// xf_err_t xf_co_sched_co_del_from(xf_co_t *const co_sched, xf_co_t *const co);
 
 xf_err_t xf_co_ctor(
-    xf_co_t *const co, xf_co_func_t func, const xf_co_attr_t *attr);
+    xf_co_t *const co, xf_co_func_t func, const xf_co_attr_t *p_attr);
 xf_err_t xf_co_dtor(xf_co_t *const co);
 
 #define xf_co_attr_default()            NULL
 
 #define xf_co_init(_co, _func)          do { \
-                                            xf_co_ctor((_co), (xf_co_func_t)(_func), xf_co_attr_default()); \
+                                            xf_co_ctor((_co), xf_co_func_cast(_func), xf_co_attr_default()); \
                                         } while (0)
 
 #define xf_co_begin(_me)                { \
-                                            char XF_CO_YIELD_FLAG = 1; \
-                                            UNUSED(XF_CO_YIELD_FLAG); /*!< 只是为了防止警告 */ \
                                             if (xf_co_get_flags_state(_me) == XF_CO_SUSPENDED) { \
                                                 return XF_CO_SUSPENDED; \
                                             } \
-                                            xf_co_lc_resume(xf_co_cast(_me)->lc); \
-                                            do { \
-                                                xf_co_set_flags_state((_me), XF_CO_RUNNING); \
-                                            } while (0)
+                                            xf_co_lc_resume(xf_co_cast(_me)->lc) \
 
 #define xf_co_end(_me)                      xf_co_lc_end(xf_co_cast(_me)->lc); \
-                                            XF_CO_YIELD_FLAG = 0; \
                                             xf_co_lc_init(xf_co_cast(_me)->lc); \
                                             xf_co_set_flags_state((_me), XF_CO_TERMINATED); \
                                             xf_co_set_flags_terminate_bit((_me), 0); \
                                             return XF_CO_TERMINATED; \
                                         }
 
+#define xf_co_call(_co, _e)             xf_co_cast(_co)->func(xf_co_cast(_co), (_e))
+#define xf_co_call_explicit(_co_func, _co, _e) \
+                                        xf_co_func_cast(_co_func)(xf_co_cast(_co), (_e))
+
 #define xf_co_get_state(_co)            xf_co_get_flags_state(_co)
 
+#if 0
 #define xf_co_yield(_me)                xf_co_yield_until((_me), 1)
 
 #define xf_co_yield_until(_me, _cond)   do { \
-                                            XF_CO_YIELD_FLAG = 0; \
+                                            __co_yield_flag = 0; \
                                             xf_co_lc_set(xf_co_cast(_me)->lc); \
-                                            if ((XF_CO_YIELD_FLAG == 0) || !(_cond)) { \
-                                                xf_co_set_flags_state((_me), XF_CO_WAITING); \
-                                                return XF_CO_WAITING; \
+                                            if ((__co_yield_flag == 0) || !(_cond)) { \
+                                                xf_co_set_flags_state((_me), XF_CO_READY); \
+                                                return XF_CO_READY; \
                                             } \
-                                            xf_co_set_flags_state((_me), XF_CO_RUNNING); \
                                         } while (0)
+#endif
 
 #define xf_co_suspend(_me, _co)         do { \
                                             xf_co_set_flags_state((_co), XF_CO_SUSPENDED); \
@@ -138,16 +197,17 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                                 if (xf_co_get_flags_state(_me) == XF_CO_SUSPENDED) { \
                                                     return XF_CO_SUSPENDED; \
                                                 } \
-                                                xf_co_set_flags_state((_me), XF_CO_RUNNING); \
                                             } \
                                         } while (0)
 
-#define xf_co_resume(_co)               xf_co_set_flags_state((_co), XF_CO_WAITING)
+#if 0
+#define xf_co_resume(_co)               xf_co_set_flags_state((_co), XF_CO_READY)
+#endif
 
 #define xf_co_restart(_co)              do { \
                                             xf_co_lc_init(xf_co_cast(_co)->lc); \
-                                            xf_co_set_flags_state((_co), XF_CO_WAITING); \
-                                            return XF_CO_WAITING; \
+                                            xf_co_set_flags_state((_co), XF_CO_READY); \
+                                            return XF_CO_READY; \
                                         } while (0)
 
 #define xf_co_exit(_me)                 do { \
@@ -166,13 +226,13 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                             } \
                                         } while (0)
 
+#if 0
 #define xf_co_wait_until(_me, _cond)    do { \
                                             xf_co_lc_set(xf_co_cast(_me)->lc); \
                                             if (!(_cond)) { \
-                                                xf_co_set_flags_state((_me), XF_CO_WAITING); \
-                                                return XF_CO_WAITING; \
+                                                xf_co_set_flags_state((_me), XF_CO_READY); \
+                                                return XF_CO_READY; \
                                             } \
-                                            xf_co_set_flags_state((_me), XF_CO_RUNNING); \
                                         } while (0)
 
 #define xf_co_wait_while(_me, _cond)    xf_co_wait_until((_me), !(_cond))
@@ -199,9 +259,41 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                                 (xf_co_get_tick() >= xf_co_cast(_me)->ts_wakeup) \
                                             ); \
                                         } while (0)
+#endif
 
-/*
-#define xf_co_schedule(_f)              ((_f) == XF_CO_WAITING)
+#define xf_co_block(_co)                do { \
+                                            xf_co_set_flags_state((_co), XF_CO_BLOCKED); \
+                                        } while (0)
+
+#define xf_co_yield(_me)                do { \
+                                            xf_co_lc_set(xf_co_cast(_me)->lc); \
+                                            if (xf_co_get_flags_state(_me) != XF_CO_READY) { \
+                                                return XF_CO_BLOCKED; \
+                                            } \
+                                        } while (0)
+
+#define xf_co_resume(_co)               xf_co_set_flags_state((_co), XF_CO_READY)
+
+#define xf_co_delay(_me, _tick)         do { \
+                                            xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + (_tick)); \
+                                            xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
+                                            xf_co_block((_me)); \
+                                            xf_co_yield((_me)); \
+                                            xf_co_unsubscribe(xf_co_cast(_me), ((xf_co_tim_event_t *)e)->base.id); \
+                                            xf_co_tim_release((xf_co_tim_event_t *)e); \
+                                        } while (0)
+
+#define xf_co_delay_ms(_me, _ms)        do { \
+                                            xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + xf_co_ms_to_tick(_ms)); \
+                                            xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
+                                            xf_co_block((_me)); \
+                                            xf_co_yield((_me)); \
+                                            xf_co_unsubscribe(xf_co_cast(_me), ((xf_co_tim_event_t *)e)->base.id); \
+                                            xf_co_tim_release((xf_co_tim_event_t *)e); \
+                                        } while (0)
+
+#if 0
+#define xf_co_schedule(_f)              ((_f) == XF_CO_READY)
 
 #define xf_co_wait_thread(_me, _thread) xf_co_wait_while((_me), xf_co_schedule(_thread))
 
@@ -210,7 +302,7 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                             xf_co_init(_co_child); \
                                             xf_co_wait_thread((_co), (_call_co_child_func)); \
                                         } while (0)
- */
+#endif
 
 /*
     TODO await 多个子协程
@@ -241,113 +333,13 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                             xf_co_set_flags_await_bit((_me), 0); \
                                         } while (0)
 
-#define xf_co_mutex_init(_mutex)        ((_mutex)->flag = XF_CO_MUTEX_UNLOCKED)
-#define xf_co_mutex_destroy(_mutex)     ((_mutex)->flag = XF_CO_MUTEX_UNLOCKED)
-#define xf_co_mutex_is_locked(_mutex)   ((_mutex)->flag == XF_CO_MUTEX_LOCKED)
-
-xf_err_t xf_co_mutex_trylock(xf_co_t *const me, xf_co_mutex_t *const mutex);
-xf_err_t xf_co_mutex_unlock(xf_co_t *const me, xf_co_mutex_t *const mutex);
-
-#define xf_co_mutex_acquire(_me, _mutex, _timeout, _res) \
-                                        do { \
-                                            (_res) = xf_co_mutex_trylock((_me), (_mutex)); \
-                                            if (((_res) == XF_OK) || ((_timeout) == 0)) { \
-                                                break; \
-                                            } \
-                                            /* FIXME 区分 系统 tick 和 时基 tick */ \
-                                            /* 失败且超时不为 0，重试 */ \
-                                            xf_co_cast(_me)->ts_wakeup = xf_co_get_tick(); \
-                                            xf_co_cast(_me)->ts_timeout = xf_co_cast(_me)->ts_wakeup + (_timeout); \
-                                            xf_co_cast(_me)->ts_wakeup += XF_CO_MIN_INTERVAL; \
-                                            xf_co_set_flags_state((_me), XF_CO_WAITING); \
-                                            \
-                                            xf_co_lc_set(xf_co_cast(_me)->lc); \
-                                            \
-                                            if (xf_co_get_tick() < xf_co_cast(_me)->ts_wakeup) { \
-                                                return XF_CO_WAITING; \
-                                            } \
-                                            (_res) = xf_co_mutex_trylock((_me), (_mutex)); \
-                                            xf_co_cast(_me)->ts_wakeup += XF_CO_MIN_INTERVAL; \
-                                            if (((_res) != XF_OK) \
-                                                    && (xf_co_cast(_me)->ts_wakeup < xf_co_cast(_me)->ts_timeout)) { \
-                                                return XF_CO_WAITING; \
-                                            } \
-                                            xf_co_set_flags_state((_me), XF_CO_RUNNING); \
-                                        } while (0)
-
-#define xf_co_mutex_release(_me, _mutex, _res) \
-                                        do { \
-                                            (_res) = xf_co_mutex_unlock((_me), (_mutex)); \
-                                        } while (0)
-
-#if CONFIG_XF_CO_ENABLE_MUTEX_OWNER
-__STATIC_INLINE xf_co_t *xf_co_mutex_get_owner(xf_co_mutex_t *mutex)
+__STATIC_INLINE xf_event_id_t xf_event_acquire_id(void)
 {
-    return mutex->owner;
+    xf_event_id_t eid;
+    xf_err_t xf_ret;
+    xf_ret = xf_event_acquire_id_(&eid);
+    return (xf_ret == XF_OK) ? (eid) : (XF_EVENT_ID_INVALID);
 }
-#endif
-
-#define xf_co_semaphore_init(_sem, _count_max, _count_initial) \
-                                        do { \
-                                            (_sem)->count_max = (_count_max); \
-                                            (_sem)->count = (_count_initial); \
-                                        } while (0)
-
-#define xf_co_semaphore_destroy(_sem)   do { \
-                                            xf_co_semaphore_init((_sem), 0, 0); \
-                                        } while (0)
-
-#define xf_co_semaphore_acquire(_me, _sem, _timeout, _res) \
-                                        do { \
-                                            if ((_sem)->count > 0) { \
-                                                --(_sem)->count; \
-                                                (_res) = XF_OK; \
-                                                break; \
-                                            } \
-                                            if ((_timeout) == 0) { \
-                                                (_res) = XF_FAIL; \
-                                                break; \
-                                            } \
-                                            /* 失败且超时不为 0，重试 */ \
-                                            xf_co_cast(_me)->ts_wakeup = xf_co_get_tick(); \
-                                            xf_co_cast(_me)->ts_timeout = xf_co_cast(_me)->ts_wakeup + (_timeout); \
-                                            xf_co_cast(_me)->ts_wakeup += XF_CO_MIN_INTERVAL; \
-                                            xf_co_set_flags_state((_me), XF_CO_WAITING); \
-                                            \
-                                            xf_co_lc_set(xf_co_cast(_me)->lc); \
-                                            \
-                                            if (xf_co_get_tick() < xf_co_cast(_me)->ts_wakeup) { \
-                                                return XF_CO_WAITING; \
-                                            } \
-                                            if ((_sem)->count > 0) { \
-                                                --(_sem)->count; \
-                                                (_res) = XF_OK; \
-                                                xf_co_set_flags_state((_me), XF_CO_RUNNING); \
-                                                break; \
-                                            } \
-                                            xf_co_cast(_me)->ts_wakeup += XF_CO_MIN_INTERVAL; \
-                                            if (xf_co_cast(_me)->ts_wakeup < xf_co_cast(_me)->ts_timeout) { \
-                                                return XF_CO_WAITING; \
-                                            } \
-                                            (_res) = XF_FAIL; \
-                                            xf_co_set_flags_state((_me), XF_CO_RUNNING); \
-                                        } while (0)
-
-#define xf_co_semaphore_release(_me, _sem, _res) \
-                                        do { \
-                                            if ((_sem)->count < (_sem)->count_max) { \
-                                                ++(_sem)->count; \
-                                                (_res) = XF_OK; \
-                                                break; \
-                                            } \
-                                            (_res) = XF_FAIL; \
-                                        } while (0)
-
-#define xf_co_semaphore_get_count(_sem) \
-                                        ((_sem)->count)
-
-#define xf_co_semaphore_get_count_max(_sem) \
-                                        ((_sem)->count_max)
 
 #ifdef __cplusplus
 } /* extern "C" */

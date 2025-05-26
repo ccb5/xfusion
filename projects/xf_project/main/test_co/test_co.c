@@ -21,6 +21,7 @@
 #include "xf_common.h"
 #include "xf_dstruct.h"
 #include "xf_log.h"
+#include "xf_algo.h"
 
 #include "xf_osal.h"
 
@@ -40,7 +41,7 @@ static const char *const TAG = "test_co";
 #define EXAMPLE_SEMAPHORE   6
 #define EXAMPLE_SCHEDULER   7
 
-#define EXAMPLE             EXAMPLE_MUTEX
+#define EXAMPLE             EXAMPLE_DELAY
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -56,44 +57,57 @@ static const char *const TAG = "test_co";
 
 #elif EXAMPLE == EXAMPLE_DELAY
 
-typedef struct test_co {
-    xf_co_t         base;       /*!< 必须第一个，名字必须为 base */
-    int32_t         count;       /*!< 用户上下文 */
-} test_co_t;
+static uint32_t l_rnd = 42; // random seed
 
-test_co_t co1 = {0};
-
-xf_co_async_t co1_func(test_co_t *const me, void *e)
+void ex_random_seed(uint32_t seed)
 {
+    l_rnd = seed;
+}
+
+uint32_t ex_random(void)
+{
+    // "Super-Duper" Linear Congruential Generator (LCG)
+    // LCG(2^32, 3*7*11*13*23, 0, seed)
+    //
+    l_rnd = l_rnd * (3U * 7U * 11U * 13U * 23U);
+    return l_rnd;
+}
+
+xf_co_async_t co_func(xf_co_nctx_t *const me, xf_event_t *e)
+{
+    uint32_t delay_val = 0;
     xf_co_begin(me);
-    printf("co1 begin\n");
+    printf("co%d begin\n", (int)me->base.user_data);
     while (1) {
-        me->count++;
-        XF_LOGI(TAG, "curr time1: %lu", xf_co_get_tick());
-        xf_co_delay(me, 1000);
-        XF_LOGI(TAG, "curr time2: %lu", xf_co_get_tick());
-        xf_co_delay_ms(me, 1000);
-        XF_LOGI(TAG, "curr time3: %lu", xf_co_get_tick());
-        xf_co_delay_ms(me, 1000);
-        XF_LOGI(TAG, "curr time4: %lu", xf_co_get_tick());
-        xf_co_delay_until(me, xf_co_get_tick() + 1000);
-        XF_LOGI(TAG, "curr time5: %lu", xf_co_get_tick());
-        if (me->count == 2) {
-            break;
-        }
+        delay_val = ex_random() % 1000 + 1;
+        // delay_val = 200;
+        XF_LOGI(TAG, "co%d curr: %8lu, delay: %8lu",
+                (int)me->base.user_data, xf_co_get_tick(), delay_val);
+        xf_co_delay_ms(me, delay_val);
+        XF_LOGI(TAG, "co%d curr: %8lu", (int)me->base.user_data, xf_co_get_tick());
     }
-    me->count = 0;
-    printf("co1 end\n");
+    printf("co%d end\n", (int)me->base.user_data);
     xf_co_end(me);
 }
 
 void test_main(void)
 {
-    xf_co_init(&co1, co1_func);
-
-    /* TODO 调度器 */
+    xf_event_t *e;
+    xf_co_tim_event_t *cte;
+    xf_co_tim_timestamp_t ts_idle = 0;
+    xf_co_sched_init();
+    xf_co_create(co_func, 0);
+    xf_co_create(co_func, 1);
     while (1) {
-        co1_func(&co1, NULL);
+        xf_co_sched_run(&e);
+        if (e) {
+            cte = (xf_co_tim_event_t *)e;
+            if (cte->ts_wakeup > xf_co_get_tick()) {
+                osDelay(cte->ts_wakeup - xf_co_get_tick());
+            }
+            xf_co_publish(cte);
+            e = NULL;
+        }
     }
 }
 
@@ -402,6 +416,8 @@ xf_co_async_t co_func(test_co_t *const me, void *e)
     xf_co_end(me);
 }
 
+#include "xf_bitmap.h"
+
 void test_main(void)
 {
     test_co_t co_arr[20];
@@ -418,6 +434,79 @@ void test_main(void)
         xf_co_ctor(xf_co_cast(&co_arr[i]), xf_co_func_cast(co_func), &co_attr);
     }
 
+    // XF_LOGI(TAG, "---------");
+    // XF_BITMAP_DECLARE(uint8_t, bitmap_u8, 1234);
+    // for (int i = 0; i < ARRAY_SIZE(bitmap_u8) * sizeof(bitmap_u8[0]) * 8; i++) {
+    //     if (((XF_BITMAP_GET_BLK_POS(bitmap_u8, i) - i / (sizeof(bitmap_u8[0]) * 8)) != 0)
+    //             || ((XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u8, i) - i % (sizeof(bitmap_u8[0]) * 8)) != 0))
+    //         XF_LOGI(TAG, "%4d, %4d, %4d",
+    //                 i,
+    //                 XF_BITMAP_GET_BLK_POS(bitmap_u8, i) - i / (sizeof(bitmap_u8[0]) * 8),
+    //                 XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u8, i) - i % (sizeof(bitmap_u8[0]) * 8));
+    // }
+    // XF_LOGI(TAG, "---------");
+    // XF_BITMAP_DECLARE(uint16_t, bitmap_u16, 1234);
+    // for (int i = 0; i < ARRAY_SIZE(bitmap_u16) * sizeof(bitmap_u16[0]) * 8; i++) {
+    //     if (((XF_BITMAP_GET_BLK_POS(bitmap_u16, i) - i / (sizeof(bitmap_u16[0]) * 8)) != 0)
+    //             || ((XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u16, i) - i % (sizeof(bitmap_u16[0]) * 8)) != 0))
+    //         XF_LOGI(TAG, "%4d, %4d, %4d",
+    //                 i,
+    //                 XF_BITMAP_GET_BLK_POS(bitmap_u16, i) - i / (sizeof(bitmap_u16[0]) * 8),
+    //                 XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u16, i) - i % (sizeof(bitmap_u16[0]) * 8));
+    // }
+    // XF_LOGI(TAG, "---------");
+    // XF_BITMAP_DECLARE(uint32_t, bitmap_u32, 1234);
+    // for (int i = 0; i < ARRAY_SIZE(bitmap_u32) * sizeof(bitmap_u32[0]) * 8; i++) {
+    //     if (((XF_BITMAP_GET_BLK_POS(bitmap_u32, i) - i / (sizeof(bitmap_u32[0]) * 8)) != 0)
+    //             || ((XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u32, i) - i % (sizeof(bitmap_u32[0]) * 8)) != 0))
+    //         XF_LOGI(TAG, "%4d, %4d, %4d",
+    //                 i,
+    //                 XF_BITMAP_GET_BLK_POS(bitmap_u32, i) - i / (sizeof(bitmap_u32[0]) * 8),
+    //                 XF_BITMAP_GET_BIT_POS_IN_BLK(bitmap_u32, i) - i % (sizeof(bitmap_u32[0]) * 8));
+    // }
+    // XF_LOGI(TAG, "---------");
+
+#undef XF_BITMAP_BLK_SIZE
+#define XF_BITMAP_BLK_SIZE 8
+    XF_LOGI(TAG, "---------");
+    XF_BITMAP_DECLARE(bitmap_u8, 1234);
+    for (int i = 0; i < sizeof(bitmap_u8) * 8; i++) {
+        if (((XF_BITMAP_GET_BLK_POS(bitmap_u8, i) - i / (sizeof(bitmap_u8[0]) * 8)) != 0))
+            XF_LOGI(TAG, "%4d, %4d, %4d, %4d",
+                    i,
+                    XF_BITMAP_GET_BLK_POS(bitmap_u8, i),
+                    i / (sizeof(bitmap_u8[0]) * 8),
+                    XF_BITMAP_GET_BLK_POS(bitmap_u8, i) - i / (sizeof(bitmap_u8[0]) * 8));
+    }
+    XF_LOGI(TAG, "---------");
+#undef XF_BITMAP_BLK_SIZE
+#define XF_BITMAP_BLK_SIZE 16
+    XF_BITMAP_DECLARE(bitmap_u16, 1234);
+    for (int i = 0; i < sizeof(bitmap_u16) * 8; i++) {
+        if (((XF_BITMAP_GET_BLK_POS(bitmap_u16, i) - i / (sizeof(bitmap_u16[0]) * 8)) != 0))
+            XF_LOGI(TAG, "%4d, %4d, %4d, %4d",
+                    i,
+                    XF_BITMAP_GET_BLK_POS(bitmap_u16, i),
+                    i / (sizeof(bitmap_u16[0]) * 8),
+                    XF_BITMAP_GET_BLK_POS(bitmap_u16, i) - i / (sizeof(bitmap_u16[0]) * 8));
+    }
+    XF_LOGI(TAG, "---------");
+#undef XF_BITMAP_BLK_SIZE
+#define XF_BITMAP_BLK_SIZE 32
+    XF_BITMAP_DECLARE(bitmap_u32, 1234);
+    for (int i = 0; i < sizeof(bitmap_u32) * 8; i++) {
+        if (((XF_BITMAP_GET_BLK_POS(bitmap_u32, i) - i / (sizeof(bitmap_u32[0]) * 8)) != 0))
+            XF_LOGI(TAG, "%4d, %4d, %4d, %4d",
+                    i,
+                    ((i) >> (2 + 4)) /* XF_BITMAP_GET_BLK_POS(bitmap_u32, i) */,
+                    i / (sizeof(bitmap_u32[0]) * 8),
+                    XF_BITMAP_GET_BLK_POS(bitmap_u32, i) - i / (sizeof(bitmap_u32[0]) * 8));
+    }
+    XF_LOGI(TAG, "---------");
+
+    while (1) {
+        usleep(1000);
+    }
     extern xf_co_sched_t *sp_sched;
 
     xf_err_t xf_ret = XF_OK;
