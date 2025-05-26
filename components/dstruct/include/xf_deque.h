@@ -118,8 +118,6 @@ xf_dq_size_t xf_deque_back_remove(xf_dq_t *p_dq, xf_dq_size_t size_bytes);
 #define XF_DQ_MEMCPY(dst, src, size)    memcpy((void *)(dst), (const void *)(src), (size))
 #define XF_DQ_MEMSET(dst, c, size)      memset((void *)(dst), (c), (size))
 
-#define XF_DQ_WRAP(pos, size)           ((pos) >= (size) ? (pos) - (size) : (pos))
-
 __STATIC_INLINE xf_dq_bool_t xf_deque_is_empty(const xf_dq_t *p_dq)
 {
     if (!p_dq) {

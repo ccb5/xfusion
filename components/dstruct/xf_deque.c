@@ -16,7 +16,7 @@
 
 /* ==================== [Defines] =========================================== */
 
-#if 1 /* def CONFIG_XF_RINGBUF_EN_FILL */
+#if 0 /* def CONFIG_XF_RINGBUF_EN_FILL */
 #   define _EN_READ_AND_CLR             1
 #else
 #   define _EN_READ_AND_CLR             0
@@ -84,7 +84,7 @@ xf_dq_size_t xf_deque_get_filled(const xf_dq_t *p_dq)
 xf_dq_size_t xf_deque_get_empty(const xf_dq_t *p_dq)
 {
     if (!p_dq) {
-        return XF_FAIL;
+        return 0;
     }
     return p_dq->buf_size - xf_deque_get_filled(p_dq);
 }
@@ -98,6 +98,9 @@ xf_dq_size_t xf_deque_front_push(xf_dq_t *p_dq, const void *src, xf_dq_size_t si
         return 0;
     }
     empty_size = xf_deque_get_empty(p_dq);
+    if (empty_size == 0) {
+        return 0;
+    }
     if (size_bytes > empty_size) {
         size_bytes = empty_size;
     }
@@ -144,6 +147,9 @@ xf_dq_size_t xf_deque_front_pop(xf_dq_t *p_dq, void *dest, xf_dq_size_t size_byt
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (size_bytes > filled_size) {
         size_bytes = filled_size;
     }
@@ -183,14 +189,19 @@ xf_dq_size_t xf_deque_front_peek_from(
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (offset >= filled_size) {
         return 0;
     }
     if (size_bytes + offset > filled_size) {
         size_bytes = filled_size - offset;
     }
-    pos = XF_DQ_WRAP(p_dq->head + offset, p_dq->buf_size);
-    if (p_dq->buf_size > size_bytes + pos) {
+    pos = ((p_dq->head + offset >= p_dq->buf_size)
+           ? (p_dq->head + offset - p_dq->buf_size)
+           : (p_dq->head + offset));
+    if (pos + size_bytes < p_dq->buf_size) {
         XF_DQ_MEMCPY(dest, (const void *)(p_dq->p_buf + pos), size_bytes);
         return size_bytes;
     }
@@ -209,6 +220,9 @@ xf_dq_size_t xf_deque_front_remove(xf_dq_t *p_dq, xf_dq_size_t size_bytes)
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (size_bytes > filled_size) {
         size_bytes = filled_size;
     }
@@ -239,6 +253,9 @@ xf_dq_size_t xf_deque_back_push(xf_dq_t *p_dq, const void *src, xf_dq_size_t siz
         return 0;
     }
     empty_size = xf_deque_get_empty(p_dq);
+    if (empty_size == 0) {
+        return 0;
+    }
     if (size_bytes > empty_size) {
         size_bytes = empty_size;
     }
@@ -283,6 +300,9 @@ xf_dq_size_t xf_deque_back_pop(xf_dq_t *p_dq, void *dest, xf_dq_size_t size_byte
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (size_bytes > filled_size) {
         size_bytes = filled_size;
     }
@@ -322,14 +342,19 @@ xf_dq_size_t xf_deque_back_peek_from(
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (offset >= filled_size) {
         return 0;
     }
     if (size_bytes + offset > filled_size) {
         size_bytes = filled_size - offset;
     }
-    pos = XF_DQ_WRAP(p_dq->tail + p_dq->buf_size - offset - size_bytes, p_dq->buf_size);
-    if (p_dq->buf_size > pos + size_bytes) {
+    pos = ((p_dq->tail >= size_bytes + offset)
+           ? (p_dq->tail - offset - size_bytes)
+           : (p_dq->buf_size + p_dq->tail - offset - size_bytes));
+    if (pos + size_bytes < p_dq->buf_size) {
         XF_DQ_MEMCPY(dest, (const void *)(p_dq->p_buf + pos), size_bytes);
         return size_bytes;
     }
@@ -348,6 +373,9 @@ xf_dq_size_t xf_deque_back_remove(xf_dq_t *p_dq, xf_dq_size_t size_bytes)
         return 0;
     }
     filled_size = xf_deque_get_filled(p_dq);
+    if (filled_size == 0) {
+        return 0;
+    }
     if (size_bytes > filled_size) {
         size_bytes = filled_size;
     }
