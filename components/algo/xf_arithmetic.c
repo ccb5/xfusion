@@ -32,7 +32,6 @@ uint32_t xf_am_log2_u32(uint32_t n)
 {
     uint32_t result = 0;
 /* *INDENT-OFF* */
-    if (IS_POWER_OF_TWO(n)) { return n; }
     if (n & 0xffff0000) { result += 16; n >>= 16; }
     if (n & 0x0000ff00) { result +=  8; n >>=  8; }
     if (n & 0x000000f0) { result +=  4; n >>=  4; }
