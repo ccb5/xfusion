@@ -258,7 +258,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
         goto l_no_event;
     }
     /* 正常情况下都是 XF_EQ_ELEM_SIZE 的整数倍 */
-    if (unlikely(((filled_size) & BIT_MASK(XF_EQ_ELEM_SIZE)) != 0U)) {
+    if (unlikely(!IS_ALIGNED(filled_size, XF_EQ_ELEM_SIZE))) {
         XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
         xf_ret = XF_FAIL;
         goto l_err;
