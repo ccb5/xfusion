@@ -62,7 +62,7 @@ static xf_co_tim_event_t co_tim_event_pool[XF_CO_TIMER_NUM_MAX] = {0};
 static xf_co_tim_event_t *sp_tep = co_tim_event_pool;
 
 /* 唯一事件 id 位图 */
-xf_event_bitmap_t eid_bm[XF_BITMAP32_GET_BLK_SIZE(XF_CO_EVENT_NUM_MAX)];
+static xf_event_bitmap_t eid_bm[XF_BITMAP32_GET_BLK_SIZE(XF_CO_EVENT_NUM_MAX)];
 
 /*
     协程订阅事件列表，
@@ -86,7 +86,7 @@ xf_err_t xf_co_ctor(
     xf_co_set_flags_await_bit(co, 0);
     xf_co_set_flags_terminate_bit(co, 0);
     /* 不改变 xf_co_set_flags_reserved */
-    if (p_attr) {
+    if (!!p_attr) {
         xf_co_set_flags_type(co, p_attr->type);
         xf_co_set_flags_id(co, p_attr->id);
         /* TODO p_attr->co_sched */
@@ -124,14 +124,14 @@ xf_err_t xf_co_sched_deinit(void)
 
 xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co)
 {
-    int i = 0;
+    int16_t i = 0;
     xf_err_t xf_ret;
     xf_co_attr_t attr = {0};
     attr.type = XF_CO_TYPE_NCTX;
     attr.user_data = user_data;
     /* 此处决定优先分配大的协程 id */
     /* TODO 优化此处 for */
-    for (i = XF_CO_NUM_MAX - 1; i >= 0; i--) {
+    for (i = (int16_t)XF_CO_NUM_MAX - 1; i >= 0; i--) {
         if (NULL == xf_co_pool[i].func) {
             attr.id = i;
             xf_ret = xf_co_ctor(&xf_co_pool[i], func, &attr);
@@ -152,9 +152,7 @@ xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co)
 xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e)
 {
     xf_dq_size_t dq_ret_size;
-    int i;
-    int j;
-    uint8_t is_subscr;
+    int16_t i;
     xf_event_ref_cnt_t ref_cnt;
     UNUSED(me);
     if (e == NULL) {
@@ -171,7 +169,7 @@ xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e)
         ref_cnt += (xf_event_ref_cnt_t)xf_popcount((uint32_t)xf_co_subscr_list[e->id].co_bm[i]);
     }
     e->ref_cnt = ref_cnt;
-    if (ref_cnt == 0) {
+    if (ref_cnt == 0U) {
         XF_LOGD(TAG, "no co subscribe event %d", e->id);
         /* TODO 无人订阅的事件需要成功发布？ */
     }
@@ -207,10 +205,9 @@ xf_err_t xf_co_unsubscribe(xf_co_t *const me, xf_event_id_t id)
 
 xf_co_tim_event_t *xf_co_tim_acquire_oneshoot(xf_co_tim_timestamp_t ts_wakeup)
 {
-    int i = 0;
-    xf_event_id_t eid;
+    uint16_t i = 0;
     for (i = 0; i < XF_CO_TIMER_NUM_MAX; i++) {
-        if (sp_tep[i].ts_wakeup == 0) {
+        if (sp_tep[i].ts_wakeup == 0U) {
             sp_tep[i].base.id = xf_event_acquire_id();
             sp_tep[i].ts_wakeup = ts_wakeup;
             xf_co_tim_set_attr_oneshoot(&sp_tep[i], 1);
@@ -223,8 +220,7 @@ xf_co_tim_event_t *xf_co_tim_acquire_oneshoot(xf_co_tim_timestamp_t ts_wakeup)
 xf_err_t xf_co_tim_release(xf_co_tim_event_t *cte)
 {
     xf_err_t xf_ret;
-    int i = 0;
-    xf_event_id_t eid;
+    uint16_t i = 0;
     if (cte == NULL) {
         return XF_ERR_INVALID_ARG;
     }
@@ -251,7 +247,6 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
     xf_dq_size_t filled_size;
     xf_dq_size_t dq_ret_size;
     xf_dq_size_t event_cnt;
-    uint8_t is_subscr;
     xf_err_t xf_ret;
     xf_event_t *e;
     xf_event_t e_empty = {0};
@@ -263,7 +258,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
         goto l_no_event;
     }
     /* 正常情况下都是 XF_EQ_ELEM_SIZE 的整数倍 */
-    if (unlikely(filled_size & BIT_MASK(XF_EQ_ELEM_SIZE) != 0)) {
+    if (unlikely(((filled_size) & BIT_MASK(XF_EQ_ELEM_SIZE)) != 0U)) {
         XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
         xf_ret = XF_FAIL;
         goto l_err;
@@ -279,7 +274,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
             xf_ret = XF_FAIL;
             goto l_err;
         }
-        if (e->ref_cnt == 0) {
+        if (e->ref_cnt == 0U) {
             /*
                 事件无人订阅
                 TODO 重新加回事件循环？
@@ -299,17 +294,16 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
 
             /* k: 当前 co bitmap block 内的 co_id 索引 */
             k = xf_co_bm_blk_find_max(co_bm_blk);
-            co_id = j * (sizeof(xf_co_bitmap_t) * 8) + k;
+            co_id = (xf_co_id_t)((uint32_t)j * (sizeof(xf_co_bitmap_t) * 8U) + (uint32_t)k);
             co = &xf_co_pool[co_id];
             if (unlikely(co->func == NULL)) {
                 XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
                 xf_ret = XF_FAIL;
                 goto l_err;
             }
-
             xf_co_resume(co);
             co_state = xf_co_call(co, e);
-            if (co_state == XF_CO_TERMINATED) {
+            if (co_state == (xf_co_state_t)XF_CO_TERMINATED) {
                 XF_LOGV(TAG, "co[%d] done.", (int)xf_co_get_flags_id(&xf_co_pool[i]));
                 xf_co_dtor(&xf_co_pool[i]);
                 /* TODO GC co */
@@ -320,7 +314,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
                 continue;
             }
 
-            if (e->ref_cnt == 0) {
+            if (e->ref_cnt == 0U) {
                 /* TODO GC e */
             } else {
                 /* TODO 事件未被处理完，重新加入事件队列？ */
@@ -331,7 +325,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
 l_no_event:;
 
     /* 处理就绪 */
-    for (i = 0; i < XF_CO_NUM_MAX; i++) {
+    for (i = 0; i < (int32_t)XF_CO_NUM_MAX; i++) {
         if ((xf_co_pool[i].func != NULL)
                 && (xf_co_get_flags_state(&xf_co_pool[i]) == XF_CO_READY)
            ) {
@@ -353,15 +347,15 @@ l_no_event:;
         /* 找最小时间 */
         /* j: 最小时间定时事件所在索引 */
         /* 先找首个有效定时器 */
-        for (i = 0; i < XF_CO_TIMER_NUM_MAX; i++) {
-            if (sp_tep[i].ts_wakeup != 0) {
+        for (i = 0; i < (int32_t)XF_CO_TIMER_NUM_MAX; i++) {
+            if (sp_tep[i].ts_wakeup != 0U) {
                 break;
             }
         }
-        if (i != XF_CO_TIMER_NUM_MAX) {
+        if (i != (int32_t)XF_CO_TIMER_NUM_MAX) {
             k = i;
-            for (j = i + 1; j < XF_CO_TIMER_NUM_MAX; j++) {
-                if ((sp_tep[j].ts_wakeup != 0)
+            for (j = i + 1; j < (int32_t)XF_CO_TIMER_NUM_MAX; j++) {
+                if ((sp_tep[j].ts_wakeup != 0U)
                         && (sp_tep[j].ts_wakeup < sp_tep[k].ts_wakeup)) {
                     k = j;
                 }
@@ -377,7 +371,7 @@ l_err:;
 
 xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid)
 {
-    uint8_t j = 0;
+    int16_t j = 0;
     uint8_t k = 0;
     uint8_t eid_free_idx = 0;
     xf_event_bitmap_t bm_blk;
@@ -390,8 +384,8 @@ xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid)
         if (bm_blk == 0) {
             continue;
         }
-        k = xf_log2(bm_blk);
-        eid_free_idx = j * (sizeof(xf_event_bitmap_t) * 8) + k;
+        k = (uint8_t)xf_log2(bm_blk);
+        eid_free_idx = (uint8_t)j * ((uint8_t)sizeof(xf_event_bitmap_t) * 8U) + k;
         BIT_SET1(eid_bm[j], k);
         *p_eid = (xf_event_id_t)eid_free_idx;
         return XF_OK;
@@ -401,7 +395,7 @@ xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid)
 
 xf_err_t xf_event_release_id(xf_event_id_t eid)
 {
-    if (eid > (sizeof(eid_bm) * 8 - 1)) {
+    if (eid > (((xf_event_id_t)sizeof(eid_bm) * 8U) - 1U)) {
         return XF_FAIL;
     }
     if (XF_BITMAP_GET(eid_bm, eid) == 0) {

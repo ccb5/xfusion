@@ -24,10 +24,10 @@ extern "C" {
 /* ==================== [Defines] =========================================== */
 
 /* 协程数量 */
-#define XF_CO_NUM_MAX                   32 
-#define XF_CO_INTERNAL_NUM_MAX          32
-#define XF_CO_TIMER_NUM_MAX             8
-#define XF_CO_EVENT_NUM_MAX             32
+#define XF_CO_NUM_MAX                   32U
+#define XF_CO_INTERNAL_NUM_MAX          32U
+#define XF_CO_TIMER_NUM_MAX             8U
+#define XF_CO_EVENT_NUM_MAX             32U
 
 #define CONFIG_XF_CO_ENABLE_USER_DATA   1
 
@@ -105,13 +105,18 @@ typedef struct xf_co_attr {
  */
 typedef uint8_t xf_co_state_t;
 enum _xf_co_state_t {
-    XF_CO_TERMINATED       = 0x00,          /*!< 已结束 */
-    XF_CO_READY,                            /*!< 就绪 */
-#define XF_CO_WAITING       XF_CO_READY     /*!< 等待下一次执行 */
-    XF_CO_BLOCKED,                          /*!< 因某些事件而阻塞 */
-    XF_CO_SUSPENDED,                        /*!< 已挂起 */
-    XF_CO_STATE_MAX,                        /*!< （不含）协程状态最大值 */
+    _XF_CO_TERMINATED       = 0x00U,         /*!< 已结束 */
+    _XF_CO_READY,                            /*!< 就绪 */
+    _XF_CO_BLOCKED,                          /*!< 因某些事件而阻塞 */
+    _XF_CO_SUSPENDED,                        /*!< 已挂起 */
+    _XF_CO_STATE_MAX,                        /*!< （不含）协程状态最大值 */
 };
+#define XF_CO_TERMINATED                    ((xf_co_state_t)_XF_CO_TERMINATED)
+#define XF_CO_READY                         ((xf_co_state_t)_XF_CO_READY     )
+#define XF_CO_BLOCKED                       ((xf_co_state_t)_XF_CO_BLOCKED   )
+#define XF_CO_SUSPENDED                     ((xf_co_state_t)_XF_CO_SUSPENDED )
+#define XF_CO_STATE_MAX                     ((xf_co_state_t)_XF_CO_STATE_MAX )
+
 typedef xf_co_state_t xf_co_async_t; /*!< 用于标识无栈协程函数 */
 typedef uint8_t xf_co_sched_state_t;
 

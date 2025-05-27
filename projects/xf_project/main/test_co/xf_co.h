@@ -40,7 +40,7 @@ extern "C" {
 
 __STATIC_INLINE xf_co_timestamp_t xf_co_get_timestamp_freq(void)
 {
-    // return (1000 * 1000);
+    // return (1000U * 1000U);
     return osKernelGetTickFreq();
 }
 
@@ -49,7 +49,7 @@ __STATIC_INLINE xf_co_timestamp_t _xf_co_get_tick(void)
     // struct timeval tv;
     // struct timezone tz;
     // gettimeofday(&tv, &tz);
-    // return (xf_co_timestamp_t)(tv.tv_sec * 1000 * 1000 + tv.tv_usec);
+    // return (xf_co_timestamp_t)(tv.tv_sec * 1000U * 1000U + tv.tv_usec);
     return osKernelGetTickCount();
 }
 
@@ -60,7 +60,7 @@ __STATIC_INLINE xf_co_timestamp_t xf_co_tick_to_us(xf_co_timestamp_t tick)
 
 __STATIC_INLINE xf_co_timestamp_t xf_co_tick_to_ms(xf_co_timestamp_t tick)
 {
-    return tick / (xf_co_get_timestamp_freq() / 1000);
+    return tick / (xf_co_get_timestamp_freq() / 1000U);
 }
 
 __STATIC_INLINE xf_co_timestamp_t xf_co_us_to_tick(xf_co_timestamp_t us)
@@ -70,17 +70,17 @@ __STATIC_INLINE xf_co_timestamp_t xf_co_us_to_tick(xf_co_timestamp_t us)
 
 __STATIC_INLINE xf_co_timestamp_t xf_co_ms_to_tick(xf_co_timestamp_t ms)
 {
-    return ms * (xf_co_get_timestamp_freq() / 1000);
+    return ms * (xf_co_get_timestamp_freq() / 1000U);
 }
 
 __STATIC_INLINE xf_co_timestamp_t _xf_co_get_us(void)
 {
-    return (_xf_co_get_tick() * 1000 * 1000) / xf_co_get_timestamp_freq();
+    return (_xf_co_get_tick() * 1000U * 1000U) / xf_co_get_timestamp_freq();
 }
 
 __STATIC_INLINE xf_co_timestamp_t _xf_co_get_ms(void)
 {
-    return _xf_co_get_us() / 1000;
+    return _xf_co_get_us() / 1000U;
 }
 
 #define xf_co_get_tick()            _xf_co_get_tick()
@@ -127,7 +127,7 @@ xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co);
 #define xf_co_create(_func, _user_data) xf_co_create_(xf_co_func_cast(_func), \
                                                       ((void *)(_user_data)), NULL)
 
-#define XF_EVENT_ID_INVALID     (~(xf_event_id_t)0)
+#define XF_EVENT_ID_INVALID     ((xf_event_id_t)~(xf_event_id_t)0U)
 /* 获取唯一事件 id */
 xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid);
 __STATIC_INLINE xf_event_id_t xf_event_acquire_id(void);
