@@ -55,6 +55,17 @@ extern "C" {
 
 /* ==================== [Global Prototypes] ================================= */
 
+__weak void xf_check_on_fatal_error(const char *file, int line);
+
+#define XF_CHECK_REPORT_ERROR_LINE()    do { \
+                                            XF_LOGE("CHECK", "ERROR@%s:%d", __FILENAME__, __LINE__); \
+                                        } while (0)
+#define XF_ERROR_LINE()                 XF_CHECK_REPORT_ERROR_LINE()
+#define XF_CHECK_FATAL_ERROR()          do { \
+                                            xf_check_on_fatal_error(__FILENAME__, __LINE__); \
+                                        } while (0)
+#define XF_FATAL_ERROR()                XF_CHECK_FATAL_ERROR()
+
 /* ==================== [Macros] ============================================ */
 
 #if 1 /* XF_CHECK_IS_ENABLE || XF_ASSERT_IS_ENABLE */

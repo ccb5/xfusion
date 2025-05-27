@@ -18,7 +18,6 @@
 #include <inttypes.h>
 
 #include "xf_common.h"
-#include "xf_check.h"
 
 #ifdef __cplusplus
 extern "C" {
