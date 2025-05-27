@@ -15,9 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_algo.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
+#include "xf_utils.h"
 #include "xf_event.h"
 
 #include "xf_co_def.h"
@@ -125,7 +123,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e);
 
 xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co);
 #define xf_co_create(_func, _user_data) xf_co_create_(xf_co_func_cast(_func), \
-                                                      ((void *)(_user_data)), NULL)
+                                                      ((void *)(uintptr_t)(_user_data)), NULL)
 
 #define XF_EVENT_ID_INVALID     ((xf_event_id_t)~(xf_event_id_t)0U)
 /* 获取唯一事件 id */
@@ -276,6 +274,7 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
 
 #define xf_co_delay(_me, _tick)         do { \
                                             xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + (_tick)); \
+                                            if (!__cte) { /* TODO 判断返回值 */ return XF_CO_READY; }; \
                                             xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
                                             xf_co_block((_me)); \
                                             xf_co_yield((_me)); \
@@ -285,6 +284,7 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
 
 #define xf_co_delay_ms(_me, _ms)        do { \
                                             xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + xf_co_ms_to_tick(_ms)); \
+                                            if (!__cte) { /* TODO 判断返回值 */ return XF_CO_READY; }; \
                                             xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
                                             xf_co_block((_me)); \
                                             xf_co_yield((_me)); \

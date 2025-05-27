@@ -136,7 +136,7 @@ xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co)
             attr.id = i;
             xf_ret = xf_co_ctor(&xf_co_pool[i], func, &attr);
             if (xf_ret != XF_OK) {
-                XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
+                XF_ERROR_LINE();
                 break;
             }
             xf_co_set_flags_id(&xf_co_pool[i], i);
@@ -257,11 +257,9 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
     if (filled_size == 0) {
         goto l_no_event;
     }
-    /* 正常情况下都是 XF_EQ_ELEM_SIZE 的整数倍 */
     if (unlikely(!IS_ALIGNED(filled_size, XF_EQ_ELEM_SIZE))) {
-        XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
-        xf_ret = XF_FAIL;
-        goto l_err;
+        /* 正常情况下都是 XF_EQ_ELEM_SIZE 的整数倍 */
+        XF_FATAL_ERROR();
     }
 
     event_cnt = filled_size / XF_EQ_ELEM_SIZE;
@@ -270,9 +268,13 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
         /* 获取事件，顺序 fifo */
         dq_ret_size = xf_deque_front_pop(sp_eq, &e, XF_EQ_ELEM_SIZE);
         if (unlikely(dq_ret_size == 0)) {
-            XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
+            /* 说明有别处取走了，不算致命错误 */
+            XF_ERROR_LINE();
             xf_ret = XF_FAIL;
             goto l_err;
+        }
+        if (unlikely(dq_ret_size != XF_EQ_ELEM_SIZE)) {
+            XF_FATAL_ERROR();
         }
         if (e->ref_cnt == 0U) {
             /*
@@ -297,7 +299,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
             co_id = (xf_co_id_t)((uint32_t)j * (sizeof(xf_co_bitmap_t) * 8U) + (uint32_t)k);
             co = &xf_co_pool[co_id];
             if (unlikely(co->func == NULL)) {
-                XF_LOGE(TAG, "ERR_LINE:%d", __LINE__);
+                XF_ERROR_LINE();
                 xf_ret = XF_FAIL;
                 goto l_err;
             }
@@ -345,9 +347,9 @@ l_no_event:;
     if (pp_e) {
         *pp_e = NULL;
         /* 找最小时间 */
-        /* j: 最小时间定时事件所在索引 */
-        /* 先找首个有效定时器 */
+        /* k: 最小时间定时事件所在索引 */
         for (i = 0; i < (int32_t)XF_CO_TIMER_NUM_MAX; i++) {
+            /* 先找首个有效定时器 */
             if (sp_tep[i].ts_wakeup != 0U) {
                 break;
             }

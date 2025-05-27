@@ -79,8 +79,7 @@ xf_co_async_t co_func(xf_co_nctx_t *const me, xf_event_t *e)
     xf_co_begin(me);
     printf("co%d begin\n", (int)me->base.user_data);
     while (1) {
-        delay_val = ex_random() % 1000 + 1;
-        // delay_val = 200;
+        delay_val = (ex_random() % 1000U) + 1U;
         XF_LOGI(TAG, "co%d curr: %8lu, delay: %8lu",
                 (int)me->base.user_data, xf_co_get_tick(), delay_val);
         xf_co_delay_ms(me, delay_val);
@@ -94,7 +93,6 @@ void test_main(void)
 {
     xf_event_t *e;
     xf_co_tim_event_t *cte;
-    xf_co_tim_timestamp_t ts_idle = 0;
     xf_co_sched_init();
     xf_co_create(co_func, 0);
     xf_co_create(co_func, 1);
