@@ -122,6 +122,16 @@ menu "XFusion"
 
         endmenu # system
 
+        config XF_ENABLE_utils
+            bool "utils"
+            default y
+
+        menu "utils"
+
+            depends on XF_ENABLE_utils
+
+        endmenu # utils
+
     endmenu # Components
 
     config XF_ENABLE_examples
