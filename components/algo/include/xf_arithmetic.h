@@ -112,6 +112,15 @@ __STATIC_INLINE uint32_t xf_am_round_up_to_power_of_2_u32(uint32_t n)
 #define xf_popcount(n)                  xf_am_popcount_u32(n)
 #define xf_clz(n)                       xf_am_clz_u32(n)
 
+#define XF_AM_LOG2_STEP_16(n)           (((n) & 0xffff0000) ? 16 + XF_AM_LOG2_STEP_8((n) >> 16) : XF_AM_LOG2_STEP_8(n))
+#define XF_AM_LOG2_STEP_8(n)            (((n) & 0x0000ff00) ?  8 + XF_AM_LOG2_STEP_4((n) >>  8) : XF_AM_LOG2_STEP_4(n))
+#define XF_AM_LOG2_STEP_4(n)            (((n) & 0x000000f0) ?  4 + XF_AM_LOG2_STEP_2((n) >>  4) : XF_AM_LOG2_STEP_2(n))
+#define XF_AM_LOG2_STEP_2(n)            (((n) & 0x0000000c) ?  2 + XF_AM_LOG2_STEP_1((n) >>  2) : XF_AM_LOG2_STEP_1(n))
+#define XF_AM_LOG2_STEP_1(n)            (((n) & 0x00000002) ?  1 + XF_AM_LOG2_STEP_0((n) >>  1) : 0 )
+#define XF_AM_LOG2_STEP_0(n)            (0)
+
+#define xf_am_log2_u32_const(n)         XF_AM_LOG2_STEP_16(n)
+
 #ifdef __cplusplus
 }
 #endif
