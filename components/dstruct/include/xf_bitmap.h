@@ -16,6 +16,7 @@
 /* ==================== [Includes] ========================================== */
 
 #include "xf_common.h"
+#include "xf_algo.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,13 +45,33 @@ typedef uint64_t    xf_bitmap64_t;
 
 /* ==================== [Global Prototypes] ================================= */
 
+/*
+    ffs:    Find First Set, 从低到高找第一个 1 出现的位置
+    fls:    Find Last Set, 从低到高找最后一个 1 出现的位置，
+            也就是从高到低找第一个 1 出现的位置。
+ */
+
+#if XF_TODO
+int32_t xf_bitmap8_fls(const xf_bitmap8_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap16_fls(const xf_bitmap16_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap64_fls(const xf_bitmap64_t *p_bm, uint32_t bit_size);
+
+int32_t xf_bitmap8_ffs(const xf_bitmap8_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap16_ffs(const xf_bitmap16_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap32_ffs(const xf_bitmap32_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap64_ffs(const xf_bitmap64_t *p_bm, uint32_t bit_size);
+#endif
+
+int32_t xf_bitmap32_fls(const xf_bitmap32_t *p_bm, uint32_t bit_size);
+
 /* ==================== [Macros] ============================================ */
 
 #if !defined(xf_bitmap_div_round_up)
 #   define xf_bitmap_div_round_up(n, d)                 (((n) + (d) - 1) / (d))
 #endif
 
-#define XF_BITMAP8_GET_BLK_SIZE(_bit_size)              xf_bitmap_div_round_up((_bit_size), 8 * sizeof(xf_bitmap8_t))
+#define XF_BITMAP8_BLK_BIT_SIZE                         (8 * sizeof(xf_bitmap8_t))
+#define XF_BITMAP8_GET_BLK_SIZE(_bit_size)              xf_bitmap_div_round_up((_bit_size), XF_BITMAP8_BLK_BIT_SIZE)
 #define XF_BITMAP8_DECLARE(_bitmap, _bit_size)          xf_bitmap8_t _bitmap[XF_BITMAP8_GET_BLK_SIZE(_bit_size)]
 #define XF_BITMAP8_GET_BLK_POS(_bit)                    ((_bit) / (sizeof(xf_bitmap8_t) * 8))
 #define XF_BITMAP8_GET_BIT_POS_IN_BLK(_bit)             ((_bit) % (sizeof(xf_bitmap8_t) * 8))
@@ -66,7 +87,8 @@ typedef uint64_t    xf_bitmap64_t;
 #define XF_BITMAP8_SET(_bitmap, _bit, _value)           (XF_BITMAP8_GET_BLK(_bitmap, _bit) = XF_BITMAP8_GET_MDF(_bitmap, _bit, _value))
 #define XF_BITMAP8_SET_FLIP(_bitmap, _bit)              (XF_BITMAP8_GET_BLK(_bitmap, _bit) = XF_BITMAP8_GET_MDF_FLIP(_bitmap, _bit))
 
-#define XF_BITMAP16_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), 8 * sizeof(xf_bitmap16_t))
+#define XF_BITMAP16_BLK_BIT_SIZE                        (8 * sizeof(xf_bitmap16_t))
+#define XF_BITMAP16_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), XF_BITMAP8_BLK_BIT_SIZE)
 #define XF_BITMAP16_DECLARE(_bitmap, _bit_size)         xf_bitmap16_t _bitmap[XF_BITMAP16_GET_BLK_SIZE(_bit_size)]
 #define XF_BITMAP16_GET_BLK_POS(_bit)                   ((_bit) / (sizeof(xf_bitmap16_t) * 8))
 #define XF_BITMAP16_GET_BIT_POS_IN_BLK(_bit)            ((_bit) % (sizeof(xf_bitmap16_t) * 8))
@@ -82,7 +104,8 @@ typedef uint64_t    xf_bitmap64_t;
 #define XF_BITMAP16_SET(_bitmap, _bit, _value)          (XF_BITMAP16_GET_BLK(_bitmap, _bit) = XF_BITMAP16_GET_MDF(_bitmap, _bit, _value))
 #define XF_BITMAP16_SET_FLIP(_bitmap, _bit)             (XF_BITMAP16_GET_BLK(_bitmap, _bit) = XF_BITMAP16_GET_MDF_FLIP(_bitmap, _bit))
 
-#define XF_BITMAP32_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), 8 * sizeof(xf_bitmap32_t))
+#define XF_BITMAP32_BLK_BIT_SIZE                        (8 * sizeof(xf_bitmap32_t))
+#define XF_BITMAP32_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), XF_BITMAP32_BLK_BIT_SIZE)
 #define XF_BITMAP32_DECLARE(_bitmap, _bit_size)         xf_bitmap32_t _bitmap[XF_BITMAP32_GET_BLK_SIZE(_bit_size)]
 #define XF_BITMAP32_GET_BLK_POS(_bit)                   ((_bit) / (sizeof(xf_bitmap32_t) * 8))
 #define XF_BITMAP32_GET_BIT_POS_IN_BLK(_bit)            ((_bit) % (sizeof(xf_bitmap32_t) * 8))
@@ -98,7 +121,8 @@ typedef uint64_t    xf_bitmap64_t;
 #define XF_BITMAP32_SET(_bitmap, _bit, _value)          (XF_BITMAP32_GET_BLK(_bitmap, _bit) = XF_BITMAP32_GET_MDF(_bitmap, _bit, _value))
 #define XF_BITMAP32_SET_FLIP(_bitmap, _bit)             (XF_BITMAP32_GET_BLK(_bitmap, _bit) = XF_BITMAP32_GET_MDF_FLIP(_bitmap, _bit))
 
-#define XF_BITMAP64_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), 8 * sizeof(xf_bitmap64_t))
+#define XF_BITMAP64_BLK_BIT_SIZE                        (8 * sizeof(xf_bitmap64_t))
+#define XF_BITMAP64_GET_BLK_SIZE(_bit_size)             xf_bitmap_div_round_up((_bit_size), XF_BITMAP64_BLK_BIT_SIZE)
 #define XF_BITMAP64_DECLARE(_bitmap, _bit_size)         xf_bitmap64_t _bitmap[XF_BITMAP64_GET_BLK_SIZE(_bit_size)]
 #define XF_BITMAP64_GET_BLK_POS(_bit)                   ((_bit) / (sizeof(xf_bitmap64_t) * 8))
 #define XF_BITMAP64_GET_BIT_POS_IN_BLK(_bit)            ((_bit) % (sizeof(xf_bitmap64_t) * 8))
@@ -117,6 +141,7 @@ typedef uint64_t    xf_bitmap64_t;
 typedef XCAT3(xf_bitmap, XF_BITMAP_BLK_SIZE, _t)        xf_bitmap_t;
 
 #if 1
+#define XF_BITMAP_BLK_BIT_SIZE                          XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _BLK_BIT_SIZE)
 #define XF_BITMAP_GET_BLK_SIZE(_bit_size)               XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _GET_BLK_SIZE) (_bit_size)
 #define XF_BITMAP_DECLARE(_bitmap, _bit_size)           XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _DECLARE) (_bitmap, (_bit_size))
 #define XF_BITMAP_GET_BLK_POS(_bit)                     XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _GET_BLK_POS) ((_bit))
@@ -133,6 +158,7 @@ typedef XCAT3(xf_bitmap, XF_BITMAP_BLK_SIZE, _t)        xf_bitmap_t;
 #define XF_BITMAP_SET(_bitmap, _bit, _value)            XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _SET) ((_bitmap), (_bit), (_value))
 #define XF_BITMAP_SET_FLIP(_bitmap, _bit)               XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _SET_FLIP) ((_bitmap), (_bit))
 #else
+#define XF_BITMAP_BLK_BIT_SIZE                          XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _BLK_BIT_SIZE)
 #define XF_BITMAP_GET_BLK_SIZE          XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _GET_BLK_SIZE)
 #define XF_BITMAP_DECLARE               XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _DECLARE)
 #define XF_BITMAP_GET_BLK_POS           XCAT3(XF_BITMAP, XF_BITMAP_BLK_SIZE, _GET_BLK_POS)
