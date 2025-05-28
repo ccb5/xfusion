@@ -55,7 +55,7 @@ static xf_co_t xf_co_pool[XF_CO_NUM_MAX] = {0};
 static xf_dq_t xf_co_event_queue = {0};
 static xf_dq_t *sp_eq = &xf_co_event_queue;
 static xf_event_t *xf_event_pool[XF_CO_EVENT_NUM_MAX] = {0};
-#define XF_EQ_ELEM_SIZE     (sizeof(xf_event_t *))
+#define XF_EQ_ELEM_SIZE                 (sizeof(xf_event_t *))
 
 /* 定时器事件池 */
 static xf_co_tim_event_t co_tim_event_pool[XF_CO_TIMER_NUM_MAX] = {0};
@@ -124,6 +124,9 @@ xf_err_t xf_co_sched_deinit(void)
 
 xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co)
 {
+    if (!func) {
+        return XF_ERR_INVALID_ARG;
+    }
     int16_t i = 0;
     xf_err_t xf_ret;
     xf_co_attr_t attr = {0};
@@ -149,11 +152,38 @@ xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co)
     return XF_FAIL;
 }
 
+xf_err_t xf_co_destroy(xf_co_t *co)
+{
+    int16_t i = 0;
+    xf_err_t xf_ret;
+    xf_co_id_t id;
+    if (!co) {
+        return XF_ERR_INVALID_ARG;
+    }
+    id = xf_co_get_flags_id(co);
+    if (id > (XF_CO_NUM_MAX - 1)) {
+        XF_ERROR_LINE();
+        return XF_FAIL;
+    }
+    if (co == &xf_co_pool[i]) {
+        xf_ret = xf_co_dtor(co);
+        return xf_ret;
+    }
+    return XF_FAIL;
+}
+
 xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e)
 {
+    /*
+        TODO 发布指定池
+        关键因素：
+        -   订阅者列表
+        -   队列
+     */
     xf_dq_size_t dq_ret_size;
     int16_t i;
     xf_event_ref_cnt_t ref_cnt;
+    xf_co_bitmap_t bm_blk;
     UNUSED(me);
     if (e == NULL) {
         return XF_ERR_INVALID_ARG;
@@ -166,12 +196,17 @@ xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e)
     for (i = 0; i < XF_BITMAP_GET_BLK_SIZE(XF_CO_NUM_MAX); i++) {
         /* TODO 更多事件的情况 */
         STATIC_ASSERT(sizeof(xf_co_subscr_list[e->id].co_bm[0]) <= sizeof(uint32_t));
-        ref_cnt += (xf_event_ref_cnt_t)xf_popcount((uint32_t)xf_co_subscr_list[e->id].co_bm[i]);
+        bm_blk = xf_co_subscr_list[e->id].co_bm[i];
+        if (!bm_blk) {
+            continue;
+        }
+        ref_cnt += (xf_event_ref_cnt_t)xf_am_popcount_u32((uint32_t)bm_blk);
     }
     e->ref_cnt = ref_cnt;
     if (ref_cnt == 0U) {
         XF_LOGD(TAG, "no co subscribe event %d", e->id);
         /* TODO 无人订阅的事件需要成功发布？ */
+        return XF_FAIL;
     }
     /* 加入事件队列， WARNING 此处仅拷贝指针 */
     dq_ret_size = xf_deque_back_push(sp_eq, (void *)&e, XF_EQ_ELEM_SIZE);
@@ -183,6 +218,11 @@ xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e)
 
 xf_err_t xf_co_subscribe(xf_co_t *const me, xf_event_id_t id)
 {
+    /*
+        TODO 从指定池订阅
+        关键因素：
+        -   订阅者列表
+     */
     xf_co_id_t co_id;
     if (id >= XF_CO_EVENT_NUM_MAX) {
         return XF_FAIL;
@@ -194,6 +234,11 @@ xf_err_t xf_co_subscribe(xf_co_t *const me, xf_event_id_t id)
 
 xf_err_t xf_co_unsubscribe(xf_co_t *const me, xf_event_id_t id)
 {
+    /*
+        TODO 从指定池取消订阅
+        关键因素：
+        -   订阅者列表
+     */
     xf_co_id_t co_id;
     if (id >= XF_CO_EVENT_NUM_MAX) {
         return XF_FAIL;
@@ -203,23 +248,22 @@ xf_err_t xf_co_unsubscribe(xf_co_t *const me, xf_event_id_t id)
     return XF_OK;
 }
 
-xf_co_tim_event_t *xf_co_tim_acquire_oneshoot(xf_co_tim_timestamp_t ts_wakeup)
+xf_co_tim_event_t *xf_co_tim_event_acquire(void)
 {
     uint16_t i = 0;
     for (i = 0; i < XF_CO_TIMER_NUM_MAX; i++) {
         if (sp_tep[i].ts_wakeup == 0U) {
             sp_tep[i].base.id = xf_event_acquire_id();
-            sp_tep[i].ts_wakeup = ts_wakeup;
-            xf_co_tim_set_attr_oneshoot(&sp_tep[i], 1);
             return &sp_tep[i];
         }
     }
     return NULL;
 }
 
-xf_err_t xf_co_tim_release(xf_co_tim_event_t *cte)
+xf_err_t xf_co_tim_event_release(xf_co_tim_event_t *cte)
 {
-    xf_err_t xf_ret;
+    xf_err_t xf_ret = XF_OK;
+    const xf_co_tim_event_t te_empty = {0};
     uint16_t i = 0;
     if (cte == NULL) {
         return XF_ERR_INVALID_ARG;
@@ -227,9 +271,7 @@ xf_err_t xf_co_tim_release(xf_co_tim_event_t *cte)
     for (i = 0; i < XF_CO_TIMER_NUM_MAX; i++) {
         if ((uintptr_t)&sp_tep[i] == (uintptr_t)cte) {
             xf_ret = xf_event_release_id(cte->base.id);
-            cte->ts_wakeup = 0;
-            cte->base.id = 0;
-            cte->base.ref_cnt = 0;
+            sp_tep[i] = te_empty;
             return xf_ret;
         }
     }
@@ -269,9 +311,7 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
         dq_ret_size = xf_deque_front_pop(sp_eq, &e, XF_EQ_ELEM_SIZE);
         if (unlikely(dq_ret_size == 0)) {
             /* 说明有别处取走了，不算致命错误 */
-            XF_ERROR_LINE();
-            xf_ret = XF_FAIL;
-            goto l_err;
+            goto l_no_event;
         }
         if (unlikely(dq_ret_size != XF_EQ_ELEM_SIZE)) {
             XF_FATAL_ERROR();
@@ -386,7 +426,7 @@ xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid)
         if (bm_blk == 0) {
             continue;
         }
-        k = (uint8_t)xf_log2(bm_blk);
+        k = (uint8_t)xf_am_log2_u32(bm_blk);
         eid_free_idx = (uint8_t)j * ((uint8_t)sizeof(xf_event_bitmap_t) * 8U) + k;
         BIT_SET1(eid_bm[j], k);
         *p_eid = (xf_event_id_t)eid_free_idx;

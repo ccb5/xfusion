@@ -45,9 +45,11 @@ typedef uintptr_t xf_event_id_t;
 #endif
 
 enum _xf_event_id_t {
-    XF_EID_EMPTY = 0x00,
-    XF_EID_USER,
-    XF_EID_MAX,
+    XF_EVENT_ID_EMPTY = 0x00,           /*!< 空事件，保留 */
+    XF_EVENT_ID_USER,                   /*!< 用户事件起始 */
+    /* 最大事件 ID （含） */
+    /* cppcheck-suppress misra-c2012-10.6 */
+    XF_EVENT_ID_MAX = (xf_event_id_t)~((xf_event_id_t)0),
 };
 
 typedef volatile uint8_t xf_event_ref_cnt_t;

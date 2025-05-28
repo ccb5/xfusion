@@ -92,6 +92,7 @@ typedef struct xf_co_subscr_list {
 } xf_co_subscr_list_t;
 
 typedef uint8_t xf_co_tim_attr_t;
+/* TODO 可能存在溢出问题 */
 typedef uint32_t xf_co_tim_timestamp_t;
 
 typedef struct xf_co_timer_event {
@@ -105,7 +106,7 @@ typedef struct xf_co_timer_event {
 #define xf_te_cast(_e)                  ((xf_co_tim_event_t *)(_e))
 
 #define xf_co_tim_get_attr_oneshoot(_e) BIT_GET(xf_te_cast(_e)->attr, \
-                                                XF_CO_FLAGS_AWAIT_B)
+                                                XF_TIM_ATTR_ONESHOOT_B)
 #define xf_co_tim_set_attr_oneshoot(_e, _value) \
                                         BIT_SET(xf_te_cast(_e)->attr, \
                                                 XF_TIM_ATTR_ONESHOOT_B, \
@@ -114,7 +115,7 @@ typedef struct xf_co_timer_event {
 __STATIC_INLINE xf_co_id_t xf_co_bm_blk_find_max(xf_co_bitmap_t bitmap_blk)
 {
     STATIC_ASSERT(sizeof(xf_co_bitmap_t) <= sizeof(uint32_t));
-    return (xf_co_id_t)xf_log2((uint32_t)bitmap_blk);
+    return (xf_co_id_t)xf_am_log2_u32((uint32_t)bitmap_blk);
 }
 
 xf_err_t xf_co_sched_init(void);
@@ -125,14 +126,16 @@ xf_err_t xf_co_create_(xf_co_func_t func, void *user_data, xf_co_t **pp_co);
 #define xf_co_create(_func, _user_data) xf_co_create_(xf_co_func_cast(_func), \
                                                       ((void *)(uintptr_t)(_user_data)), NULL)
 
-#define XF_EVENT_ID_INVALID     ((xf_event_id_t)~(xf_event_id_t)0U)
+xf_err_t xf_co_destroy(xf_co_t *co);
+
+#define XF_EVENT_ID_INVALID             ((xf_event_id_t)~(xf_event_id_t)0U)
 /* 获取唯一事件 id */
 xf_err_t xf_event_acquire_id_(xf_event_id_t *p_eid);
 __STATIC_INLINE xf_event_id_t xf_event_acquire_id(void);
 xf_err_t xf_event_release_id(xf_event_id_t eid);
 
-xf_co_tim_event_t *xf_co_tim_acquire_oneshoot(xf_co_tim_timestamp_t ts_wakeup);
-xf_err_t xf_co_tim_release(xf_co_tim_event_t *cte);
+xf_co_tim_event_t *xf_co_tim_event_acquire(void);
+xf_err_t xf_co_tim_event_release(xf_co_tim_event_t *cte);
 
 /* me 之后用于追溯发布事件的协程 */
 xf_err_t xf_co_publish_(xf_co_t *const me, xf_event_t *const e);
@@ -175,21 +178,20 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
 
 #define xf_co_get_state(_co)            xf_co_get_flags_state(_co)
 
-#if 0
-#define xf_co_yield(_me)                xf_co_yield_until((_me), 1)
-
-#define xf_co_yield_until(_me, _cond)   do { \
-                                            __co_yield_flag = 0; \
-                                            xf_co_lc_set(xf_co_cast(_me)->lc); \
-                                            if ((__co_yield_flag == 0) || !(_cond)) { \
-                                                xf_co_set_flags_state((_me), XF_CO_READY); \
-                                                return XF_CO_READY; \
-                                            } \
+#define xf_co_set_ready(_co)            do { \
+                                            xf_co_set_flags_state((_co), XF_CO_READY); \
                                         } while (0)
-#endif
+
+#define xf_co_set_block(_co)            do { \
+                                            xf_co_set_flags_state((_co), XF_CO_BLOCKED); \
+                                        } while (0)
+
+#define xf_co_set_suspend(_co)          do { \
+                                            xf_co_set_flags_state((_co), XF_CO_SUSPENDED); \
+                                        } while (0)
 
 #define xf_co_suspend(_me, _co)         do { \
-                                            xf_co_set_flags_state((_co), XF_CO_SUSPENDED); \
+                                            xf_co_set_suspend((_co)); \
                                             if ((_me) == (_co)) { \
                                                 xf_co_lc_set(xf_co_cast(_me)->lc); \
                                                 if (xf_co_get_flags_state(_me) == XF_CO_SUSPENDED) { \
@@ -197,10 +199,6 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                                 } \
                                             } \
                                         } while (0)
-
-#if 0
-#define xf_co_resume(_co)               xf_co_set_flags_state((_co), XF_CO_READY)
-#endif
 
 #define xf_co_restart(_co)              do { \
                                             xf_co_lc_init(xf_co_cast(_co)->lc); \
@@ -234,34 +232,7 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                         } while (0)
 
 #define xf_co_wait_while(_me, _cond)    xf_co_wait_until((_me), !(_cond))
-
-#define xf_co_set_next_wakeup_tick(_co, _tick_inc) \
-                                        do { \
-                                            xf_co_cast(_co)->ts_wakeup = xf_co_get_tick() + (_tick_inc); \
-                                        } while (0)
-
-#define xf_co_delay(_me, _tick)         do { \
-                                            xf_co_set_next_wakeup_tick((_me), (_tick)); \
-                                            xf_co_wait_until((_me), xf_co_get_tick() >= xf_co_cast(_me)->ts_wakeup); \
-                                        } while (0)
-
-#define xf_co_delay_ms(_me, _ms)        do { \
-                                            xf_co_set_next_wakeup_tick((_me), xf_co_ms_to_tick(_ms)); \
-                                            xf_co_wait_until((_me), xf_co_get_tick() >= xf_co_cast(_me)->ts_wakeup); \
-                                        } while (0)
-
-#define xf_co_delay_until(_me, _tick)   do { \
-                                            xf_co_cast(_me)->ts_wakeup = (_tick); \
-                                            xf_co_wait_until( \
-                                                (_me), \
-                                                (xf_co_get_tick() >= xf_co_cast(_me)->ts_wakeup) \
-                                            ); \
-                                        } while (0)
 #endif
-
-#define xf_co_block(_co)                do { \
-                                            xf_co_set_flags_state((_co), XF_CO_BLOCKED); \
-                                        } while (0)
 
 #define xf_co_yield(_me)                do { \
                                             xf_co_lc_set(xf_co_cast(_me)->lc); \
@@ -270,39 +241,43 @@ xf_err_t xf_co_dtor(xf_co_t *const co);
                                             } \
                                         } while (0)
 
+#if 0
+#define xf_co_yield_until(_me, _cond)   do { \
+                                            __co_yield_flag = 0; \
+                                            xf_co_lc_set(xf_co_cast(_me)->lc); \
+                                            if ((__co_yield_flag == 0) || !(_cond)) { \
+                                                xf_co_set_flags_state((_me), XF_CO_READY); \
+                                                return XF_CO_READY; \
+                                            } \
+                                        } while (0)
+#endif
+
+/* TODO 标记恢复还是立即恢复？ */
 #define xf_co_resume(_co)               xf_co_set_flags_state((_co), XF_CO_READY)
 
 #define xf_co_delay(_me, _tick)         do { \
-                                            xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + (_tick)); \
+                                            xf_co_tim_event_t *__cte = xf_co_tim_event_acquire(); \
                                             if (!__cte) { /* TODO 判断返回值 */ return XF_CO_READY; }; \
+                                            __cte->ts_wakeup = xf_co_get_tick() + (_tick); \
+                                            xf_co_tim_set_attr_oneshoot(__cte, 1); \
                                             xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
-                                            xf_co_block((_me)); \
+                                            xf_co_set_block((_me)); \
                                             xf_co_yield((_me)); \
                                             xf_co_unsubscribe(xf_co_cast(_me), ((xf_co_tim_event_t *)e)->base.id); \
-                                            xf_co_tim_release((xf_co_tim_event_t *)e); \
+                                            xf_co_tim_event_release((xf_co_tim_event_t *)e); \
                                         } while (0)
 
 #define xf_co_delay_ms(_me, _ms)        do { \
-                                            xf_co_tim_event_t *__cte = xf_co_tim_acquire_oneshoot(xf_co_get_tick() + xf_co_ms_to_tick(_ms)); \
+                                            xf_co_tim_event_t *__cte = xf_co_tim_event_acquire(); \
                                             if (!__cte) { /* TODO 判断返回值 */ return XF_CO_READY; }; \
+                                            __cte->ts_wakeup = xf_co_get_tick() + xf_co_ms_to_tick(_ms); \
+                                            xf_co_tim_set_attr_oneshoot(__cte, 1); \
                                             xf_co_subscribe(xf_co_cast(_me), __cte->base.id); \
-                                            xf_co_block((_me)); \
+                                            xf_co_set_block((_me)); \
                                             xf_co_yield((_me)); \
                                             xf_co_unsubscribe(xf_co_cast(_me), ((xf_co_tim_event_t *)e)->base.id); \
-                                            xf_co_tim_release((xf_co_tim_event_t *)e); \
+                                            xf_co_tim_event_release((xf_co_tim_event_t *)e); \
                                         } while (0)
-
-#if 0
-#define xf_co_schedule(_f)              ((_f) == XF_CO_READY)
-
-#define xf_co_wait_thread(_me, _thread) xf_co_wait_while((_me), xf_co_schedule(_thread))
-
-#define xf_co_spawn(_co, _co_child, _call_co_child_func) \
-                                        do { \
-                                            xf_co_init(_co_child); \
-                                            xf_co_wait_thread((_co), (_call_co_child_func)); \
-                                        } while (0)
-#endif
 
 /*
     TODO await 多个子协程
