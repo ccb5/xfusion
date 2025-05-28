@@ -1,7 +1,7 @@
 /**
  * @file xf_macro_definition.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2025-05-14
  */
@@ -58,6 +58,13 @@ extern "C" {
  * @brief 平台字长.
  */
 #   define XF_WORD_SIZE                 (sizeof(void *) * 8)
+#endif
+
+#if defined(__INTELLISENSE__)
+/**
+ * @brief 防止 vscode 的 c/c++ 插件误报错。
+ */
+#   define __FILENAME__                 (__FILE__)
 #endif
 
 #if !defined(__FILENAME__) && XF_COM_USE_BUILTIN
@@ -1081,7 +1088,7 @@ static_assertion_failure \
  *
  * You can copy, modify, distribute and perform the work,
  * even for commercial purposes, all without asking permission.
- * 
+ *
  * @ref https://github.com/swansontec/map-macro
  * @ref https://stackoverflow.com/questions/6707148/foreach-macro-on-macros-arguments/13459454#13459454
  * @ref https://www.cnblogs.com/shangdawei/archive/2013/05/27/3100889.html

@@ -287,13 +287,9 @@ extern "C" {
  * @brief 获取低 n 位为 1 的位掩码, 并左移 offset 位.
  *
  * @param n 小于等于 32 的数.
+ * @param offset 左移位数.
  *
- * @return 低 n 位为 1 的位掩码.
- *
- * @code{markdown}
- * BIT_MASK(6)  == 0x003f ==          0b00111111
- * BIT_MASK(13) == 0x1fff == 0b00011111 11111111
- * @endcode
+ * @return 高 n 位为 1 的位掩码.
  */
 #   define BIT_MASK_LSH(n, offset)      (BIT_MASK(n) << (offset))
 #endif
@@ -623,14 +619,10 @@ extern "C" {
 /**
  * @brief 获取低 n 位为 1 的位掩码, 并左移 offset 位.
  *
- * @param n 小于等于 32 的数.
+ * @param n 小于等于 64 的数.
+ * @param offset 左移位数.
  *
- * @return 低 n 位为 1 的位掩码.
- *
- * @code{markdown}
- * BIT64_MASK(6)  == 0x003f ==          0b00111111
- * BIT64_MASK(13) == 0x1fff == 0b00011111 11111111
- * @endcode
+ * @return 高 n 位为 1 的位掩码.
  */
 #   define BIT64_MASK_LSH(n, offset)      (BIT64_MASK(n) << (offset))
 #endif
