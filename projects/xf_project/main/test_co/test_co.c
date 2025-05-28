@@ -70,22 +70,53 @@ uint32_t ex_random(void)
     // LCG(2^32, 3*7*11*13*23, 0, seed)
     //
     l_rnd = l_rnd * (3U * 7U * 11U * 13U * 23U);
-    return l_rnd;
+    return l_rnd >> 8;
 }
 
 xf_co_async_t co_func(xf_co_nctx_t *const me, xf_event_t *e)
 {
     uint32_t delay_val = 0;
     xf_co_begin(me);
-    printf("co%d begin\n", (int)me->base.user_data);
+    printf("co%d begin\n", (int)(intptr_t)me->base.user_data);
     while (1) {
         delay_val = (ex_random() % 1000U) + 1U;
-        XF_LOGI(TAG, "co%d curr: %8lu, delay: %8lu",
-                (int)me->base.user_data, xf_co_get_tick(), delay_val);
+        XF_LOGI(TAG, "co%d curr: %8" PRIu32 ", delay: %8" PRIu32,
+                (int)(intptr_t)me->base.user_data, xf_co_get_tick(), delay_val);
         xf_co_delay_ms(me, delay_val);
-        XF_LOGI(TAG, "co%d curr: %8lu", (int)me->base.user_data, xf_co_get_tick());
+        XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->base.user_data, xf_co_get_tick());
     }
-    printf("co%d end\n", (int)me->base.user_data);
+    printf("co%d end\n", (int)(intptr_t)me->base.user_data);
+    xf_co_end(me);
+}
+
+xf_co_tim_event_t *sp_cte = NULL;
+
+xf_co_async_t co_func_period(xf_co_nctx_t *const me, xf_event_t *e)
+{
+    UNUSED(e);
+    xf_co_begin(me);
+    printf("co%d begin\n", (int)(intptr_t)me->base.user_data);
+    if (!sp_cte) {
+        sp_cte = xf_co_tim_event_acquire();
+        if (!sp_cte) {
+            XF_FATAL_ERROR();
+        }
+        sp_cte->ts_interval = xf_co_ms_to_tick(500);
+        sp_cte->ts_wakeup = xf_co_get_tick() + sp_cte->ts_interval;
+        xf_co_tim_set_attr_oneshoot(sp_cte, 0);
+    }
+    xf_co_subscribe(xf_co_cast(me), sp_cte->base.id);
+    while (1) {
+        xf_co_set_block((me));
+        xf_co_yield((me));
+        XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->base.user_data, xf_co_get_tick());
+    }
+    if (sp_cte) {
+        xf_co_unsubscribe(xf_co_cast(me), sp_cte->base.id);
+        xf_co_tim_event_release(sp_cte);
+        sp_cte = NULL;
+    }
+    printf("co%d end\n", (int)(intptr_t)me->base.user_data);
     xf_co_end(me);
 }
 
@@ -96,12 +127,17 @@ void test_main(void)
     xf_co_sched_init();
     xf_co_create(co_func, 0);
     xf_co_create(co_func, 1);
+    xf_co_create(co_func_period, 2);
+    xf_co_create(co_func_period, 3);
     while (1) {
         xf_co_sched_run(&e);
         if (e) {
             cte = (xf_co_tim_event_t *)e;
             if (cte->ts_wakeup > xf_co_get_tick()) {
                 osDelay(cte->ts_wakeup - xf_co_get_tick());
+            }
+            if (!xf_co_tim_get_attr_oneshoot(cte)) {
+                sp_cte->ts_wakeup = xf_co_get_tick() + sp_cte->ts_interval;
             }
             xf_co_publish(cte);
             e = NULL;
