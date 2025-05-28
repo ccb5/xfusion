@@ -333,29 +333,26 @@ xf_err_t xf_co_sched_run(xf_event_t **pp_e)
             if (0 == co_bm_blk) {
                 continue;
             }
-
-            /* k: 当前 co bitmap block 内的 co_id 索引 */
-            k = xf_co_bm_blk_find_max(co_bm_blk);
-            co_id = (xf_co_id_t)((uint32_t)j * (sizeof(xf_co_bitmap_t) * 8U) + (uint32_t)k);
-            co = &xf_co_pool[co_id];
-            if (unlikely(co->func == NULL)) {
-                XF_ERROR_LINE();
-                xf_ret = XF_FAIL;
-                goto l_err;
+            while (co_bm_blk) {
+                /* k: 当前 co bitmap block 内的 co_id 索引 */
+                k = xf_co_bm_blk_find_max(co_bm_blk);
+                co_id = (xf_co_id_t)((uint32_t)j * (sizeof(xf_co_bitmap_t) * 8U) + (uint32_t)k);
+                co = &xf_co_pool[co_id];
+                if (unlikely(co->func == NULL)) {
+                    XF_ERROR_LINE();
+                    xf_ret = XF_FAIL;
+                    goto l_err;
+                }
+                xf_co_resume(co);
+                co_state = xf_co_call(co, e);
+                if (co_state == (xf_co_state_t)XF_CO_TERMINATED) {
+                    /* TODO 取消订阅所有事件 */
+                    XF_LOGV(TAG, "co[%d] done.", (int)xf_co_get_flags_id(&xf_co_pool[i]));
+                    xf_co_dtor(&xf_co_pool[i]);
+                    /* TODO GC co */
+                }
+                BIT_SET0(co_bm_blk, k);
             }
-            xf_co_resume(co);
-            co_state = xf_co_call(co, e);
-            if (co_state == (xf_co_state_t)XF_CO_TERMINATED) {
-                XF_LOGV(TAG, "co[%d] done.", (int)xf_co_get_flags_id(&xf_co_pool[i]));
-                xf_co_dtor(&xf_co_pool[i]);
-                /* TODO GC co */
-            }
-
-            BIT_SET0(co_bm_blk, k);
-            if (0 == co_bm_blk) {
-                continue;
-            }
-
             if (e->ref_cnt == 0U) {
                 /* TODO GC e */
             } else {
