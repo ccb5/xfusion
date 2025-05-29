@@ -157,3 +157,7 @@ XUNIT_RESULT*.xml
 
 # Vale
 .vale/styles/*
+
+# static check
+*.dump
+*.ctu-info
