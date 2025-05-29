@@ -119,11 +119,10 @@ extern "C" {
  *       2. SET0、SET1 表示需要目标值是 0、1. 不带后缀表示目标值由用户输入.
  *       3. FLIP 表示翻转.
  *    2. 获取
- *          GET、GET_MDF、MASK、WIDTH
+ *          GET、GET_MDF、MASK
  *       1. 不会改变原值, 源可以是常数.
  *       2. GET_MDF 表示获取获取修改后的值, 不修改原值.
  *       3. MASK 只用于获取低 n 位为 1 的掩码.
- *       4. WIDTH 只用于获取容纳给定值所需要的二进制位数.
  *    3. BIT 中的 n
  *       1. 表示对 bit_n 的操作, 从 0 开始.
  *    4. BITS 中的 bitmask
@@ -804,6 +803,8 @@ extern "C" {
                                         ((src) = BITSn64_GET_MDF((src), (n), (offset), (value)))
 #endif
 
+#if 0 /* TODO 这些应该移到 xf_arithmetic */
+
 #if !defined(FLS32) && XF_COM_USE_BUILTIN
 /**
  * @brief 找到 x 中为 1 的最高位所在位数.
@@ -898,6 +899,8 @@ static inline int __no_builtin_clzll(uint64_t x)
 #   define BIT_WIDTH(x)                 ((sizeof(_typeof_(x)) <= 4) ? FLS32(x) : FLS64(x))
 #elif !defined(BIT_WIDTH)
 #   define BIT_WIDTH(x)                 (((x) < (~(BIT_IE - 1))) ? FLS32(x) : FLS64(x))
+#endif
+
 #endif
 
 #ifdef __cplusplus

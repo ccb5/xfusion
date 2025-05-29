@@ -106,7 +106,6 @@ __STATIC_INLINE uint32_t xf_am_round_up_to_power_of_2_u32(uint32_t n)
 
 #define xf_align(x, a)                  ALIGN(x, a)
 #define xf_log2(n)                      xf_am_log2_u32(n)
-#define xf_bitwidth(n)                  BIT_WIDTH(n)
 #define xf_bitswap32(n)                 xf_am_swap_u32(n)
 #define xf_bitrev(n)                    xf_am_reverse_u32(n)
 #define xf_popcount(n)                  xf_am_popcount_u32(n)
