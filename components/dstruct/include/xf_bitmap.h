@@ -49,6 +49,9 @@ typedef uint64_t    xf_bitmap64_t;
     ffs:    Find First Set, 从低到高找第一个 1 出现的位置
     fls:    Find Last Set, 从低到高找最后一个 1 出现的位置，
             也就是从高到低找第一个 1 出现的位置。
+    ffz:    Find First Zero, 从低到高找第一个 0 出现的位置
+    flz:    Find Last Zero, 从低到高找最后一个 0 出现的位置，
+            也就是从高到低找第一个 0 出现的位置。
  */
 
 #if XF_TODO
@@ -62,7 +65,10 @@ int32_t xf_bitmap32_ffs(const xf_bitmap32_t *p_bm, uint32_t bit_size);
 int32_t xf_bitmap64_ffs(const xf_bitmap64_t *p_bm, uint32_t bit_size);
 #endif
 
+int32_t xf_bitmap32_ffs(const xf_bitmap32_t *p_bm, uint32_t bit_size);
 int32_t xf_bitmap32_fls(const xf_bitmap32_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap32_ffz(const xf_bitmap32_t *p_bm, uint32_t bit_size);
+int32_t xf_bitmap32_flz(const xf_bitmap32_t *p_bm, uint32_t bit_size);
 
 /* ==================== [Macros] ============================================ */
 
