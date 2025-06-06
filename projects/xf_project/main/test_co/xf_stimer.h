@@ -48,17 +48,23 @@ struct xf_soft_timer {
 
 xf_stimer_t *xf_stimer_acquire(void);
 xf_err_t xf_stimer_release(xf_stimer_t *stimer);
-xf_err_t xf_stimer_set_cb(xf_stimer_t *stimer,
-                          xf_stimer_cb_t cb_func, void *user_data);
-xf_err_t xf_stimer_init(xf_stimer_t *stimer, xf_tick_t tick_period,
-                        uint32_t repeat_count);
+
+xf_err_t xf_stimer_init(xf_stimer_t *stimer);
+xf_err_t xf_stimer_set_cb(xf_stimer_t *stimer, xf_stimer_cb_t cb_func);
+xf_err_t xf_stimer_set_user_data(xf_stimer_t *stimer, void *user_data);
+xf_err_t xf_stimer_set_period(xf_stimer_t *stimer, xf_tick_t tick_period);
+xf_err_t xf_stimer_set_repeat_count(xf_stimer_t *stimer, uint32_t repeat_count);
+
 xf_err_t xf_stimer_reset(xf_stimer_t *stimer);
 xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer);
+
+xf_stimer_t *xf_stimer_create(
+    xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
+xf_err_t xf_stimer_destroy(xf_stimer_t *stimer);
 
 xf_tick_t xf_stimer_handler(void);
 /* 0~100 */
 uint8_t xf_stimer_get_idle_percentage(void);
-xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer);
 
 /* ==================== [Macros] ============================================ */
 

@@ -25,6 +25,7 @@
 
 static bool_t xf_stimer_exec(xf_stimer_t *stimer);
 static xf_tick_t xf_stimer_time_remaining(xf_stimer_t *stimer);
+static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer);
 
 /* ==================== [Static Variables] ================================== */
 
@@ -33,14 +34,14 @@ static xf_stimer_t s_stimer_pool[XF_STIMER_NUM_MAX] = {0};
 static xf_stimer_t *const sp_pool = s_stimer_pool;
 /* 用于指示已使用的定时器 */
 static xf_bitmap32_t s_stimer_bm[XF_BITMAP32_GET_BLK_SIZE(XF_STIMER_NUM_MAX)] = {0};
-static xf_stimer_t *sp_stimer_min = NULL;
+static xf_stimer_t *sp_stimer_min = NULL;  /*!< TODO 还需获取此指针的接口，或移除 */
 
 static xf_tick_t s_idle_period_start = 0;
 static xf_tick_t s_busy_time         = 0;
 
 static uint8_t s_idle_last;
-static bool_t stimer_deleted = FALSE;
 static bool_t stimer_created = FALSE;
+static bool_t stimer_deleted = FALSE;
 
 /* ==================== [Macros] ============================================ */
 
@@ -80,27 +81,45 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
     return XF_OK;
 }
 
-xf_err_t xf_stimer_set_cb(xf_stimer_t *stimer,
-                          xf_stimer_cb_t cb_func, void *user_data)
+xf_err_t xf_stimer_set_cb(xf_stimer_t *stimer, xf_stimer_cb_t cb_func)
 {
     if ((stimer == NULL) || (cb_func == NULL)) {
         return XF_ERR_INVALID_ARG;
     }
     stimer->cb_func = cb_func;
-    stimer->user_data = user_data;
     return XF_OK;
 }
 
-xf_err_t xf_stimer_init(xf_stimer_t *stimer, xf_tick_t tick_period,
-                        uint32_t repeat_count)
+xf_err_t xf_stimer_set_user_data(xf_stimer_t *stimer, void *user_data)
 {
     if (stimer == NULL) {
         return XF_ERR_INVALID_ARG;
     }
-    stimer->tick_last_run = xf_tick_get_count();
+    stimer->user_data = user_data;
+    return XF_OK;
+}
+
+xf_err_t xf_stimer_set_period(xf_stimer_t *stimer, xf_tick_t tick_period)
+{
+    if (stimer == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
     stimer->tick_period = tick_period;
+    return XF_OK;
+}
+
+xf_err_t xf_stimer_set_repeat_count(xf_stimer_t *stimer, uint32_t repeat_count)
+{
+    if (stimer == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
     stimer->repeat_count = repeat_count;
     return XF_OK;
+}
+
+xf_err_t xf_stimer_init(xf_stimer_t *stimer)
+{
+    return xf_stimer_reset(stimer);
 }
 
 xf_err_t xf_stimer_reset(xf_stimer_t *stimer)
@@ -121,6 +140,27 @@ xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer)
     return XF_OK;
 }
 
+xf_stimer_t *xf_stimer_create(
+    xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data)
+{
+    xf_err_t xf_err = XF_OK;
+    xf_stimer_t *stimer = xf_stimer_acquire();
+    if (stimer == NULL) {
+        return NULL;
+    }
+    xf_err |= xf_stimer_init(stimer);
+    xf_err |= xf_stimer_set_cb(stimer, cb_func);
+    xf_err |= xf_stimer_set_user_data(stimer, user_data);
+    xf_err |= xf_stimer_set_period(stimer, tick_period);
+    xf_err |= xf_stimer_set_repeat_count(stimer, XF_STIMER_INFINITY);
+    return stimer;
+}
+
+xf_err_t xf_stimer_destroy(xf_stimer_t *stimer)
+{
+    return xf_stimer_release(stimer);
+}
+
 xf_tick_t xf_stimer_handler(void)
 {
     int32_t stimer_idx;
@@ -130,6 +170,7 @@ xf_tick_t xf_stimer_handler(void)
     xf_bitmap32_t stimer_bm_temp[XF_BITMAP32_GET_BLK_SIZE(XF_STIMER_NUM_MAX)];
     xf_tick_t handler_start = xf_tick_get_count();
 
+    /* 检查是否正常调用 xf_tick_inc */
     if (handler_start == 0) {
         static uint8_t s_run_cnt = 0;
         s_run_cnt++;
@@ -178,38 +219,6 @@ uint8_t xf_stimer_get_idle_percentage(void)
     return s_idle_last;
 }
 
-xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
-{
-    int32_t i;
-    xf_tick_t tick_min;
-    for (i = 0; i < (int32_t)XF_STIMER_NUM_MAX; i++) {
-        /* 先找首个有效定时器 */
-        if (XF_BITMAP32_GET(s_stimer_bm, i) != 0U) {
-            tick_min = xf_stimer_time_remaining(&sp_pool[i]);
-            break;
-        }
-    }
-    if (i != (int32_t)XF_STIMER_NUM_MAX) {
-        int32_t j; /*!< j: 最小时间定时事件所在索引 */
-        xf_tick_t tick_temp;
-        j = i;
-        for (i = i + 1; i < (int32_t)XF_STIMER_NUM_MAX; i++) {
-            if (XF_BITMAP32_GET(s_stimer_bm, i) != 0U) {
-                tick_temp = xf_stimer_time_remaining(&sp_pool[j]);
-                if (tick_min < tick_temp) {
-                    tick_min = tick_temp;
-                    j = i;
-                }
-            }
-        }
-        if (pp_stimer) {
-            *pp_stimer = &sp_pool[j];
-        }
-        return tick_min;
-    }
-    return XF_STIMER_NO_READY;
-}
-
 /* ==================== [Static Functions] ================================== */
 
 static bool_t xf_stimer_exec(xf_stimer_t *stimer)
@@ -242,4 +251,36 @@ static xf_tick_t xf_stimer_time_remaining(xf_stimer_t *stimer)
         return 0;
     }
     return stimer->tick_period - elp;
+}
+
+static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
+{
+    int32_t i;
+    xf_tick_t tick_min;
+    for (i = 0; i < (int32_t)XF_STIMER_NUM_MAX; i++) {
+        /* 先找首个有效定时器 */
+        if (XF_BITMAP32_GET(s_stimer_bm, i) != 0U) {
+            tick_min = xf_stimer_time_remaining(&sp_pool[i]);
+            break;
+        }
+    }
+    if (i != (int32_t)XF_STIMER_NUM_MAX) {
+        int32_t j; /*!< j: 最小时间定时事件所在索引 */
+        xf_tick_t tick_temp;
+        j = i;
+        for (i = i + 1; i < (int32_t)XF_STIMER_NUM_MAX; i++) {
+            if (XF_BITMAP32_GET(s_stimer_bm, i) != 0U) {
+                tick_temp = xf_stimer_time_remaining(&sp_pool[j]);
+                if (tick_min < tick_temp) {
+                    tick_min = tick_temp;
+                    j = i;
+                }
+            }
+        }
+        if (pp_stimer) {
+            *pp_stimer = &sp_pool[j];
+        }
+        return tick_min;
+    }
+    return XF_STIMER_NO_READY;
 }
