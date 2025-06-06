@@ -24,29 +24,33 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-/* ==================== [Typedefs] ========================================== */
+#define XF_EVENT_ID_NUM_MAX             (128U)
+#define XF_EVENT_ID_OFFSET              (32768U)
 
 #if !defined(CONFIG_XF_EVENT_ID_SIZE)
-#   define XF_EVENT_ID_SIZE    2
+#   define XF_EVENT_ID_SIZE             (2U)
 #else
-#   define XF_EVENT_ID_SIZE    CONFIG_XF_EVENT_ID_SIZE
+#   define XF_EVENT_ID_SIZE             CONFIG_XF_EVENT_ID_SIZE
 #endif
 
-#if (XF_EVENT_ID_SIZE == 1)
+#define XF_EVENT_ID_INVALID             ((xf_event_id_t)~(xf_event_id_t)0U)
+
+/* ==================== [Typedefs] ========================================== */
+
+#if (XF_EVENT_ID_SIZE == 1U)
 typedef uint8_t xf_event_id_t;
-#elif (XF_EVENT_ID_SIZE == 2)
+#elif (XF_EVENT_ID_SIZE == 2U)
 typedef uint16_t xf_event_id_t;
-#elif (XF_EVENT_ID_SIZE == 4)
+#elif (XF_EVENT_ID_SIZE == 4U)
 typedef uint32_t xf_event_id_t;
-#elif (XF_EVENT_ID_SIZE == 8)
+#elif (XF_EVENT_ID_SIZE == 8U)
 typedef uint64_t xf_event_id_t;
 #else
 typedef uintptr_t xf_event_id_t;
 #endif
 
 enum _xf_event_id_t {
-    XF_EVENT_ID_EMPTY = 0x00,           /*!< 空事件，保留 */
-    XF_EVENT_ID_USER,                   /*!< 用户事件起始 */
+    XF_EVENT_ID_USER = 0x00U,            /*!< 用户事件起始 */
     /* 最大事件 ID （含） */
     /* cppcheck-suppress misra-c2012-10.6 */
     XF_EVENT_ID_MAX = (xf_event_id_t)~((xf_event_id_t)0),
@@ -70,6 +74,10 @@ typedef struct xf_event {
 typedef xf_bitmap_t xf_event_bitmap_t;
 
 /* ==================== [Global Prototypes] ================================= */
+
+/* 获取唯一事件 id */
+xf_event_id_t xf_event_acquire_id(void);
+xf_err_t xf_event_release_id(xf_event_id_t eid);
 
 /* ==================== [Macros] ============================================ */
 
