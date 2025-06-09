@@ -26,7 +26,6 @@ static const char *const TAG = "xf_ps";
 
 /* 订阅者池及其位图管理 */
 static xf_ps_subscr_t s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX] = {0};
-static xf_ps_subscr_t *const sp_pool = s_subscr_pool;
 static xf_bitmap32_t s_subscr_pool_bm[XF_BITMAP32_GET_BLK_SIZE(XF_PS_SUBSCRIBER_NUM_MAX)] = {0};
 
 /* 默认通道及其事件池 */
@@ -247,7 +246,6 @@ xf_err_t xf_ps_publish_to(xf_ps_ch_t *const ch, xf_event_t *const e)
 xf_err_t xf_ps_publish_immediately_to(
     xf_ps_ch_t *const ch, xf_event_t *const e)
 {
-    xf_dq_size_t pushed_size;
     xf_event_ref_cnt_t ref_cnt = 0U;
     xf_ps_subscr_t *pos;
     xf_ps_subscr_t *n;
