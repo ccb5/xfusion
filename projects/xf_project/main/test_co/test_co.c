@@ -42,8 +42,9 @@ static const char *const TAG = "test_co";
 #define EXAMPLE_STIMER                  1
 #define EXAMPLE_PS                      2
 #define EXAMPLE_CO_BASIC                3
+#define EXAMPLE_CO_DELAY                4
 
-#define EXAMPLE                         EXAMPLE_CO_BASIC
+#define EXAMPLE                         EXAMPLE_CO_DELAY
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -81,19 +82,19 @@ typedef struct xf_co_main_data {
     xf_co_t                *co[2];
 } xf_co_main_data_t;
 
-xf_co_main_data_t xf_co_main_data = {0};
+static xf_co_main_data_t xf_co_main_data = {0};
 
 xf_co_state_t xf_co_main(xf_co_t *const me, void *arg)
 {
-    xf_co_state_t res;
-    xf_co_main_data_t *p_md = &xf_co_main_data;
-    UNUSED(res);
+    xf_co_state_t co_state;
+    xf_co_main_data_t *sp_md = &xf_co_main_data;
+    UNUSED(co_state);
     xf_co_begin(me);
-    p_md->co[0] = xf_co_create(co_func, 0);
-    p_md->co[1] = xf_co_create(co_func, 1);
+    sp_md->co[0] = xf_co_create(co_func, 0);
+    sp_md->co[1] = xf_co_create(co_func, 1);
     while (1) {
-        xf_co_resume(me, p_md->co[0], NULL, res);
-        xf_co_resume(me, p_md->co[1], NULL, res);
+        xf_co_resume(me, sp_md->co[0], NULL, co_state);
+        xf_co_resume(me, sp_md->co[1], NULL, co_state);
         xf_co_yield(me);
     }
     xf_co_end(me);
@@ -106,6 +107,65 @@ xf_co_state_t co_func(xf_co_t *const me, void *arg)
     while (1) {
         XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->user_data, xf_tick_get_count());
         xf_co_yield(me);
+    }
+    printf("co%d end\n", (int)(intptr_t)me->user_data);
+    xf_co_end(me);
+}
+
+#elif EXAMPLE == EXAMPLE_CO_DELAY
+
+void test_main(void)
+{
+    xf_tick_t delay_tick;
+    UNUSED(delay_tick);
+    xf_co_top_init();
+    while (1) {
+        xf_co_top_run(NULL);
+        delay_tick = xf_stimer_handler();
+        osDelayMs(delay_tick);
+        (void)xf_tick_inc(delay_tick);
+    }
+}
+
+xf_co_state_t co_func_0(xf_co_t *const me, void *arg);
+xf_co_state_t co_func_1(xf_co_t *const me, void *arg);
+
+xf_co_state_t xf_co_main(xf_co_t *const me, void *arg)
+{
+    xf_co_state_t co_state;
+    xf_co_t *co;
+    UNUSED(co_state);
+    xf_co_begin(me);
+    co = xf_co_create(co_func_0, 0);
+    xf_co_resume(me, co, NULL, co_state);
+    xf_co_end(me);
+}
+
+xf_co_state_t co_func_0(xf_co_t *const me, void *arg)
+{
+    xf_co_state_t co_state;
+    xf_co_t *co;
+    UNUSED(co_state);
+    xf_co_begin(me);
+    printf("co%d begin\n", (int)(intptr_t)me->user_data);
+    co = xf_co_create(co_func_1, 1);
+    xf_co_resume(me, co, NULL, co_state);
+    while (1) {
+        XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->user_data, xf_tick_get_count());
+        xf_co_delay_ms(me, 1000U);
+    }
+    printf("co%d end\n", (int)(intptr_t)me->user_data);
+    xf_co_end(me);
+}
+
+xf_co_state_t co_func_1(xf_co_t *const me, void *arg)
+{
+    xf_co_t *co;
+    xf_co_begin(me);
+    printf("co%d begin\n", (int)(intptr_t)me->user_data);
+    while (1) {
+        XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->user_data, xf_tick_get_count());
+        xf_co_delay_ms(me, 500U);
     }
     printf("co%d end\n", (int)(intptr_t)me->user_data);
     xf_co_end(me);

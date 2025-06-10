@@ -59,6 +59,15 @@ int8_t xf_co_get_nest_depth(void)
     return s_nest_depth;
 }
 
+void xf_stimer_call_co_cb(xf_stimer_t *const stimer)
+{
+    xf_co_state_t co_state;
+    xf_co_t *co = xf_co_cast(stimer->user_data);
+    co->temp.stimer = stimer;
+    xf_co_resume(co, co, NULL, co_state);
+    UNUSED(co_state);
+}
+
 xf_err_t xf_co_top_init(void)
 {
     xf_co_attr_t co_attr = {0};
@@ -94,20 +103,19 @@ xf_err_t xf_co_ctor(
 #else
     UNUSED(user_data);
 #endif
-    xf_co_set_flags_state(co, XF_CO_NORMAL);
+    xf_co_set_flags_state(co, XF_CO_SUSPENDED);
     xf_co_set_flags_await_bit(co, FALSE);
     /* 不改变 xf_co_set_flags_reserved */
     if (p_attr) {
-        xf_co_set_flags_type(co, p_attr->type);
-        xf_co_set_flags_id(co, p_attr->id);
-    } else {
-        xf_co_set_flags_type(co, XF_CO_TYPE_UNKNOWN);
-        /* FIXME 存在冲突 */
         /* 检查此 id 是否已被占用 */
         if (NULL != xf_co_pool[p_attr->id].func) {
             XF_ERROR_LINE();
             return XF_FAIL;
         }
+        xf_co_set_flags_type(co, p_attr->type);
+        xf_co_set_flags_id(co, p_attr->id);
+    } else {
+        xf_co_set_flags_type(co, XF_CO_TYPE_UNKNOWN);
     }
     return XF_OK;
 }
@@ -181,11 +189,10 @@ static xf_co_state_t xf_co_top(xf_co_top_t *const me, void *arg)
     xf_co_state_t res;
     xf_co_begin(me);
     me->co_main = xf_co_create(xf_co_main, 0);
+    me->co_main_state = XF_CO_SUSPENDED;
     while (1) {
-        xf_co_resume(me, me->co_main, arg, res);
-        if (res == XF_CO_DEAD) {
-            /* xf_co_main 不应该终止 */
-            XF_FATAL_ERROR();
+        if (me->co_main_state != XF_CO_DEAD) {
+            xf_co_resume(me, me->co_main, arg, me->co_main_state);
         }
         xf_co_yield(me);
     }

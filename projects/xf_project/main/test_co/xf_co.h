@@ -45,6 +45,7 @@ xf_err_t xf_co_destroy(xf_co_t *co);
 #define xf_co_begin(_me)                { \
                                             xf_event_t *__e; \
                                             UNUSED(__e); \
+                                            UNUSED(me); /*!< 仅用于规定参数名必须为 me */ \
                                             UNUSED(arg); /*!< 仅用于规定参数名必须为 arg */ \
                                             xf_co_set_flags_state((_me), XF_CO_RUNNING); \
                                             xf_co_lc_resume(xf_co_cast(_me)->lc) \
@@ -52,6 +53,9 @@ xf_err_t xf_co_destroy(xf_co_t *co);
 #define xf_co_end(_me)                      xf_co_lc_end(xf_co_cast(_me)->lc); \
                                             xf_co_lc_init(xf_co_cast(_me)->lc); \
                                             xf_co_set_flags_state((_me), XF_CO_DEAD); \
+                                            if (xf_co_get_flags_id(_me) < XF_CO_INTERNAL_NUM_MAX) { \
+                                                xf_co_destroy(_me); \
+                                            } \
                                             return XF_CO_DEAD; \
                                         }
 
@@ -84,7 +88,8 @@ xf_err_t xf_co_destroy(xf_co_t *co);
 #define xf_co_resume(_me, _co, _arg, _res) \
                                         do { \
                                             UNUSED(_me); /*!< 之后还用于逻辑嵌套 */ \
-                                            if (xf_co_get_nest_depth() >= (XF_CO_NEST_DEPTH_MAX - 1)) { \
+                                            if ((xf_co_get_nest_depth() >= (XF_CO_NEST_DEPTH_MAX - 1)) \
+                                                    || (!xf_co_cast(_co)->func)) { \
                                                 XF_FATAL_ERROR(); \
                                             } \
                                             xf_co_nest_depth_inc(); \
@@ -93,6 +98,23 @@ xf_err_t xf_co_destroy(xf_co_t *co);
                                             xf_co_set_flags_state((_me), XF_CO_RUNNING); \
                                             xf_co_nest_depth_dec(); \
                                         } while (0)
+
+#define xf_co_delay(_me, _tick)         do { \
+                                            xf_co_cast(_me)->temp.vd = NULL; \
+                                            xf_stimer_create_oneshot((_tick), \
+                                                                     (xf_stimer_cb_t)xf_stimer_call_co_cb, \
+                                                                     (void *)(_me)); \
+                                            xf_co_yield((_me)); \
+                                            if ((!xf_co_cast(_me)->temp.stimer->user_data) || \
+                                                    (xf_co_cast(_me)->temp.stimer->user_data != (_me))) { \
+                                                /* 意外唤醒 */ \
+                                                xf_co_set_flags_state((_me), XF_CO_SUSPENDED); \
+                                                /* 使用前一个 xf_co_yield */ \
+                                                return XF_CO_SUSPENDED; \
+                                            } \
+                                        } while (0)
+
+#define xf_co_delay_ms(_me, _ms)        xf_co_delay((_me), xf_tick_to_ms(_ms))
 
 #ifdef __cplusplus
 } /* extern "C" */

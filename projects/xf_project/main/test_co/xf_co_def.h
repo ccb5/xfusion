@@ -17,6 +17,10 @@
 
 #include "xf_common.h"
 
+#include "xf_event.h"
+#include "xf_ps.h"
+#include "xf_stimer.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -134,7 +138,9 @@ typedef xf_co_state_t (*xf_co_func_t)(xf_co_t *const me, void *arg);
 typedef union xf_co_temp {
     xf_co_t                *co;             /*!< 下一级协程 */
     xf_co_state_t           state;          /*!< 状态 */
-    uintptr_t               uip;
+    uintptr_t               uip;            /*!< 无符号整型指针类型 (U Int Ptr) */
+    void                   *vd;             /*!< 空指针类型数据 (Void Data) */
+    xf_stimer_t            *stimer;         /*!< 定时器 */
 } xf_co_temp_t;
 
 /**
@@ -148,7 +154,7 @@ struct xf_co {
 #endif
 // private:
     xf_co_func_t            func;           /*!< 协程执行函数 */
-    xf_co_temp_t            temp;           /*!< 临时存储转换目标等。 */
+    xf_co_temp_t            temp;           /*!< 临时存储系统数据、转换目标等。 */
     /**
      * @brief Local Continuations（本地延续，当前代码的执行位置）。
      */
@@ -207,6 +213,7 @@ struct xf_co {
 typedef struct xf_co_top {
     xf_co_t                 base;
     xf_co_t                *co_main;
+    xf_co_state_t           co_main_state;
 } xf_co_top_t;
 
 /**
@@ -238,9 +245,11 @@ xf_err_t xf_co_ctor(
     xf_co_t *const co, xf_co_func_t func, void *user_data, xf_co_attr_t *p_attr);
 xf_err_t xf_co_dtor(xf_co_t *const co);
 
+void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
+
 /* ==================== [Macros] ============================================ */
 
-#define xf_co_cast(_co)                 ((xf_co_t *const)(_co))
+#define xf_co_cast(_co)                 ((xf_co_t *)(_co))
 #define xf_co_func_cast(_co_func)       ((xf_co_func_t)(_co_func))
 
 #define xf_co_call(_co, _arg)           xf_co_cast(_co)->func(xf_co_cast(_co), (_arg))
