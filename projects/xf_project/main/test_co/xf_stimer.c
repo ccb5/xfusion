@@ -157,6 +157,17 @@ xf_stimer_t *xf_stimer_create(
     return stimer;
 }
 
+xf_stimer_t *xf_stimer_create_oneshot(
+    xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data)
+{
+    xf_stimer_t *stimer;
+    stimer = xf_stimer_create(tick_period, cb_func, user_data);
+    if (stimer != NULL) {
+        xf_stimer_set_repeat_count(stimer, 1U);
+    }
+    return stimer;
+}
+
 xf_err_t xf_stimer_destroy(xf_stimer_t *stimer)
 {
     return xf_stimer_release(stimer);

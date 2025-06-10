@@ -60,6 +60,8 @@ xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer);
 
 xf_stimer_t *xf_stimer_create(
     xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
+xf_stimer_t *xf_stimer_create_oneshot(
+    xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
 xf_err_t xf_stimer_destroy(xf_stimer_t *stimer);
 
 xf_tick_t xf_stimer_handler(void);
@@ -67,6 +69,8 @@ xf_tick_t xf_stimer_handler(void);
 uint8_t xf_stimer_get_idle_percentage(void);
 
 /* ==================== [Macros] ============================================ */
+
+#define xf_stimer_cast(_stimer)                 ((xf_stimer_t *)(_stimer))
 
 #ifdef __cplusplus
 } /* extern "C" */
