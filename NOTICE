@@ -28,9 +28,11 @@
 -   Origin: https://github.com/lvgl/lvgl
 -   branches/tags(commit): v9.2.2 (7f07a129e8d77f4984fff8e623fd5be18ff42e74)
 -   Path:
-    -   None
+    -   TODO
 -   Note:
-    -   参考模块化设计思想。
+    -   参考模块化设计。
+    -   xf_stimer 参考 lv_timer. (v8.3.11)
+    -   xf_tick 参考 lv_hal_tick. (v8.3.11)
 
 ## FreeRTOS-Kernel
 
