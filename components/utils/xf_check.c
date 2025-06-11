@@ -30,7 +30,7 @@
 
 __weak void xf_check_on_fatal_error(const char *file, int line)
 {
-    XF_LOGE(TAG, "FATAL_ERROR@%s:%d", file, line);
+    XF_LOGE(TAG, "FATAL_ERROR(%s:%d)", file, line);
     while (1) {
     }
 }

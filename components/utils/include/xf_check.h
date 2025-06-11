@@ -58,7 +58,7 @@ extern "C" {
 __weak void xf_check_on_fatal_error(const char *file, int line);
 
 #define XF_CHECK_REPORT_ERROR_LINE()    do { \
-                                            XF_LOGE("CHECK", "ERROR@%s:%d", __FILENAME__, __LINE__); \
+                                            XF_LOGE("CHECK", "ERROR(%s:%d)", __FILENAME__, __LINE__); \
                                         } while (0)
 #define XF_ERROR_LINE()                 XF_CHECK_REPORT_ERROR_LINE()
 #define XF_CHECK_FATAL_ERROR()          do { \
