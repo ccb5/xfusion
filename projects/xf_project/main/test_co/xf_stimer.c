@@ -144,16 +144,16 @@ xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer)
 xf_stimer_t *xf_stimer_create(
     xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data)
 {
-    xf_err_t xf_err = XF_OK;
+    xf_err_t xf_ret = XF_OK;
     xf_stimer_t *stimer = xf_stimer_acquire();
     if (stimer == NULL) {
         return NULL;
     }
-    xf_err |= xf_stimer_init(stimer);
-    xf_err |= xf_stimer_set_cb(stimer, cb_func);
-    xf_err |= xf_stimer_set_user_data(stimer, user_data);
-    xf_err |= xf_stimer_set_period(stimer, tick_period);
-    xf_err |= xf_stimer_set_repeat_count(stimer, XF_STIMER_INFINITY);
+    xf_ret |= xf_stimer_init(stimer);
+    xf_ret |= xf_stimer_set_cb(stimer, cb_func);
+    xf_ret |= xf_stimer_set_user_data(stimer, user_data);
+    xf_ret |= xf_stimer_set_period(stimer, tick_period);
+    xf_ret |= xf_stimer_set_repeat_count(stimer, XF_STIMER_INFINITY);
     return stimer;
 }
 
