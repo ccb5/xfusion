@@ -22,6 +22,8 @@ static const char *const TAG = "xf_ps";
 
 /* ==================== [Static Prototypes] ================================= */
 
+static xf_err_t xf_ps_notify(xf_ps_ch_t *const ch, xf_event_t *const e);
+
 /* ==================== [Static Variables] ================================== */
 
 /* 订阅者池及其位图管理 */
@@ -32,6 +34,9 @@ static xf_bitmap32_t s_subscr_pool_bm[XF_BITMAP32_GET_BLK_SIZE(XF_PS_SUBSCRIBER_
 static xf_ps_ch_t s_default_ch = {0};
 static xf_ps_ch_t *const sp_ch = &s_default_ch;
 static xf_event_t *s_event_pool[XF_PS_EVENT_NUM_MAX] = {0};
+
+static bool_t sb_subscriber_created = FALSE;
+static bool_t sb_subscriber_deleted = FALSE;
 
 /* ==================== [Macros] ============================================ */
 
@@ -61,6 +66,7 @@ xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
         return NULL;
     }
     XF_BITMAP32_SET1(s_subscr_pool_bm, idx);
+    sb_subscriber_created = TRUE;
     return &s_subscr_pool[idx];
 }
 
@@ -80,6 +86,7 @@ xf_err_t xf_ps_release_subscriber(xf_ps_subscr_t *s)
         return XF_ERR_INVALID_ARG;
     }
     XF_BITMAP32_SET0(s_subscr_pool_bm, idx);
+    sb_subscriber_deleted = TRUE;
     return XF_OK;
 }
 
@@ -92,8 +99,8 @@ xf_err_t xf_ps_subscriber_init(
     }
     s->cb_func = cb_func;
     s->user_data = user_data;
-    for (i = 0; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-        s->subscr_list[i] = XF_EVENT_ID_INVALID;
+    for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+        s->subscr_id_list[i] = XF_EVENT_ID_INVALID;
     }
     xf_list_init(&s->node);
     return XF_OK;
@@ -171,25 +178,25 @@ xf_err_t xf_ps_subscriber_detach(
 xf_err_t xf_ps_subscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id)
 {
     uint32_t i;
-    uint32_t free_idx = XF_PS_SUBSCR_LIST_NUM_MAX;
+    uint32_t free_idx = XF_PS_SUBSCR_ID_LIST_NUM_MAX;
     if ((s == NULL) || (event_id == XF_EVENT_ID_INVALID)) {
         return XF_ERR_INVALID_ARG;
     }
     /* 检查该订阅者是否已经订阅过此 event_id，已订阅则返回，未订阅则寻找空位 */
-    for (i = 0U; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-        if (s->subscr_list[i] == event_id) {
+    for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+        if (s->subscr_id_list[i] == event_id) {
             /* NOTE 此处不允许订阅两次相同事件 ID */
             return XF_OK;
         }
-        if ((free_idx == XF_PS_SUBSCR_LIST_NUM_MAX)
-                && (s->subscr_list[i] == XF_EVENT_ID_INVALID)) {
+        if ((free_idx == XF_PS_SUBSCR_ID_LIST_NUM_MAX)
+                && (s->subscr_id_list[i] == XF_EVENT_ID_INVALID)) {
             free_idx = i;
         }
     }
-    if (free_idx == XF_PS_SUBSCR_LIST_NUM_MAX) {
+    if (free_idx == XF_PS_SUBSCR_ID_LIST_NUM_MAX) {
         return XF_ERR_RESOURCE;
     }
-    s->subscr_list[free_idx] = event_id;
+    s->subscr_id_list[free_idx] = event_id;
     return XF_OK;
 }
 
@@ -200,9 +207,9 @@ xf_err_t xf_ps_unsubscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id)
         return XF_ERR_INVALID_ARG;
     }
     /* 遍历该订阅者的订阅列表，寻找对应的 event_id */
-    for (i = 0; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-        if (s->subscr_list[i] == event_id) {
-            s->subscr_list[i] = XF_EVENT_ID_INVALID;
+    for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+        if (s->subscr_id_list[i] == event_id) {
+            s->subscr_id_list[i] = XF_EVENT_ID_INVALID;
             return XF_OK;
         }
     }
@@ -211,29 +218,16 @@ xf_err_t xf_ps_unsubscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id)
 
 xf_err_t xf_ps_publish_to(xf_ps_ch_t *const ch, xf_event_t *const e)
 {
+    xf_err_t xf_ret;
     xf_dq_size_t pushed_size;
-    xf_event_ref_cnt_t ref_cnt = 0U;
-    xf_ps_subscr_t *pos;
-    uint32_t i;
     if ((ch == NULL) || (e == NULL)) {
         return XF_ERR_INVALID_ARG;
     }
-    /* 统计当前通道中订阅该事件的订阅者数量 */
-    xf_list_for_each_entry(pos, &ch->head, xf_ps_subscr_t, node) {
-        for (i = 0; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-            if (pos->subscr_list[i] == e->id) {
-                ref_cnt++;
-                break;
-            }
-        }
+    xf_ret = xf_ps_update_event_ref_cnt(ch, e);
+    if (xf_ret != XF_OK) {
+        XF_LOGD(TAG, "xf_ps_update_event_ref_cnt failed");
+        return xf_ret;
     }
-    if (ref_cnt == 0U) {
-        /* 无人订阅该事件 */
-        XF_ERROR_LINE();
-        XF_LOGD(TAG, "No one subscribed to event ID %u.", (unsigned int)e->id);
-        return XF_FAIL;
-    }
-    e->ref_cnt = ref_cnt;
     /* 加入事件队列， WARNING 此处仅拷贝指针 */
     pushed_size = xf_deque_back_push(&ch->event_queue, (void *)&e, XF_PS_ELEM_SIZE);
     if (pushed_size != XF_PS_ELEM_SIZE) {
@@ -246,62 +240,69 @@ xf_err_t xf_ps_publish_to(xf_ps_ch_t *const ch, xf_event_t *const e)
 xf_err_t xf_ps_publish_immediately_to(
     xf_ps_ch_t *const ch, xf_event_t *const e)
 {
-    xf_event_ref_cnt_t ref_cnt = 0U;
-    xf_ps_subscr_t *pos;
-    xf_ps_subscr_t *n;
-    uint32_t i;
+    xf_err_t xf_ret;
     if ((ch == NULL) || (e == NULL)) {
         return XF_ERR_INVALID_ARG;
     }
-    /* TODO 立即发布是否仍需要统计引用数？ */
+    xf_ret = xf_ps_update_event_ref_cnt(ch, e);
+    if (xf_ret != XF_OK) {
+        XF_LOGD(TAG, "xf_ps_update_event_ref_cnt failed");
+        return xf_ret;
+    }
+    xf_ret = xf_ps_notify(ch, e);
+    if (xf_ret != XF_OK) {
+        XF_ERROR_LINE();
+    }
+    return xf_ret;
+}
+
+int32_t xf_ps_get_event_ref_cnt(xf_ps_ch_t *const ch, xf_event_id_t id)
+{
+    xf_ps_subscr_t *pos;
+    int32_t ref_cnt = 0;
+    uint32_t i;
+    if ((ch == NULL) || (id == XF_EVENT_ID_INVALID)) {
+        return -1;
+    }
     /* 统计当前通道中订阅该事件的订阅者数量 */
     xf_list_for_each_entry(pos, &ch->head, xf_ps_subscr_t, node) {
-        for (i = 0; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-            if (pos->subscr_list[i] == e->id) {
-                ref_cnt++;
+        for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+            if (pos->subscr_id_list[i] == id) {
+                ++ref_cnt;
+                /* NOTE 此处决定不能订阅两次相同事件 */
                 break;
             }
         }
     }
-    if (ref_cnt == 0U) {
+    return ref_cnt;
+}
+
+xf_err_t xf_ps_update_event_ref_cnt(xf_ps_ch_t *const ch, xf_event_t *const e)
+{
+    int32_t ref_cnt;
+    if ((ch == NULL) || (e == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    /* 统计当前通道中订阅该事件的订阅者数量 */
+    ref_cnt = xf_ps_get_event_ref_cnt(ch, e->id);
+    if (ref_cnt <= 0) {
         /* 无人订阅该事件 */
         XF_ERROR_LINE();
         XF_LOGD(TAG, "No one subscribed to event ID %u.", (unsigned int)e->id);
         return XF_FAIL;
     }
-    e->ref_cnt = ref_cnt;
-    /* 回调中可能删除订阅者对象 pos(回调中的 me), 必须使用 safe */
-    xf_list_for_each_entry_safe(pos, n, &ch->head, xf_ps_subscr_t, node) {
-        for (i = 0; i < XF_PS_SUBSCR_LIST_NUM_MAX; i++) {
-            if (pos->subscr_list[i] == e->id) {
-                if (pos->cb_func != NULL) {
-                    pos->cb_func(pos, e);
-                }
-                if (e->ref_cnt > 0U) {
-                    --e->ref_cnt;
-                }
-                break;
-            }
-        }
-    }
-    if (e->ref_cnt == 0U) {
-        /* TODO GC e */
-    } else {
-        /* TODO 事件未被处理完，重新加入事件队列？ */
-    }
+    e->ref_cnt = (xf_event_ref_cnt_t)ref_cnt;
     return XF_OK;
 }
 
 xf_err_t xf_ps_dispatch_ch(xf_ps_ch_t *const ch)
 {
+    xf_err_t xf_ret;
     xf_dq_size_t popped_size;
     xf_dq_size_t filled_size;
     xf_dq_size_t event_cnt;
     xf_event_t *e;
-    xf_ps_subscr_t *pos;
-    xf_ps_subscr_t *n;
     uint32_t i;
-    uint32_t j;
     if (ch == NULL) {
         return XF_ERR_INVALID_ARG;
     }
@@ -322,38 +323,19 @@ xf_err_t xf_ps_dispatch_ch(xf_ps_ch_t *const ch)
             /* 说明有别处取走了，不算致命错误 */
             goto l_no_event;
         }
-        if (unlikely(popped_size != XF_PS_ELEM_SIZE)) {
+        if (unlikely((popped_size != XF_PS_ELEM_SIZE) || (e == NULL))) {
             XF_FATAL_ERROR();
         }
-        if (e->ref_cnt == 0U) {
-            /*
-                事件无人订阅
-                TODO 重新加回事件循环？
-             */
+        if (unlikely(e->ref_cnt == 0)) {
             XF_LOGD(TAG, "no co subscribe event %u", e->id);
+            xf_event_gc(e);
             continue;
         }
-        /* 回调中可能删除订阅者对象 pos(回调中的 me), 必须使用 safe */
-        xf_list_for_each_entry_safe(pos, n, &ch->head, xf_ps_subscr_t, node) {
-            for (j = 0; j < XF_PS_SUBSCR_LIST_NUM_MAX; j++) {
-                if (pos->subscr_list[j] == e->id) {
-                    if (pos->cb_func != NULL) {
-                        pos->cb_func(pos, e);
-                    }
-                    if (e->ref_cnt > 0U) {
-                        --e->ref_cnt;
-                    }
-                    break;
-                }
-            }
-        }
-        if (e->ref_cnt == 0U) {
-            /* TODO GC e */
-        } else {
-            /* TODO 事件未被处理完，重新加入事件队列？ */
+        xf_ret = xf_ps_notify(ch, e);
+        if (xf_ret != XF_OK) {
+            XF_ERROR_LINE();
         }
     }
-
 l_no_event:;
     return XF_OK;
 }
@@ -425,3 +407,49 @@ xf_err_t xf_ps_dispatch(void)
 }
 
 /* ==================== [Static Functions] ================================== */
+
+static xf_err_t xf_ps_notify(xf_ps_ch_t *const ch, xf_event_t *const e)
+{
+    xf_err_t xf_ret;
+    xf_ps_subscr_t *pos;
+    xf_ps_subscr_t *n;
+    uint32_t i;
+    if ((ch == NULL) || (e == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    /* 回调中可能删除订阅者对象 pos(回调中的 me), 必须使用 safe */
+    xf_list_for_each_entry_safe(pos, n, &ch->head, xf_ps_subscr_t, node) {
+        for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+            if (pos->subscr_id_list[i] != e->id) {
+                continue;
+            }
+            if (pos->cb_func) {
+                pos->cb_func(pos, e);
+            }
+            if (sb_subscriber_created || sb_subscriber_deleted) {
+                /* 
+                    FIXME 是否需要处理订阅者？
+                    此处未处理回调中订阅和取消订阅的情况，需要规范回调函数行为。
+                    1.  回调中，不得创建新的订阅者对象。
+                    2.  回调中，应该可以删除当前订阅对象 pos, 但是需要更新引用计数。
+                        回调中，不得删除其他订阅者对象。
+                 */
+            }
+            if (e->ref_cnt > 0) {
+                --e->ref_cnt;
+            }
+            /* NOTE 由于不存在订阅者对象重复订阅同一个事件的情况，此处直接下一个 */
+            break;
+        }
+        if (e->ref_cnt == 0) {
+            break;
+        }
+    }
+    if (e->ref_cnt == 0) {
+        xf_ret = xf_event_gc(e);
+    } else {
+        /* TODO 此处强制回收是否合理？ */
+        xf_ret = xf_event_gc_force(e);
+    }
+    return xf_ret;
+}
