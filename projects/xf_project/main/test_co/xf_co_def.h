@@ -256,50 +256,50 @@ void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
 #define xf_co_call_explicit(_co_func, _co, _arg) \
                                         xf_co_func_cast(_co_func)(xf_co_cast(_co), (_arg))
 
-#define xf_co_get_flags_state(_co)      BITSn_GET_RSH(xf_co_cast(_co)->flags, \
+#define xf_co_flags_get_state(_co)      BITSn_GET_RSH(xf_co_cast(_co)->flags, \
                                             XF_CO_FLAGS_STATE_W, XF_CO_FLAGS_STATE_S)
 
-#define xf_co_set_flags_state(_co, _value) \
+#define xf_co_flags_set_state(_co, _value) \
                                         do { \
                                             BITSn_SET(xf_co_cast(_co)->flags, \
                                                       XF_CO_FLAGS_STATE_W, XF_CO_FLAGS_STATE_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_get_flags_await_bit(_co)  BIT_GET(xf_co_cast(_co)->flags, \
+#define xf_co_flags_get_await_bit(_co)  BIT_GET(xf_co_cast(_co)->flags, \
                                                 XF_CO_FLAGS_AWAIT_B)
 
-#define xf_co_set_flags_await_bit(_co, _value) \
+#define xf_co_flags_set_await_bit(_co, _value) \
                                         do { \
                                             BIT_SET(xf_co_cast(_co)->flags, \
                                                     XF_CO_FLAGS_AWAIT_B, \
                                                     (_value)); \
                                         } while (0)
 
-#define xf_co_get_flags_reserved(_co)   BITSn_GET_RSH(xf_co_cast(_co)->flags, \
+#define xf_co_flags_get_reserved(_co)   BITSn_GET_RSH(xf_co_cast(_co)->flags, \
                                             XF_CO_FLAGS_RESERVED_W, XF_CO_FLAGS_RESERVED_S)
 
-#define xf_co_set_flags_reserved(_co, _value) \
+#define xf_co_flags_set_reserved(_co, _value) \
                                         do { \
                                             BITSn_SET(xf_co_cast(_co)->flags, \
                                                       XF_CO_FLAGS_RESERVED_W, XF_CO_FLAGS_RESERVED_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_get_flags_id(_co)         BITSn_GET_RSH(xf_co_cast(_co)->flags, \
+#define xf_co_flags_get_id(_co)         BITSn_GET_RSH(xf_co_cast(_co)->flags, \
                                             XF_CO_FLAGS_ID_W, XF_CO_FLAGS_ID_S)
 
-#define xf_co_set_flags_id(_co, _value) \
+#define xf_co_flags_set_id(_co, _value) \
                                         do { \
                                             BITSn_SET(xf_co_cast(_co)->flags, \
                                                       XF_CO_FLAGS_ID_W, XF_CO_FLAGS_ID_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_get_flags_type(_co)       BITSn_GET_RSH(xf_co_cast(_co)->flags, \
+#define xf_co_flags_get_type(_co)       BITSn_GET_RSH(xf_co_cast(_co)->flags, \
                                             XF_CO_FLAGS_TYPE_W, XF_CO_FLAGS_TYPE_S)
 
-#define xf_co_set_flags_type(_co, _value) \
+#define xf_co_flags_set_type(_co, _value) \
                                         do { \
                                             BITSn_SET(xf_co_cast(_co)->flags, \
                                                       XF_CO_FLAGS_TYPE_W, XF_CO_FLAGS_TYPE_S, \

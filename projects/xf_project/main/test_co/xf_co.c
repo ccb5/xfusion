@@ -103,19 +103,19 @@ xf_err_t xf_co_ctor(
 #else
     UNUSED(user_data);
 #endif
-    xf_co_set_flags_state(co, XF_CO_SUSPENDED);
-    xf_co_set_flags_await_bit(co, FALSE);
-    /* 不改变 xf_co_set_flags_reserved */
+    xf_co_flags_set_state(co, XF_CO_SUSPENDED);
+    xf_co_flags_set_await_bit(co, FALSE);
+    /* 不改变 xf_co_flags_set_reserved */
     if (p_attr) {
         /* 检查此 id 是否已被占用 */
         if (NULL != xf_co_pool[p_attr->id].func) {
             XF_ERROR_LINE();
             return XF_FAIL;
         }
-        xf_co_set_flags_type(co, p_attr->type);
-        xf_co_set_flags_id(co, p_attr->id);
+        xf_co_flags_set_type(co, p_attr->type);
+        xf_co_flags_set_id(co, p_attr->id);
     } else {
-        xf_co_set_flags_type(co, XF_CO_TYPE_UNKNOWN);
+        xf_co_flags_set_type(co, XF_CO_TYPE_UNKNOWN);
     }
     return XF_OK;
 }
@@ -170,7 +170,7 @@ xf_err_t xf_co_destroy(xf_co_t *co)
     if (!co) {
         return XF_ERR_INVALID_ARG;
     }
-    id = xf_co_get_flags_id(co);
+    id = xf_co_flags_get_id(co);
     if (id > (XF_CO_NUM_MAX - 1)) {
         XF_ERROR_LINE();
         return XF_FAIL;
