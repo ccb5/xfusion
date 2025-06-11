@@ -39,12 +39,13 @@
 
 static const char *const TAG = "test_co";
 
-#define EXAMPLE_STIMER                  1
-#define EXAMPLE_PS                      2
-#define EXAMPLE_CO_BASIC                3
-#define EXAMPLE_CO_DELAY                4
+#define EXAMPLE_CO_BASIC                1
+#define EXAMPLE_CO_DELAY                2
+#define EXAMPLE_CO_WAIT_EVENT           3
+#define EXAMPLE_STIMER                  4
+#define EXAMPLE_PS                      5
 
-#define EXAMPLE                         EXAMPLE_CO_DELAY
+#define EXAMPLE                         EXAMPLE_CO_WAIT_EVENT
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -166,6 +167,105 @@ xf_co_state_t co_func_1(xf_co_t *const me, void *arg)
     while (1) {
         XF_LOGI(TAG, "co%d curr: %8" PRIu32, (int)(intptr_t)me->user_data, xf_tick_get_count());
         xf_co_delay_ms(me, 500U);
+    }
+    printf("co%d end\n", (int)(intptr_t)me->user_data);
+    xf_co_end(me);
+}
+
+#elif EXAMPLE == EXAMPLE_CO_WAIT_EVENT
+
+xf_stimer_t *stimer_dispatch;
+
+void xf_ps_dispatch_stimer_cb(xf_stimer_t *const s)
+{
+    xf_ps_dispatch();
+    xf_stimer_set_period(stimer_dispatch, XF_STIMER_INFINITY);
+}
+
+xf_err_t xf_ps_publish_stimer(xf_event_t *const e)
+{
+    if (stimer_dispatch) {
+        xf_stimer_reset(stimer_dispatch);
+        xf_stimer_set_period(stimer_dispatch, 0);
+        xf_stimer_set_ready(stimer_dispatch);
+    }
+    return xf_ps_publish(e);
+}
+
+void test_main(void)
+{
+    xf_tick_t delay_tick;
+    UNUSED(delay_tick);
+    xf_co_top_init();
+    xf_ps_init();
+    xf_event_init();
+    stimer_dispatch = xf_stimer_create(
+                          XF_STIMER_INFINITY,
+                          (xf_stimer_cb_t)xf_ps_dispatch_stimer_cb, NULL);
+    while (1) {
+        xf_co_top_run(NULL);
+        /* FIXME 可能存在延时问题 */
+        delay_tick = xf_stimer_handler();
+        osDelayMs(delay_tick);
+        (void)xf_tick_inc(delay_tick);
+    }
+}
+
+xf_co_state_t co_func_publish(xf_co_t *const me, void *arg);
+xf_co_state_t co_func_subscribe(xf_co_t *const me, void *arg);
+
+xf_co_state_t xf_co_main(xf_co_t *const me, void *arg)
+{
+    xf_co_state_t co_state;
+    xf_co_t *co0;
+    xf_co_t *co1;
+    xf_co_t *co2;
+    xf_co_t *co3;
+    UNUSED(co_state);
+    xf_co_begin(me);
+    co0 = xf_co_create(co_func_publish,   0);
+    co1 = xf_co_create(co_func_subscribe, 1);
+    co2 = xf_co_create(co_func_subscribe, 2);
+    co3 = xf_co_create(co_func_subscribe, 3);
+    xf_co_resume(me, co0, NULL, co_state);
+    xf_co_resume(me, co1, NULL, co_state);
+    xf_co_resume(me, co2, NULL, co_state);
+    xf_co_resume(me, co3, NULL, co_state);
+    xf_co_end(me);
+}
+
+#define EVENT_ID_1  1
+
+static xf_event_t s_e_cont_1 = {0};
+
+xf_co_state_t co_func_publish(xf_co_t *const me, void *arg)
+{
+    xf_co_begin(me);
+    printf("co%d begin\n", (int)(intptr_t)me->user_data);
+    s_e_cont_1.id = EVENT_ID_1;
+    xf_event_set_pool_id(&s_e_cont_1, XF_EVENT_POOL_ID_STATIC);
+    while (1) {
+        xf_co_delay_ms(me, 1000U);
+        XF_LOGI(TAG, "co%d publish:         %8" PRIu32, (int)(intptr_t)me->user_data, EVENT_ID_1);
+        xf_ps_publish_stimer(&s_e_cont_1);
+    }
+    printf("co%d end\n", (int)(intptr_t)me->user_data);
+    xf_co_end(me);
+}
+
+xf_co_state_t co_func_subscribe(xf_co_t *const me, void *arg)
+{
+    xf_err_t xf_ret;
+    xf_event_t *e;
+    xf_co_begin(me);
+    printf("co%d begin\n", (int)(intptr_t)me->user_data);
+    while (1) {
+        xf_co_wait_until_ms(me, EVENT_ID_1, 333U, e, xf_ret);
+        if (xf_ret != XF_OK) {
+            XF_LOGI(TAG, "co%d wait failed", (int)(intptr_t)me->user_data);
+        } else {
+            XF_LOGI(TAG, "co%d wait success:    %8" PRIu32, (int)(intptr_t)me->user_data, e->id);
+        }
     }
     printf("co%d end\n", (int)(intptr_t)me->user_data);
     xf_co_end(me);

@@ -63,9 +63,133 @@ void xf_stimer_call_co_cb(xf_stimer_t *const stimer)
 {
     xf_co_state_t co_state;
     xf_co_t *co = xf_co_cast(stimer->user_data);
-    co->temp.stimer = stimer;
-    xf_co_resume(co, co, NULL, co_state);
+    if (co->t != stimer) {
+        XF_FATAL_ERROR();
+    }
+    xf_co_resume(co, co, stimer, co_state);
     UNUSED(co_state);
+}
+
+void xf_subscr_call_co_cb(xf_ps_subscr_t *const s, xf_event_t *e)
+{
+    xf_co_state_t co_state;
+    xf_co_t *co = xf_co_cast(s->user_data);
+    if (co->s != s) {
+        XF_FATAL_ERROR();
+    }
+    xf_co_resume(co, co, e, co_state);
+    UNUSED(co_state);
+}
+
+xf_err_t xf_co_attach_stimer(xf_co_t *const co, xf_stimer_t *const stimer)
+{
+    if ((co == NULL) || (stimer == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (co->t != NULL) {
+        return XF_ERR_INITED;
+    }
+    co->t = stimer;
+    stimer->user_data = co;
+    return XF_OK;
+}
+
+xf_err_t xf_co_detach_stimer(xf_co_t *const co, xf_stimer_t *const stimer)
+{
+    if ((co == NULL) || (stimer == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (co->t != stimer) {
+        return XF_ERR_INVALID_ARG;
+    }
+    co->t = NULL;
+    stimer->user_data = NULL;
+    return XF_OK;
+}
+
+xf_err_t xf_co_attach_subscriber(xf_co_t *const co, xf_ps_subscr_t *const s)
+{
+    if ((co == NULL) || (s == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (co->s != NULL) {
+        return XF_ERR_INITED;
+    }
+    co->s = s;
+    s->user_data = co;
+    return XF_OK;
+}
+
+xf_err_t xf_co_detach_subscriber(xf_co_t *const co, xf_ps_subscr_t *const s)
+{
+    if ((co == NULL) || (s == NULL)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (co->s != s) {
+        return XF_ERR_INVALID_ARG;
+    }
+    co->s = NULL;
+    s->user_data = NULL;
+    return XF_OK;
+}
+
+xf_err_t xf_co_teardown_wait_until(xf_co_t *const me)
+{
+    if (me == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (me->t) {
+        xf_stimer_destroy(me->t);
+        me->t = NULL;
+    }
+    if (me->s) {
+        xf_ps_unsubscribe_all(me->s);
+        xf_ps_destroy_subscriber(me->s);
+        me->s = NULL;
+    }
+    return XF_OK;
+}
+
+xf_err_t xf_co_setup_wait_until_1(
+    xf_co_t *const me, xf_event_id_t id_1, xf_tick_t tick)
+{
+    xf_err_t xf_ret;
+    me->t = xf_stimer_create_oneshot(
+                (tick),
+                (xf_stimer_cb_t)xf_stimer_call_co_cb,
+                (void *)(me));
+    me->s = xf_ps_create_subscriber(
+                (xf_ps_subscr_cb_t)xf_subscr_call_co_cb,
+                (void *)(me));
+    if ((!me->t) || (!me->s)) {
+        XF_FATAL_ERROR();
+    }
+    xf_ret = xf_ps_subscribe(me->s, id_1);
+    if (xf_ret != XF_OK) {
+        goto l_err;
+    }
+    return xf_ret;
+l_err:;
+    xf_co_teardown_wait_until(me);
+    return xf_ret;
+}
+
+xf_err_t xf_co_setup_wait_until_2(
+    xf_co_t *const me, xf_event_id_t id_1, xf_event_id_t id_2, xf_tick_t tick)
+{
+    xf_err_t xf_ret;
+    xf_ret = xf_co_setup_wait_until_1(me, id_1, tick);
+    if (xf_ret != XF_OK) {
+        return xf_ret;
+    }
+    xf_ret = xf_ps_subscribe(me->s, id_2);
+    if (xf_ret != XF_OK) {
+        goto l_err;
+    }
+    return xf_ret;
+l_err:;
+    xf_co_teardown_wait_until(me);
+    return xf_ret;
 }
 
 xf_err_t xf_co_top_init(void)
@@ -186,7 +310,6 @@ xf_err_t xf_co_destroy(xf_co_t *co)
 
 static xf_co_state_t xf_co_top(xf_co_top_t *const me, void *arg)
 {
-    xf_co_state_t res;
     xf_co_begin(me);
     me->co_main = xf_co_create(xf_co_main, 0);
     me->co_main_state = XF_CO_SUSPENDED;

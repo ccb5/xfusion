@@ -28,7 +28,7 @@ extern "C" {
 /* ==================== [Defines] =========================================== */
 
 /* 协程数量 */
-/* 
+/*
     ID 为 XF_CO_NUM_MAX - 1 的协程默认被 xf_co_top 占用
  */
 #define XF_CO_NUM_MAX                   32U
@@ -113,10 +113,6 @@ enum _xf_co_state_t {
 #define XF_CO_SUSPENDED                     ((xf_co_state_t)_XF_CO_SUSPENDED)
 #define XF_CO_STATE_MAX                     ((xf_co_state_t)_XF_CO_STATE_MAX)
 
-typedef xf_co_state_t xf_co_async_t; /*!< 用于标识无栈协程函数 */
-
-typedef volatile uint16_t xf_co_attr_t;
-
 /**
  * @brief 无栈协程基类预声明。
  */
@@ -135,13 +131,10 @@ typedef struct xf_co xf_co_t;
  */
 typedef xf_co_state_t (*xf_co_func_t)(xf_co_t *const me, void *arg);
 
-typedef union xf_co_temp {
-    xf_co_t                *co;             /*!< 下一级协程 */
-    xf_co_state_t           state;          /*!< 状态 */
-    uintptr_t               uip;            /*!< 无符号整型指针类型 (U Int Ptr) */
-    void                   *vd;             /*!< 空指针类型数据 (Void Data) */
-    xf_stimer_t            *stimer;         /*!< 定时器 */
-} xf_co_temp_t;
+/**
+ * @brief 无栈协程属性。
+ */
+typedef volatile uint16_t xf_co_attr_t;
 
 /**
  * @brief 无栈协程上下文（系统上下文）基类。
@@ -154,14 +147,15 @@ struct xf_co {
 #endif
 // private:
     xf_co_func_t            func;           /*!< 协程执行函数 */
-    xf_co_temp_t            temp;           /*!< 临时存储系统数据、转换目标等。 */
+    xf_stimer_t            *t;              /*!< 定时器 */
+    xf_ps_subscr_t         *s;              /*!< 发布订阅 */
     /**
      * @brief Local Continuations（本地延续，当前代码的执行位置）。
      */
     volatile xf_co_lc_t     lc;
 
     /**
-     * @brief 协程属性 (attr)。
+     * @brief 协程属性 (attribute)。
      *
      * @details
      * 1. B0 ~ B1: 协程状态 (state).
@@ -194,7 +188,7 @@ struct xf_co {
      *      - W     宽度
      *      - B     位
      */
-    xf_co_attr_t           attr;
+    xf_co_attr_t            attr;
 #define XF_CO_ATTR_STATE_S          (0)     /*!< 状态起始位 */
 #define XF_CO_ATTR_STATE_W          (2)     /*!< 宽度 */
 #define XF_CO_ATTR_AWAIT_B          (0x02)  /*!< 等待位 (B3) */
@@ -246,6 +240,18 @@ xf_err_t xf_co_ctor(
 xf_err_t xf_co_dtor(xf_co_t *const co);
 
 void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
+void xf_subscr_call_co_cb(xf_ps_subscr_t *const me, xf_event_t *e);
+
+xf_err_t xf_co_attach_stimer(xf_co_t *const co, xf_stimer_t *const stimer);
+xf_err_t xf_co_detach_stimer(xf_co_t *const co, xf_stimer_t *const stimer);
+xf_err_t xf_co_attach_subscriber(xf_co_t *const co, xf_ps_subscr_t *const s);
+xf_err_t xf_co_detach_subscriber(xf_co_t *const co, xf_ps_subscr_t *const s);
+
+xf_err_t xf_co_teardown_wait_until(xf_co_t *const me);
+xf_err_t xf_co_setup_wait_until_1(
+    xf_co_t *const me, xf_event_id_t id_1, xf_tick_t tick);
+xf_err_t xf_co_setup_wait_until_2(
+    xf_co_t *const me, xf_event_id_t id_1, xf_event_id_t id_2, xf_tick_t tick);
 
 /* ==================== [Macros] ============================================ */
 
@@ -257,7 +263,7 @@ void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
                                         xf_co_func_cast(_co_func)(xf_co_cast(_co), (_arg))
 
 #define xf_co_attr_get_state(_co)       BITSn_GET_RSH(xf_co_cast(_co)->attr, \
-                                            XF_CO_ATTR_STATE_W, XF_CO_ATTR_STATE_S)
+                                                      XF_CO_ATTR_STATE_W, XF_CO_ATTR_STATE_S)
 
 #define xf_co_attr_set_state(_co, _value) \
                                         do { \
