@@ -216,6 +216,18 @@ xf_err_t xf_ps_unsubscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id)
     return XF_ERR_NOT_FOUND;
 }
 
+xf_err_t xf_ps_unsubscribe_all(xf_ps_subscr_t *const s)
+{
+    uint32_t i;
+    if (s == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    for (i = 0; i < XF_PS_SUBSCR_ID_LIST_NUM_MAX; i++) {
+        s->subscr_id_list[i] = XF_EVENT_ID_INVALID;
+    }
+    return XF_OK;
+}
+
 xf_err_t xf_ps_publish_to(xf_ps_ch_t *const ch, xf_event_t *const e)
 {
     xf_err_t xf_ret;
@@ -427,7 +439,7 @@ static xf_err_t xf_ps_notify(xf_ps_ch_t *const ch, xf_event_t *const e)
                 pos->cb_func(pos, e);
             }
             if (sb_subscriber_created || sb_subscriber_deleted) {
-                /* 
+                /*
                     FIXME 是否需要处理订阅者？
                     此处未处理回调中订阅和取消订阅的情况，需要规范回调函数行为。
                     1.  回调中，不得创建新的订阅者对象。

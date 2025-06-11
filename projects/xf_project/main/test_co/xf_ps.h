@@ -42,6 +42,7 @@ xf_err_t xf_ps_destroy_subscriber(xf_ps_subscr_t *s);
 xf_err_t xf_ps_subscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id);
 /* 取消订阅一个事件 */
 xf_err_t xf_ps_unsubscribe(xf_ps_subscr_t *const s, xf_event_id_t event_id);
+xf_err_t xf_ps_unsubscribe_all(xf_ps_subscr_t *const s);
 
 /* 在默认发布订阅通道中发布事件 */
 xf_err_t xf_ps_publish(xf_event_t *const e);
