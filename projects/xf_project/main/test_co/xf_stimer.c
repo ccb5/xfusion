@@ -40,8 +40,8 @@ static xf_tick_t s_idle_period_start = 0;
 static xf_tick_t s_busy_time         = 0;
 
 static uint8_t s_idle_last;
-static bool_t stimer_created = FALSE;
-static bool_t stimer_deleted = FALSE;
+static bool_t sb_stimer_created = FALSE;
+static bool_t sb_stimer_deleted = FALSE;
 
 /* ==================== [Macros] ============================================ */
 
@@ -56,7 +56,7 @@ xf_stimer_t *xf_stimer_acquire(void)
         return NULL;
     }
     XF_BITMAP32_SET1(s_stimer_bm, idx);
-    stimer_created = TRUE;
+    sb_stimer_created = TRUE;
     return &sp_pool[idx];
 }
 
@@ -78,7 +78,7 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
     }
     XF_BITMAP32_SET0(s_stimer_bm, idx);
     *stimer = stimer_empty;
-    stimer_deleted = TRUE;
+    sb_stimer_deleted = TRUE;
     return XF_OK;
 }
 
@@ -195,13 +195,20 @@ xf_tick_t xf_stimer_handler(void)
 
     /* 如果运行过程中有定时器创建或移除，则重新检测所有定时器是否执行。 */
     do {
+        sb_stimer_deleted = FALSE;
+        sb_stimer_created = FALSE;
+        /* 
+            由于 xf_stimer_exec 内更新了 tick_last_run ，
+            因此： 
+            不存在 “执行定时器回调函数时，定时器回调内增删定时器后，
+                   可能会重复执行已执行定时器，或者未执行可能需要执行的定时器” 的问题。
+            此处全部再次扫描。
+         */
         memcpy(stimer_bm_temp, s_stimer_bm, sizeof(s_stimer_bm));
-        stimer_deleted = FALSE;
-        stimer_created = FALSE;
         stimer_idx = xf_bitmap32_fls(stimer_bm_temp, XF_STIMER_NUM_MAX);
         while (stimer_idx >= 0) {
             if (xf_stimer_exec(&sp_pool[stimer_idx])) {
-                if (stimer_created || stimer_deleted) {
+                if (sb_stimer_created || sb_stimer_deleted) {
                     break;
                 }
             }
@@ -248,7 +255,7 @@ static bool_t xf_stimer_exec(xf_stimer_t *stimer)
         }
         exec = TRUE;
     }
-    if (stimer_deleted == FALSE) {
+    if (sb_stimer_deleted == FALSE) {
         if (stimer->repeat_count == 0) {
             xf_stimer_release(stimer);
         }
