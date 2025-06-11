@@ -70,11 +70,11 @@ void xf_stimer_call_co_cb(xf_stimer_t *const stimer)
 
 xf_err_t xf_co_top_init(void)
 {
-    xf_co_attr_t co_attr = {0};
+    xf_co_cfg_t co_cfg = {0};
     if (sp_top->base.func == NULL) {
-        co_attr.id = (XF_CO_NUM_MAX - 1);
-        co_attr.type = XF_CO_TYPE_TOP;
-        xf_co_ctor(xf_co_cast(&s_co_top_ctx), xf_co_func_cast(xf_co_top), NULL, &co_attr);
+        co_cfg.id = (XF_CO_NUM_MAX - 1);
+        co_cfg.type = XF_CO_TYPE_TOP;
+        xf_co_ctor(xf_co_cast(&s_co_top_ctx), xf_co_func_cast(xf_co_top), NULL, &co_cfg);
         return XF_OK;
     }
     return XF_ERR_INITED;
@@ -91,10 +91,21 @@ xf_err_t xf_co_top_run(void *arg)
 }
 
 xf_err_t xf_co_ctor(
-    xf_co_t *const co, xf_co_func_t func, void *user_data, xf_co_attr_t *p_attr)
+    xf_co_t *const co, xf_co_func_t func, void *user_data, xf_co_cfg_t *p_cfg)
 {
     if ((!co) || (!func)) {
         return XF_ERR_INVALID_ARG;
+    }
+    if (p_cfg) {
+        /* 检查此 id 是否已被占用 */
+        if (NULL != xf_co_pool[p_cfg->id].func) {
+            XF_ERROR_LINE();
+            return XF_FAIL;
+        }
+        xf_co_attr_set_type(co, p_cfg->type);
+        xf_co_attr_set_id(co, p_cfg->id);
+    } else {
+        xf_co_attr_set_type(co, XF_CO_TYPE_UNKNOWN);
     }
     xf_co_lc_init(xf_co_cast(co)->lc);
     xf_co_cast(co)->func = func;
@@ -103,20 +114,9 @@ xf_err_t xf_co_ctor(
 #else
     UNUSED(user_data);
 #endif
-    xf_co_flags_set_state(co, XF_CO_SUSPENDED);
-    xf_co_flags_set_await_bit(co, FALSE);
-    /* 不改变 xf_co_flags_set_reserved */
-    if (p_attr) {
-        /* 检查此 id 是否已被占用 */
-        if (NULL != xf_co_pool[p_attr->id].func) {
-            XF_ERROR_LINE();
-            return XF_FAIL;
-        }
-        xf_co_flags_set_type(co, p_attr->type);
-        xf_co_flags_set_id(co, p_attr->id);
-    } else {
-        xf_co_flags_set_type(co, XF_CO_TYPE_UNKNOWN);
-    }
+    xf_co_attr_set_state(co, XF_CO_SUSPENDED);
+    xf_co_attr_set_await_bit(co, FALSE);
+    /* 不改变 xf_co_attr_set_reserved */
     return XF_OK;
 }
 
@@ -131,11 +131,11 @@ xf_err_t xf_co_dtor(xf_co_t *const co)
 }
 
 xf_co_t *xf_co_create_(
-    xf_co_func_t func, void *user_data, xf_co_attr_t *p_attr)
+    xf_co_func_t func, void *user_data, xf_co_cfg_t *p_cfg)
 {
     int16_t i = 0;
     xf_err_t xf_ret;
-    xf_co_attr_t attr = {0};
+    xf_co_cfg_t cfg = {0};
     if (!func) {
         return NULL;
     }
@@ -149,12 +149,12 @@ xf_co_t *xf_co_create_(
         XF_FATAL_ERROR();
         return NULL;
     }
-    if (NULL == p_attr) {
-        attr.type = XF_CO_TYPE_UNKNOWN;
-        attr.id = i;
-        p_attr = &attr;
+    if (NULL == p_cfg) {
+        cfg.type = XF_CO_TYPE_UNKNOWN;
+        cfg.id = i;
+        p_cfg = &cfg;
     }
-    xf_ret = xf_co_ctor(&xf_co_pool[i], func, user_data, p_attr);
+    xf_ret = xf_co_ctor(&xf_co_pool[i], func, user_data, p_cfg);
     if (xf_ret != XF_OK) {
         XF_FATAL_ERROR();
         return NULL;
@@ -170,7 +170,7 @@ xf_err_t xf_co_destroy(xf_co_t *co)
     if (!co) {
         return XF_ERR_INVALID_ARG;
     }
-    id = xf_co_flags_get_id(co);
+    id = xf_co_attr_get_id(co);
     if (id > (XF_CO_NUM_MAX - 1)) {
         XF_ERROR_LINE();
         return XF_FAIL;

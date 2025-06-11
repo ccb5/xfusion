@@ -85,10 +85,10 @@ enum _xf_co_type_t {
  */
 typedef uint8_t xf_co_id_t;
 
-typedef struct xf_co_attr {
+typedef struct xf_co_cfg {
     xf_co_type_t            type;                   /*!< 协程类型 */
     xf_co_id_t              id;                     /*!< id */
-} xf_co_attr_t;
+} xf_co_cfg_t;
 
 /**
  * @brief 无栈协程状态。
@@ -115,7 +115,7 @@ enum _xf_co_state_t {
 
 typedef xf_co_state_t xf_co_async_t; /*!< 用于标识无栈协程函数 */
 
-typedef volatile uint16_t xf_co_flags_t;
+typedef volatile uint16_t xf_co_attr_t;
 
 /**
  * @brief 无栈协程基类预声明。
@@ -161,7 +161,7 @@ struct xf_co {
     volatile xf_co_lc_t     lc;
 
     /**
-     * @brief 状态标志 (flags)。
+     * @brief 协程属性 (attr)。
      *
      * @details
      * 1. B0 ~ B1: 协程状态 (state).
@@ -194,16 +194,16 @@ struct xf_co {
      *      - W     宽度
      *      - B     位
      */
-    xf_co_flags_t           flags;
-#define XF_CO_FLAGS_STATE_S         (0)     /*!< 状态起始位 */
-#define XF_CO_FLAGS_STATE_W         (2)     /*!< 宽度 */
-#define XF_CO_FLAGS_AWAIT_B         (0x02)  /*!< 等待位 (B3) */
-#define XF_CO_FLAGS_RESERVED_S      (3)     /*!< 保留位起始位 */
-#define XF_CO_FLAGS_RESERVED_W      (3)     /*!< 宽度 */
-#define XF_CO_FLAGS_ID_S            (6)     /*!< id 起始位 */
-#define XF_CO_FLAGS_ID_W            (7)     /*!< 宽度 */
-#define XF_CO_FLAGS_TYPE_S          (13)    /*!< 类型起始位 */
-#define XF_CO_FLAGS_TYPE_W          (3)     /*!< 宽度 */
+    xf_co_attr_t           attr;
+#define XF_CO_ATTR_STATE_S          (0)     /*!< 状态起始位 */
+#define XF_CO_ATTR_STATE_W          (2)     /*!< 宽度 */
+#define XF_CO_ATTR_AWAIT_B          (0x02)  /*!< 等待位 (B3) */
+#define XF_CO_ATTR_RESERVED_S       (3)     /*!< 保留位起始位 */
+#define XF_CO_ATTR_RESERVED_W       (3)     /*!< 宽度 */
+#define XF_CO_ATTR_ID_S             (6)     /*!< id 起始位 */
+#define XF_CO_ATTR_ID_W             (7)     /*!< 宽度 */
+#define XF_CO_ATTR_TYPE_S           (13)    /*!< 类型起始位 */
+#define XF_CO_ATTR_TYPE_W           (3)     /*!< 宽度 */
     /* TODO 对齐 */
 };
 
@@ -242,7 +242,7 @@ void xf_co_nest_depth_dec(void);
 int8_t xf_co_get_nest_depth(void);
 
 xf_err_t xf_co_ctor(
-    xf_co_t *const co, xf_co_func_t func, void *user_data, xf_co_attr_t *p_attr);
+    xf_co_t *const co, xf_co_func_t func, void *user_data, xf_co_cfg_t *p_cfg);
 xf_err_t xf_co_dtor(xf_co_t *const co);
 
 void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
@@ -256,53 +256,52 @@ void xf_stimer_call_co_cb(xf_stimer_t *const stimer);
 #define xf_co_call_explicit(_co_func, _co, _arg) \
                                         xf_co_func_cast(_co_func)(xf_co_cast(_co), (_arg))
 
-#define xf_co_flags_get_state(_co)      BITSn_GET_RSH(xf_co_cast(_co)->flags, \
-                                            XF_CO_FLAGS_STATE_W, XF_CO_FLAGS_STATE_S)
+#define xf_co_attr_get_state(_co)       BITSn_GET_RSH(xf_co_cast(_co)->attr, \
+                                            XF_CO_ATTR_STATE_W, XF_CO_ATTR_STATE_S)
 
-#define xf_co_flags_set_state(_co, _value) \
+#define xf_co_attr_set_state(_co, _value) \
                                         do { \
-                                            BITSn_SET(xf_co_cast(_co)->flags, \
-                                                      XF_CO_FLAGS_STATE_W, XF_CO_FLAGS_STATE_S, \
+                                            BITSn_SET(xf_co_cast(_co)->attr, \
+                                                      XF_CO_ATTR_STATE_W, XF_CO_ATTR_STATE_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_flags_get_await_bit(_co)  BIT_GET(xf_co_cast(_co)->flags, \
-                                                XF_CO_FLAGS_AWAIT_B)
+#define xf_co_attr_get_await_bit(_co)   BIT_GET(xf_co_cast(_co)->attr, \
+                                                XF_CO_ATTR_AWAIT_B)
 
-#define xf_co_flags_set_await_bit(_co, _value) \
+#define xf_co_attr_set_await_bit(_co, _value) \
                                         do { \
-                                            BIT_SET(xf_co_cast(_co)->flags, \
-                                                    XF_CO_FLAGS_AWAIT_B, \
+                                            BIT_SET(xf_co_cast(_co)->attr, \
+                                                    XF_CO_ATTR_AWAIT_B, \
                                                     (_value)); \
                                         } while (0)
 
-#define xf_co_flags_get_reserved(_co)   BITSn_GET_RSH(xf_co_cast(_co)->flags, \
-                                            XF_CO_FLAGS_RESERVED_W, XF_CO_FLAGS_RESERVED_S)
+#define xf_co_attr_get_reserved(_co)    BITSn_GET_RSH(xf_co_cast(_co)->attr, \
+                                            XF_CO_ATTR_RESERVED_W, XF_CO_ATTR_RESERVED_S)
 
-#define xf_co_flags_set_reserved(_co, _value) \
+#define xf_co_attr_set_reserved(_co, _value) \
                                         do { \
-                                            BITSn_SET(xf_co_cast(_co)->flags, \
-                                                      XF_CO_FLAGS_RESERVED_W, XF_CO_FLAGS_RESERVED_S, \
+                                            BITSn_SET(xf_co_cast(_co)->attr, \
+                                                      XF_CO_ATTR_RESERVED_W, XF_CO_ATTR_RESERVED_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_flags_get_id(_co)         BITSn_GET_RSH(xf_co_cast(_co)->flags, \
-                                            XF_CO_FLAGS_ID_W, XF_CO_FLAGS_ID_S)
+#define xf_co_attr_get_id(_co)          BITSn_GET_RSH(xf_co_cast(_co)->attr, \
+                                            XF_CO_ATTR_ID_W, XF_CO_ATTR_ID_S)
 
-#define xf_co_flags_set_id(_co, _value) \
-                                        do { \
-                                            BITSn_SET(xf_co_cast(_co)->flags, \
-                                                      XF_CO_FLAGS_ID_W, XF_CO_FLAGS_ID_S, \
+#define xf_co_attr_set_id(_co, _value)  do { \
+                                            BITSn_SET(xf_co_cast(_co)->attr, \
+                                                      XF_CO_ATTR_ID_W, XF_CO_ATTR_ID_S, \
                                                       (_value)); \
                                         } while (0)
 
-#define xf_co_flags_get_type(_co)       BITSn_GET_RSH(xf_co_cast(_co)->flags, \
-                                            XF_CO_FLAGS_TYPE_W, XF_CO_FLAGS_TYPE_S)
+#define xf_co_attr_get_type(_co)        BITSn_GET_RSH(xf_co_cast(_co)->attr, \
+                                            XF_CO_ATTR_TYPE_W, XF_CO_ATTR_TYPE_S)
 
-#define xf_co_flags_set_type(_co, _value) \
+#define xf_co_attr_set_type(_co, _value) \
                                         do { \
-                                            BITSn_SET(xf_co_cast(_co)->flags, \
-                                                      XF_CO_FLAGS_TYPE_W, XF_CO_FLAGS_TYPE_S, \
+                                            BITSn_SET(xf_co_cast(_co)->attr, \
+                                                      XF_CO_ATTR_TYPE_W, XF_CO_ATTR_TYPE_S, \
                                                       (_value)); \
                                         } while (0)
 
