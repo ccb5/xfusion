@@ -118,10 +118,7 @@ typedef xf_bitmap_t xf_event_bitmap_t;
 xf_event_id_t xf_event_acquire_id(void);
 xf_err_t xf_event_release_id(xf_event_id_t id);
 
-xf_err_t xf_event_init(void);
-
-xf_err_t xf_event_set_pool_id(xf_event_t *const e, xf_event_pool_id_t id);
-xf_event_pool_id_t xf_event_get_pool_id(xf_event_t *const e);
+xf_err_t xf_event_gc_init(void);
 
 xf_err_t xf_event_gc(xf_event_t *const e);
 xf_err_t xf_event_gc_force(xf_event_t *const e);
@@ -134,6 +131,10 @@ xf_event_gc_cb_t xf_event_pool_get_gc_cb(xf_event_pool_id_t id);
 // /* TODO xf_event_malloc, xf_event_free */
 // xf_event_t *xf_event_malloc(size_t size);
 // void xf_event_free(void *e);
+
+xf_err_t xf_event_init(xf_event_t *e, xf_event_id_t id, xf_event_pool_id_t id_pool);
+xf_err_t xf_event_set_pool_id(xf_event_t *const e, xf_event_pool_id_t id);
+xf_event_pool_id_t xf_event_get_pool_id(xf_event_t *const e);
 
 /* ==================== [Macros] ============================================ */
 

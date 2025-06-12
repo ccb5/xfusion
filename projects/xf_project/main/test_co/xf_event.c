@@ -62,31 +62,11 @@ xf_err_t xf_event_release_id(xf_event_id_t id)
     return XF_OK;
 }
 
-xf_err_t xf_event_init(void)
+xf_err_t xf_event_gc_init(void)
 {
     s_gc[XF_EVENT_POOL_ID_STATIC] = xf_event_gc_cb_static;
     s_gc[XF_EVENT_POOL_ID_DYN] = xf_event_gc_cb_dyn;
     return XF_OK;
-}
-
-xf_err_t xf_event_set_pool_id(xf_event_t *const e, xf_event_pool_id_t id)
-{
-    if (e == NULL) {
-        return XF_FAIL;
-    }
-    if (id >= XF_EVENT_GC_NUM_MAX) {
-        return XF_FAIL;
-    }
-    xf_event_attr_set_pool_id(e, id);
-    return XF_OK;
-}
-
-xf_event_pool_id_t xf_event_get_pool_id(xf_event_t *const e)
-{
-    if (e == NULL) {
-        return XF_FAIL;
-    }
-    return xf_event_attr_get_pool_id(e);
 }
 
 xf_err_t xf_event_gc(xf_event_t *const e)
@@ -106,7 +86,7 @@ xf_err_t xf_event_gc(xf_event_t *const e)
     }
     if (((id == XF_EVENT_POOL_ID_STATIC) || (id == XF_EVENT_POOL_ID_DYN))
             && (s_gc[id] == NULL)) {
-        xf_event_init();
+        xf_event_gc_init();
     }
     if (s_gc[id] == NULL) {
         return XF_FAIL;
@@ -142,6 +122,43 @@ xf_event_gc_cb_t xf_event_pool_get_gc_cb(xf_event_pool_id_t id)
         return NULL;
     }
     return s_gc[id];
+}
+
+xf_err_t xf_event_init(xf_event_t *e, xf_event_id_t id, xf_event_pool_id_t id_pool)
+{
+    xf_err_t xf_ret;
+    if ((e == NULL)
+            || (id_pool >= XF_EVENT_GC_NUM_MAX)
+            || (id >= XF_EVENT_ID_NUM_MAX)) {
+        return XF_ERR_INVALID_ARG;
+    }
+    e->id = id;
+    e->ref_cnt = 0;
+    xf_ret = xf_event_set_pool_id(e, id_pool);
+    if (xf_ret != XF_OK) {
+        return xf_ret;
+    }
+    return XF_OK;
+}
+
+xf_err_t xf_event_set_pool_id(xf_event_t *const e, xf_event_pool_id_t id)
+{
+    if (e == NULL) {
+        return XF_FAIL;
+    }
+    if (id >= XF_EVENT_GC_NUM_MAX) {
+        return XF_FAIL;
+    }
+    xf_event_attr_set_pool_id(e, id);
+    return XF_OK;
+}
+
+xf_event_pool_id_t xf_event_get_pool_id(xf_event_t *const e)
+{
+    if (e == NULL) {
+        return XF_FAIL;
+    }
+    return xf_event_attr_get_pool_id(e);
 }
 
 /* ==================== [Static Functions] ================================== */
