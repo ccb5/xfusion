@@ -154,14 +154,19 @@ xf_err_t xf_co_setup_wait_until_1(
     xf_co_t *const me, xf_event_id_t id_1, xf_tick_t tick)
 {
     xf_err_t xf_ret;
-    me->t = xf_stimer_create_oneshot(
-                (tick),
-                (xf_stimer_cb_t)xf_stimer_call_co_cb,
-                (void *)(me));
+    if (tick != XF_STIMER_INFINITY) {
+        me->t = xf_stimer_create_oneshot(
+                    (tick),
+                    (xf_stimer_cb_t)xf_stimer_call_co_cb,
+                    (void *)(me));
+        if (me->t == NULL) {
+            XF_FATAL_ERROR();
+        }
+    }
     me->s = xf_ps_create_subscriber(
                 (xf_ps_subscr_cb_t)xf_subscr_call_co_cb,
                 (void *)(me));
-    if ((!me->t) || (!me->s)) {
+    if (!me->s) {
         XF_FATAL_ERROR();
     }
     xf_ret = xf_ps_subscribe(me->s, id_1);
