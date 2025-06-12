@@ -198,8 +198,8 @@ void test_main(void)
     xf_tick_t delay_tick;
     UNUSED(delay_tick);
     xf_co_top_init();
+    xf_event_gc_init();
     xf_ps_init();
-    xf_event_init();
     stimer_dispatch = xf_stimer_create(
                           XF_STIMER_INFINITY,
                           (xf_stimer_cb_t)xf_ps_dispatch_stimer_cb, NULL);
@@ -303,19 +303,21 @@ void subscr_cb(xf_ps_subscr_t *const s, xf_event_t *e)
     XF_LOGI(TAG, "e->ref_cnt:   %u", (unsigned int)e->ref_cnt);
 }
 
-void test_main(void)
-{
 #define EVENT_ID_1  1
 #define EVENT_ID_2  2
 #define EVENT_ID_3  3
-    xf_event_t e_cont_1 = {0};
-    xf_event_t e_cont_2 = {0};
-    xf_event_t e_cont_3 = {0};
+xf_event_t e_cont_1 = {0};
+xf_event_t e_cont_2 = {0};
+xf_event_t e_cont_3 = {0};
+
+void test_main(void)
+{
     xf_ps_subscr_t *s1;
     xf_ps_subscr_t *s2;
-    e_cont_1.id = EVENT_ID_1;
-    e_cont_2.id = EVENT_ID_2;
-    e_cont_3.id = EVENT_ID_3;
+    xf_event_init(&e_cont_1, EVENT_ID_1, XF_EVENT_POOL_ID_STATIC);
+    xf_event_init(&e_cont_2, EVENT_ID_2, XF_EVENT_POOL_ID_STATIC);
+    xf_event_init(&e_cont_3, EVENT_ID_3, XF_EVENT_POOL_ID_STATIC);
+    xf_event_gc_init();
     xf_ps_init();
     s1 = xf_ps_create_subscriber(subscr_cb, NULL);
     s2 = xf_ps_create_subscriber(subscr_cb, NULL);
@@ -369,9 +371,10 @@ void subscr_cb(xf_ps_subscr_t *const s, xf_event_t *e)
 void test_main(void)
 {
     xf_ps_subscr_t *s1;
-    s_e_with_data.base.id = EVENT_ID_WITH_DATA;
-    s_e_with_string.base.id = EVENT_ID_WITH_STRING;
+    xf_event_gc_init();
     xf_ps_init();
+    xf_event_init(&s_e_with_data.base, EVENT_ID_WITH_DATA, XF_EVENT_POOL_ID_STATIC);
+    xf_event_init(&s_e_with_string.base, EVENT_ID_WITH_STRING, XF_EVENT_POOL_ID_STATIC);
     s1 = xf_ps_create_subscriber(subscr_cb, NULL);
     xf_log_printf("\r\n");
     xf_ps_subscribe(s1, EVENT_ID_WITH_DATA);
