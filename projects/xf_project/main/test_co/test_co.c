@@ -44,8 +44,9 @@ static const char *const TAG = "test_co";
 #define EXAMPLE_CO_WAIT_EVENT           3
 #define EXAMPLE_STIMER                  4
 #define EXAMPLE_PS                      5
+#define EXAMPLE_PS_WITH_DATA            6
 
-#define EXAMPLE                         EXAMPLE_CO_WAIT_EVENT
+#define EXAMPLE                         EXAMPLE_PS_WITH_DATA
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -294,10 +295,10 @@ void test_main(void)
 
 #elif EXAMPLE == EXAMPLE_PS
 
-void subscr_cb(xf_ps_subscr_t *const me, xf_event_t *e)
+void subscr_cb(xf_ps_subscr_t *const s, xf_event_t *e)
 {
-    XF_LOGI(TAG, "me:           %p", me);
-    XF_LOGI(TAG, "me->user_data:%u", (unsigned int)me->user_data);
+    XF_LOGI(TAG, "s:            %p", s);
+    XF_LOGI(TAG, "s->user_data: %u", (unsigned int)s->user_data);
     XF_LOGI(TAG, "e->id:        %u", (unsigned int)e->id);
     XF_LOGI(TAG, "e->ref_cnt:   %u", (unsigned int)e->ref_cnt);
 }
@@ -329,6 +330,57 @@ void test_main(void)
         xf_ps_publish(&e_cont_1);
         xf_ps_publish(&e_cont_2);
         xf_ps_publish(&e_cont_3);
+        xf_ps_dispatch();
+        xf_log_printf("\r\n");
+        osDelayMs(1000);
+    }
+}
+
+#elif EXAMPLE == EXAMPLE_PS_WITH_DATA
+
+#define EVENT_ID_WITH_DATA      1
+#define EVENT_ID_WITH_STRING    2
+
+typedef struct {
+    xf_event_t  base;
+    int         data;
+} event_with_data_t;
+
+typedef struct {
+    xf_event_t  base;
+    char        string[32];
+} event_with_string_t;
+
+event_with_data_t s_e_with_data = {0};
+event_with_string_t s_e_with_string = {0};
+
+void subscr_cb(xf_ps_subscr_t *const s, xf_event_t *e)
+{
+    XF_LOGI(TAG, "e->id:                    %u", (unsigned int)e->id);
+    if (e->id == EVENT_ID_WITH_DATA) {
+        event_with_data_t *e_with_data = (event_with_data_t *)e;
+        XF_LOGI(TAG, "e_with_data->data:        %d", e_with_data->data);
+    } else {
+        event_with_string_t *e_with_string = (event_with_string_t *)e;
+        XF_LOGI(TAG, "e_with_string->string:    %s", e_with_string->string);
+    }
+}
+
+void test_main(void)
+{
+    xf_ps_subscr_t *s1;
+    s_e_with_data.base.id = EVENT_ID_WITH_DATA;
+    s_e_with_string.base.id = EVENT_ID_WITH_STRING;
+    xf_ps_init();
+    s1 = xf_ps_create_subscriber(subscr_cb, NULL);
+    xf_log_printf("\r\n");
+    xf_ps_subscribe(s1, EVENT_ID_WITH_DATA);
+    xf_ps_subscribe(s1, EVENT_ID_WITH_STRING);
+    while (1) {
+        s_e_with_data.data = ex_random();
+        snprintf(s_e_with_string.string, sizeof(s_e_with_string.string), "\"random: %d\"", s_e_with_data.data);
+        xf_ps_publish(&s_e_with_data.base);
+        xf_ps_publish(&s_e_with_string.base);
         xf_ps_dispatch();
         xf_log_printf("\r\n");
         osDelayMs(1000);
