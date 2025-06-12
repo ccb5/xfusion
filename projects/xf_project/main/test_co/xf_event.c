@@ -129,7 +129,7 @@ xf_err_t xf_event_init(xf_event_t *e, xf_event_id_t id, xf_event_pool_id_t id_po
     xf_err_t xf_ret;
     if ((e == NULL)
             || (id_pool >= XF_EVENT_GC_NUM_MAX)
-            || (id >= XF_EVENT_ID_NUM_MAX)) {
+            || (id >= XF_EVENT_ID_INVALID)) {
         return XF_ERR_INVALID_ARG;
     }
     e->id = id;
