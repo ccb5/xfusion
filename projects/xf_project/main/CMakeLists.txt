@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # ------------------------------------------------------------------------------
 
-file(GLOB SRC_LIST ${CMAKE_CURRENT_LIST_DIR}/test_co/*.c)
+file(GLOB SRC_LIST ${CMAKE_CURRENT_LIST_DIR}/xtiny/*.c)
 
 idf_component_register(
     SRCS 
@@ -14,7 +14,7 @@ idf_component_register(
         "${SRC_LIST}"
     INCLUDE_DIRS 
         "."
-        "test_co"
+        "xtiny"
     # REQUIRES
     WHOLE_ARCHIVE
 )

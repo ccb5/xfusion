@@ -29,7 +29,7 @@ extern "C" {
 #define CONFIG_XF_EVENT_GC_NUM_MAX      (8U)    /*!< 事件池/事件回收回调的最大数量，至少大于 2 */
 #define XF_EVENT_GC_NUM_MAX             CONFIG_XF_EVENT_GC_NUM_MAX
 
-#define XF_EVENT_ID_NUM_MAX             (128U)      /*!< xf_event 管理的事件 ID 的最大数量 */
+#define XF_EVENT_ID_NUM_MAX             (64U)      /*!< xf_event 管理的事件 ID 的最大数量 */
 #define XF_EVENT_ID_OFFSET              (32768U)    /*!< xf_event 管理的事件 ID 的默认偏移量 */
 
 #if !defined(CONFIG_XF_EVENT_ID_SIZE)

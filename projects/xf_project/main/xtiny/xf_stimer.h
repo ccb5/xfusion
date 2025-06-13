@@ -34,14 +34,13 @@ extern "C" {
 /* 预声明 */
 typedef struct xf_soft_timer xf_stimer_t;
 
-typedef void (*xf_stimer_cb_t)(xf_stimer_t *const me);
+typedef void (*xf_stimer_cb_t)(xf_stimer_t *stimer);
 
 struct xf_soft_timer {
     xf_stimer_cb_t              cb_func;            /*!< 回调函数 */
     void                       *user_data;          /*!< 回调函数用户数据 */
     xf_tick_t                   tick_last_run;      /*!< 定时器开始时间/上一次运行时间，单位 tick */
     xf_tick_t                   tick_period;        /*!< 定时器周期，单位 tick */
-    uint32_t                    repeat_count;       /*!< 重复次数， XF_STIMER_INFINITY 表示无限重复 */
 };
 
 /* ==================== [Global Prototypes] ================================= */
@@ -53,14 +52,11 @@ xf_err_t xf_stimer_init(xf_stimer_t *stimer);
 xf_err_t xf_stimer_set_cb(xf_stimer_t *stimer, xf_stimer_cb_t cb_func);
 xf_err_t xf_stimer_set_user_data(xf_stimer_t *stimer, void *user_data);
 xf_err_t xf_stimer_set_period(xf_stimer_t *stimer, xf_tick_t tick_period);
-xf_err_t xf_stimer_set_repeat_count(xf_stimer_t *stimer, uint32_t repeat_count);
 
 xf_err_t xf_stimer_reset(xf_stimer_t *stimer);
 xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer);
 
 xf_stimer_t *xf_stimer_create(
-    xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
-xf_stimer_t *xf_stimer_create_oneshot(
     xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
 xf_err_t xf_stimer_destroy(xf_stimer_t *stimer);
 
