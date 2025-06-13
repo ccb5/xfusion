@@ -68,6 +68,15 @@ xf_err_t xf_ps_dispatch(void);
 
 /* ==================== [Macros] ============================================ */
 
+#define xf_subscribe(id, cb_func, user_data) \
+                                        xf_ps_subscribe((id), (cb_func), (void *)(user_data))
+#define xf_unsubscribe(id, cb_func)     xf_ps_unsubscribe((id), (cb_func))
+#define xf_unsubscribe_by_id(subscr_id) xf_ps_unsubscribe_by_id((subscr_id))
+#define xf_publish(id, arg)             xf_ps_publish((id), (void *)(arg))
+#define xf_publish_sync(id, arg)        xf_ps_publish_sync((id), (void *)(arg))
+#define xf_publish_safe(id, arg)        xf_ps_publish_safe((id), (void *)(arg))
+#define xf_dispatch()                   xf_ps_dispatch()
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
