@@ -38,7 +38,7 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg);
 
 static xf_ps_subscr_t *xf_ps_acquire_subscriber(void);
 
-static xf_err_t xf_ps_release_subscriber(xf_ps_subscr_t *s);
+#define xf_ps_release_subscriber(s) /*!< 什么也不做 */
 
 static void xf_ps_subscriber_init(
     xf_ps_subscr_t *s,
@@ -60,10 +60,8 @@ static xf_ps_subscr_t s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX] = {0};
 static xf_ps_ch_t s_default_ch = {0};
 static xf_ps_ch_t *const sp_ch = &s_default_ch;
 
-static xf_ps_msg_t s_publish_pool[XF_PS_MSG_NUM_MAX] = {0};
-
-static bool_t sb_subscriber_created = FALSE;
-static bool_t sb_subscriber_deleted = FALSE;
+/* 消息池 */
+static xf_ps_msg_t s_msg_pool[XF_PS_MSG_NUM_MAX] = {0};
 
 /* ==================== [Macros] ============================================ */
 
@@ -72,7 +70,7 @@ static bool_t sb_subscriber_deleted = FALSE;
 xf_err_t xf_ps_init(void)
 {
     if (sp_ch->event_queue.buf_size == 0) {
-        xf_deque_init(&sp_ch->event_queue, s_publish_pool, sizeof(s_publish_pool));
+        xf_deque_init(&sp_ch->event_queue, s_msg_pool, sizeof(s_msg_pool));
     }
     return XF_OK;
 }
@@ -220,12 +218,6 @@ static xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
         }
     }
     return NULL;
-}
-
-static xf_err_t xf_ps_release_subscriber(xf_ps_subscr_t *s)
-{
-    UNUSED(s);
-    return XF_OK;
 }
 
 static void xf_ps_subscriber_init(
