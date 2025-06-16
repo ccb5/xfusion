@@ -42,6 +42,7 @@ static xf_tick_t s_busy_time         = 0;
 static uint8_t s_idle_last;
 static bool_t sb_stimer_created = FALSE;
 static bool_t sb_stimer_deleted = FALSE;
+static bool_t sb_stimer_ready = FALSE;
 
 /* ==================== [Macros] ============================================ */
 
@@ -128,6 +129,7 @@ xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer)
         return XF_ERR_INVALID_ARG;
     }
     stimer->tick_last_run = xf_tick_get_count() - stimer->tick_period - 1;
+    sb_stimer_ready = TRUE;
     return XF_OK;
 }
 
@@ -191,10 +193,11 @@ xf_tick_t xf_stimer_handler(void)
         }
     }
 
-    /* 如果运行过程中有定时器创建或移除，则重新检测所有定时器是否执行。 */
+    /* 如果运行过程中有定时器创建或移除或设为就绪，则重新检测所有定时器是否执行。 */
     do {
         sb_stimer_deleted = FALSE;
         sb_stimer_created = FALSE;
+        sb_stimer_ready   = FALSE;
         /*
             由于 xf_stimer_exec 内更新了 tick_last_run ，
             因此：
@@ -206,7 +209,7 @@ xf_tick_t xf_stimer_handler(void)
         stimer_idx = xf_bitmap32_fls(stimer_bm_temp, XF_STIMER_NUM_MAX);
         while (stimer_idx >= 0) {
             if (xf_stimer_exec(&sp_pool[stimer_idx])) {
-                if (sb_stimer_created || sb_stimer_deleted) {
+                if (sb_stimer_created || sb_stimer_deleted || sb_stimer_ready) {
                     break;
                 }
             }
