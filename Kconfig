@@ -102,6 +102,25 @@ menu "XFusion"
 
         endmenu # log
 
+        config XF_ENABLE_std
+            bool "std"
+            default y
+
+        menu "std"
+
+            depends on XF_ENABLE_std
+
+            choice
+                prompt "String functions source"
+                default XF_STRING_LIBC
+                config XF_STRING_BUILTIN
+                    bool "builtin"
+                config XF_STRING_LIBC
+                    bool "libc"
+            endchoice
+
+        endmenu # std
+
         config XF_ENABLE_system
             bool "system"
             default y

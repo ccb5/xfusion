@@ -19,6 +19,7 @@
 #include "xf_algo.h"
 #include "xf_dstruct.h"
 #include "xf_log.h"
+#include "xf_std.h"
 #include "xf_check.h"
 
 #ifdef __cplusplus
