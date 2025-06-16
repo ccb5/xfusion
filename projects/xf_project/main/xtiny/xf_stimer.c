@@ -62,7 +62,6 @@ xf_stimer_t *xf_stimer_acquire(void)
 
 xf_err_t xf_stimer_release(xf_stimer_t *stimer)
 {
-    const xf_stimer_t stimer_empty = {0};
     intptr_t idx;
     if (stimer == NULL) {
         return XF_ERR_INVALID_ARG;
@@ -77,7 +76,7 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
         return XF_ERR_INVALID_ARG;
     }
     XF_BITMAP32_SET0(s_stimer_bm, idx);
-    *stimer = stimer_empty;
+    xf_memset(stimer, 0, sizeof(xf_stimer_t));
     sb_stimer_deleted = TRUE;
     return XF_OK;
 }
@@ -203,7 +202,7 @@ xf_tick_t xf_stimer_handler(void)
                    可能会重复执行已执行定时器，或者未执行可能需要执行的定时器” 的问题。
             此处全部再次扫描。
          */
-        memcpy(stimer_bm_temp, s_stimer_bm, sizeof(s_stimer_bm));
+        xf_memcpy(stimer_bm_temp, s_stimer_bm, sizeof(s_stimer_bm));
         stimer_idx = xf_bitmap32_ffs(stimer_bm_temp, XF_STIMER_NUM_MAX);
         while (stimer_idx >= 0) {
             if (xf_stimer_exec(&sp_pool[stimer_idx])) {

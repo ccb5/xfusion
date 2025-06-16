@@ -17,7 +17,7 @@
 /* ==================== [Defines] =========================================== */
 
 /* 内部循环变量均使用 uint8_t */
-STATIC_ASSERT(XF_PS_SUBSCRIBER_NUM_MAX < (~(uint8_t)0));
+STATIC_ASSERT(XF_PS_SUBSCRIBER_NUM_MAX < ((uint8_t)~(uint8_t)0));
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -232,8 +232,7 @@ static void xf_ps_subscriber_init(
 
 static void xf_ps_subscriber_deinit(xf_ps_subscr_t *s)
 {
-    const xf_ps_subscr_t subscr_empty = {0};
-    *s = subscr_empty;
+    xf_memset(s, 0, sizeof(xf_ps_subscr_t));
 }
 
 static xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s)
