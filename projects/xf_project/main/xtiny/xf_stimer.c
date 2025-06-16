@@ -50,7 +50,7 @@ static bool_t sb_stimer_deleted = FALSE;
 xf_stimer_t *xf_stimer_acquire(void)
 {
     int32_t idx;
-    idx = xf_bitmap32_ffz(s_stimer_bm, XF_STIMER_NUM_MAX);
+    idx = xf_bitmap32_flz(s_stimer_bm, XF_STIMER_NUM_MAX);
     if (idx < 0) {
         XF_FATAL_ERROR();
         return NULL;
@@ -203,7 +203,7 @@ xf_tick_t xf_stimer_handler(void)
             此处全部再次扫描。
          */
         xf_memcpy(stimer_bm_temp, s_stimer_bm, sizeof(s_stimer_bm));
-        stimer_idx = xf_bitmap32_ffs(stimer_bm_temp, XF_STIMER_NUM_MAX);
+        stimer_idx = xf_bitmap32_fls(stimer_bm_temp, XF_STIMER_NUM_MAX);
         while (stimer_idx >= 0) {
             if (xf_stimer_exec(&sp_pool[stimer_idx])) {
                 if (sb_stimer_created || sb_stimer_deleted) {
@@ -211,7 +211,7 @@ xf_tick_t xf_stimer_handler(void)
                 }
             }
             XF_BITMAP32_SET0(stimer_bm_temp, stimer_idx);
-            stimer_idx = xf_bitmap32_ffs(stimer_bm_temp, XF_STIMER_NUM_MAX);
+            stimer_idx = xf_bitmap32_fls(stimer_bm_temp, stimer_idx);
         }
     } while (stimer_idx >= 0);
 
@@ -266,14 +266,14 @@ static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
     int32_t j; /*!< j: 最小时间定时事件所在索引 */
     xf_tick_t tick_temp;
     xf_tick_t tick_min;
-    i = xf_bitmap32_ffs(s_stimer_bm, XF_STIMER_NUM_MAX);
+    i = xf_bitmap32_fls(s_stimer_bm, XF_STIMER_NUM_MAX);
     if (i < 0) {
         return XF_STIMER_NO_READY;
     }
     tick_min = xf_stimer_time_remaining(&sp_pool[i]);
     j = i;
     while (i > 0) {
-        i = xf_bitmap32_ffs(s_stimer_bm, i);
+        i = xf_bitmap32_fls(s_stimer_bm, i);
         if (i >= 0) {
             tick_temp = xf_stimer_time_remaining(&sp_pool[i]);
             if (tick_temp < tick_min) {
