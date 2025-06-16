@@ -31,6 +31,9 @@ extern "C" {
 
 /* ==================== [Typedefs] ========================================== */
 
+typedef uint8_t xf_stimer_id_t;
+#define XF_STIMER_ID_INVALID ((xf_stimer_id_t)~(xf_stimer_id_t)0) /*!< 无效定时器 ID */
+
 /* 预声明 */
 typedef struct xf_soft_timer xf_stimer_t;
 
@@ -59,6 +62,9 @@ xf_err_t xf_stimer_set_ready(xf_stimer_t *stimer);
 xf_stimer_t *xf_stimer_create(
     xf_tick_t tick_period, xf_stimer_cb_t cb_func, void *user_data);
 xf_err_t xf_stimer_destroy(xf_stimer_t *stimer);
+
+xf_stimer_id_t xf_stimer_to_id(xf_stimer_t *s);
+xf_stimer_t *xf_stimer_id_to_stimer(xf_stimer_id_t id);
 
 xf_tick_t xf_stimer_handler(void);
 /* 0~100 */

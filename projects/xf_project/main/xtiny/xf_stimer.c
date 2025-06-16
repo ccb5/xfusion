@@ -152,6 +152,26 @@ xf_err_t xf_stimer_destroy(xf_stimer_t *stimer)
     return xf_stimer_release(stimer);
 }
 
+xf_stimer_id_t xf_stimer_to_id(xf_stimer_t *s)
+{
+    intptr_t idx;
+    if ((s == NULL)
+            || (s < &s_stimer_pool[0])
+            || (s > &s_stimer_pool[XF_STIMER_NUM_MAX - 1])) {
+        return XF_STIMER_ID_INVALID;
+    }
+    idx = ((intptr_t)s - (intptr_t)&s_stimer_pool[0]) / (sizeof(s_stimer_pool[0]));
+    return (xf_stimer_id_t)idx;
+}
+
+xf_stimer_t *xf_stimer_id_to_stimer(xf_stimer_id_t id)
+{
+    if (id >= XF_STIMER_NUM_MAX) {
+        return NULL;
+    }
+    return &s_stimer_pool[id];
+}
+
 xf_tick_t xf_stimer_handler(void)
 {
     int32_t stimer_idx;
@@ -176,9 +196,9 @@ xf_tick_t xf_stimer_handler(void)
     do {
         sb_stimer_deleted = FALSE;
         sb_stimer_created = FALSE;
-        /* 
+        /*
             由于 xf_stimer_exec 内更新了 tick_last_run ，
-            因此： 
+            因此：
             不存在 “执行定时器回调函数时，定时器回调内增删定时器后，
                    可能会重复执行已执行定时器，或者未执行可能需要执行的定时器” 的问题。
             此处全部再次扫描。
