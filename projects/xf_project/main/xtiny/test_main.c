@@ -88,16 +88,16 @@ void test_main(void)
     uintptr_t cnt = 0;
     uint32_t cnt_while = 0;
     xf_ps_init();
-    xf_ps_subscribe(EVENT_ID_1, subscr_cb1, (void *)0);
-    xf_ps_subscribe(EVENT_ID_2, subscr_cb1, (void *)1);
-    xf_ps_subscribe(EVENT_ID_3, subscr_cb1, (void *)2);
-    xf_ps_subscribe(EVENT_ID_3, subscr_cb2, (void *)3);
+    xf_subscribe(EVENT_ID_1, subscr_cb1, 0);
+    xf_subscribe(EVENT_ID_2, subscr_cb1, 1);
+    xf_subscribe(EVENT_ID_3, subscr_cb1, 2);
+    xf_subscribe(EVENT_ID_3, subscr_cb2, 3);
     while (1) {
-        xf_ps_publish(EVENT_ID_1, (void *)cnt); cnt++;
-        xf_ps_publish(EVENT_ID_2, (void *)cnt); cnt++;
-        xf_ps_publish(EVENT_ID_3, (void *)cnt); cnt++;
-        xf_ps_publish_sync(EVENT_ID_3, (void *)cnt); cnt++;
-        xf_ps_dispatch();
+        xf_publish(EVENT_ID_1, cnt); cnt++;
+        xf_publish(EVENT_ID_2, cnt); cnt++;
+        xf_publish(EVENT_ID_3, cnt); cnt++;
+        xf_publish_sync(EVENT_ID_3, cnt); cnt++;
+        xf_dispatch();
         xf_log_printf("\r\n");
         osDelayMs(1000);
         cnt_while++;
@@ -106,11 +106,11 @@ void test_main(void)
         }
     }
     /* 取消订阅 EVENT_ID_3 的所有回调 */
-    xf_ps_unsubscribe(EVENT_ID_3, NULL);
+    xf_unsubscribe(EVENT_ID_3, NULL);
     /* 取消 subscr_cb1 订阅的所有事件 */
-    xf_ps_unsubscribe(XF_PS_SUBSCRIBER_NUM_MAX, subscr_cb1);
+    xf_unsubscribe(XF_PS_SUBSCRIBER_NUM_MAX, subscr_cb1);
     /* 取消 subscr_cb2 订阅的 EVENT_ID_3 事件 */
-    xf_ps_unsubscribe(EVENT_ID_3, subscr_cb2);
+    xf_unsubscribe(EVENT_ID_3, subscr_cb2);
 }
 
 #elif EXAMPLE == EXAMPLE_STIMER
