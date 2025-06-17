@@ -188,7 +188,7 @@ xf_tick_t xf_stimer_handler(void)
         s_run_cnt++;
         if (s_run_cnt > 100U) {
             s_run_cnt = 0U;
-            XF_LOGE(TAG, "It seems xf_tick_inc() is not called.");
+            XF_LOGD(TAG, "It seems xf_tick_inc() is not called.");
             XF_FATAL_ERROR();
         }
     }
@@ -284,6 +284,12 @@ static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
                 j = i;
             }
         }
+    }
+    if (tick_min == XF_STIMER_INFINITY) {
+        if (pp_stimer) {
+            *pp_stimer = NULL;
+        }
+        return XF_STIMER_NO_READY;
     }
     if (pp_stimer) {
         *pp_stimer = &sp_pool[j];
