@@ -31,6 +31,7 @@
 #include "xf_ps.h"
 #include "xf_stimer.h"
 #include "xf_tick.h"
+#include "xf_task.h"
 
 /* ==================== [Defines] =========================================== */
 
@@ -38,11 +39,11 @@ static const char *const TAG = "test_co";
 
 #define EXAMPLE_PS                      1
 #define EXAMPLE_STIMER                  2
-#define EXAMPLE_CO_BASIC                3
-#define EXAMPLE_CO_DELAY                4
+#define EXAMPLE_TASK_BASIC              3
+#define EXAMPLE_TASK_WAIT_SUB           4
 #define EXAMPLE_CO_WAIT_EVENT           5
 
-#define EXAMPLE                         EXAMPLE_PS
+#define EXAMPLE                         EXAMPLE_TASK_WAIT_SUB
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -144,6 +145,111 @@ void test_main(void)
         osDelayMs(delay_tick);
         (void)xf_tick_inc(delay_tick);
     }
+}
+
+#elif EXAMPLE == EXAMPLE_TASK_BASIC
+
+xf_task_state_t xf_task_1(xf_task_t *const me, void *arg);
+
+void test_main(void)
+{
+    xf_tick_t delay_tick;
+    xf_task_sched_init();
+
+    /* 创建并调用 */
+    xf_task_start(xf_task_1, 12345678U);
+
+    while (1) {
+        delay_tick = xf_stimer_handler();
+        if (delay_tick != 0) {
+            osDelayMs(delay_tick);
+            (void)xf_tick_inc(delay_tick);
+        }
+    }
+}
+
+xf_task_state_t xf_task_1(xf_task_t *const me, void *arg)
+{
+    const char *const tag = "xf_task_1";
+    xf_task_begin(me);
+    XF_LOGI(tag, "co%d begin", (int)xf_task_to_id(me));
+    XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+    while (1) {
+        xf_task_delay_ms(me, 1000);
+        XF_LOGI(tag, "hi: %u", xf_tick_get_count());
+    }
+    XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
+    xf_task_end(me);
+}
+
+#elif EXAMPLE == EXAMPLE_TASK_WAIT_SUB
+
+xf_task_state_t xf_task_1(xf_task_t *const me, void *arg);
+xf_task_state_t xf_task_2(xf_task_t *const me, void *arg);
+xf_task_state_t xf_task_21(xf_task_t *const me, void *arg);
+
+void test_main(void)
+{
+    xf_tick_t delay_tick;
+    xf_task_sched_init();
+
+    /* 创建并调用 */
+    xf_task_start(xf_task_1, 12345678U);
+    /* 只创建，不调用 */
+    xf_task_create(xf_task_2, NULL);
+
+    while (1) {
+        delay_tick = xf_stimer_handler();
+        if (delay_tick != 0) {
+            osDelayMs(delay_tick);
+            (void)xf_tick_inc(delay_tick);
+        }
+    }
+}
+xf_task_state_t xf_task_1(xf_task_t *const me, void *arg)
+{
+    const char *const tag = "xf_task_1";
+    xf_task_begin(me);
+    XF_LOGI(tag, "co%d begin", (int)xf_task_to_id(me));
+    XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+    xf_task_delay_ms(me, 3000);
+    while (1) {
+        xf_task_delay_ms(me, 1000);
+        XF_LOGI(tag, "hi: %u", xf_tick_get_count());
+    }
+    XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
+    xf_task_end(me);
+}
+
+xf_task_state_t xf_task_2(xf_task_t *const me, void *arg)
+{
+    const char *const tag = "xf_task_2";
+    xf_task_begin(me);
+    XF_LOGI(tag, "co%d begin", (int)xf_task_to_id(me));
+    XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+    xf_task_start_sub(me, xf_task_21, arg);
+    XF_LOGI(tag, "hi: %u", xf_tick_get_count());
+    XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
+    xf_task_end(me);
+}
+
+xf_task_state_t xf_task_21(xf_task_t *const me, void *arg)
+{
+    const char *const tag = "xf_task_21";
+    xf_task_begin(me);
+    XF_LOGI(tag, "co%d begin", (int)xf_task_to_id(me));
+    XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+    me->user_data = NULL;
+    while (1) {
+        xf_task_delay_ms(me, 500);
+        XF_LOGI(tag, "hi: %u", xf_tick_get_count());
+        me->user_data = (void *)((uintptr_t)me->user_data + 1);
+        if (me->user_data == (void *)(uintptr_t)3) {
+            break;
+        }
+    }
+    XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
+    xf_task_end(me);
 }
 
 #endif
