@@ -50,7 +50,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 #define xf_task_start(_func, _arg)      do { \
                                             xf_task_t *__task; \
                                             __task = xf_task_create((_func), (_arg)); \
-                                            xf_task_resume_(NULL, __task, (_arg)); \
+                                            xf_task_resume_(__task, (_arg)); \
                                         } while (0)
 
 #define xf_task_begin(_me)              { \
@@ -87,9 +87,8 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
                                             } \
                                         } while (0)
 
-#define xf_task_resume_(_me, _task, _arg) \
+#define xf_task_resume_(_task, _arg) \
                                         do { \
-                                            UNUSED(_me); /*!< 之后还用于逻辑嵌套 */ \
                                             xf_task_nest_depth_inc(); \
                                             xf_task_attr_set_state((_task), XF_TASK_READY); \
                                             xf_task_call((_task), (_arg)); \
@@ -135,33 +134,22 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 
 #define xf_task_delay_ms(_me, _ms)      xf_task_delay((_me), xf_tick_to_ms(_ms))
 
-#define xf_task_wait_until(_me, _id, _tick, _e_out, _xf_err) \
+#define xf_task_wait_until(_me, _id, _tick, _xf_err) \
                                         do { \
-                                            (_xf_err) = xf_task_setup_wait_until_1((_me), (_id), (_tick)); \
-                                            if ((_xf_err) != XF_OK) { \
-                                                /* 错误 */ \
-                                                break; \
-                                            } \
+                                            xf_task_setup_wait_until((_me), (_id), (_tick)); \
                                             xf_task_yield((_me)); \
-                                            if (arg == NULL) { \
-                                                /* 意外唤醒 */ \
-                                                xf_task_attr_set_state((_me), XF_TASK_BLOCKED); \
-                                                /* 使用前一个 xf_task_yield */ \
-                                                return XF_TASK_BLOCKED; \
-                                            } \
-                                            if (arg == (void *)(xf_task_cast(_me)->t)) { \
+                                            if (xf_task_cast(_me)->id_stimer == XF_STIMER_ID_INVALID) { \
                                                 /* 超时 */ \
                                                 (_xf_err) = XF_ERR_TIMEOUT; \
                                             } else { \
                                                 /* 事件到达 */ \
                                                 (_xf_err) = XF_OK; \
-                                                (_e_out) = xf_event_cast(arg); \
                                             } \
                                             xf_task_teardown_wait_until(xf_task_cast(_me)); \
                                         } while (0)
 
-#define xf_task_wait_until_ms(_me, _id, _tick, _e_out, _xf_err) \
-                                        xf_task_wait_until((_me), (_id), xf_tick_to_ms(_tick), _e_out, _xf_err)
+#define xf_task_wait_until_ms(_me, _id, _ms, _xf_err) \
+                                        xf_task_wait_until((_me), (_id), xf_tick_to_ms(_ms), (_xf_err))
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -26,6 +26,7 @@ STATIC_ASSERT(XF_TASK_NUM_MAX < ((uint8_t)~(uint8_t)0));
 /* ==================== [Static Prototypes] ================================= */
 
 static xf_err_t xf_task_sched(void *arg);
+static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg);
 
 static void xf_task_sched_resume(void);
 static void xf_task_sched_suspend(void);
@@ -199,26 +200,76 @@ xf_err_t xf_task_release_timer(xf_task_t *me)
     return XF_OK;
 }
 
+xf_err_t xf_task_acquire_subscr(xf_task_t *me, xf_event_id_t id)
+{
+    xf_ps_subscr_id_t id_subscr;
+    if (me == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (me->id_subscr != XF_PS_ID_INVALID) {
+        return XF_ERR_INITED;
+    }
+    id_subscr = xf_subscribe(id, xf_resume_task_subscr_cb, me);
+    if (id_subscr == XF_PS_ID_INVALID) {
+        XF_FATAL_ERROR();
+    }
+    me->id_subscr = id_subscr;
+    return XF_OK;
+}
+
+xf_err_t xf_task_release_subscr(xf_task_t *me)
+{
+    if (me == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (me->id_subscr != XF_PS_ID_INVALID) {
+        xf_unsubscribe_by_id(me->id_subscr);
+        me->id_subscr = XF_PS_ID_INVALID;
+    }
+    return XF_OK;
+}
+
 void xf_resume_task_timer_cb(xf_stimer_t *stimer)
 {
-    xf_task_t *parent;
     xf_task_t *task = xf_task_cast(stimer->user_data);
     if (task->id_stimer != xf_stimer_to_id(stimer)) {
         XF_FATAL_ERROR();
     }
+    xf_task_release_timer(task);
+    xf_task_resume_root(task, NULL);
+}
 
-    /* 将自己和所有父级都设为 ready */
-    xf_task_set_ready(task);
-    parent = xf_task_id_to_task(task->id_parent);
-    while (parent != NULL) {
-        xf_task_set_ready(parent);
-        parent = xf_task_id_to_task(parent->id_parent);
+void xf_resume_task_subscr_cb(xf_ps_info_t *info, void *arg)
+{
+    xf_task_t *task = xf_task_cast(info->s->user_data);
+    if (task->id_subscr != xf_ps_subscr_to_id(info->s)) {
+        XF_FATAL_ERROR();
     }
+    xf_task_release_subscr(task);
+    xf_task_resume_root(task, arg);
+}
 
-    task->id_stimer = XF_STIMER_ID_INVALID;
-    xf_stimer_destroy(stimer);
-    /* 恢复 s_sched_stimer */
-    xf_task_sched_resume();
+xf_err_t xf_task_setup_wait_until(
+    xf_task_t *me, xf_event_id_t id, xf_tick_t tick_period)
+{
+    if (id == XF_EVENT_ID_INVALID) {
+        return XF_ERR_INVALID_ARG;
+    }
+    if (tick_period != XF_STIMER_INFINITY) {
+        xf_task_acquire_timer(me, tick_period);
+    }
+    xf_task_acquire_subscr(me, id);
+    return XF_OK;
+}
+
+xf_err_t xf_task_teardown_wait_until(xf_task_t *me)
+{
+    if (me == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    xf_task_release_timer(me);
+    xf_task_release_subscr(me);
+    return XF_OK;
 }
 
 void xf_task_sched_timer_cb(xf_stimer_t *stimer)
@@ -246,137 +297,6 @@ int8_t xf_task_get_nest_depth(void)
     return s_nest_depth;
 }
 
-#if XF_TODO
-
-void xf_subscr_call_co_cb(xf_ps_subscr_t *s, xf_event_t *e)
-{
-    xf_task_state_t co_state;
-    xf_task_t *task = xf_task_cast(s->user_data);
-    if (task->s != s) {
-        XF_FATAL_ERROR();
-    }
-    xf_task_resume(task, task, e, co_state);
-    UNUSED(co_state);
-}
-
-xf_err_t xf_task_attach_stimer(xf_task_t *task, xf_stimer_t *stimer)
-{
-    if ((task == NULL) || (stimer == NULL)) {
-        return XF_ERR_INVALID_ARG;
-    }
-    if (task->t != NULL) {
-        return XF_ERR_INITED;
-    }
-    task->t = stimer;
-    stimer->user_data = task;
-    return XF_OK;
-}
-
-xf_err_t xf_task_detach_stimer(xf_task_t *task, xf_stimer_t *stimer)
-{
-    if ((task == NULL) || (stimer == NULL)) {
-        return XF_ERR_INVALID_ARG;
-    }
-    if (task->t != stimer) {
-        return XF_ERR_INVALID_ARG;
-    }
-    task->t = NULL;
-    stimer->user_data = NULL;
-    return XF_OK;
-}
-
-xf_err_t xf_task_attach_subscriber(xf_task_t *task, xf_ps_subscr_t *s)
-{
-    if ((task == NULL) || (s == NULL)) {
-        return XF_ERR_INVALID_ARG;
-    }
-    if (task->s != NULL) {
-        return XF_ERR_INITED;
-    }
-    task->s = s;
-    s->user_data = task;
-    return XF_OK;
-}
-
-xf_err_t xf_task_detach_subscriber(xf_task_t *task, xf_ps_subscr_t *s)
-{
-    if ((task == NULL) || (s == NULL)) {
-        return XF_ERR_INVALID_ARG;
-    }
-    if (task->s != s) {
-        return XF_ERR_INVALID_ARG;
-    }
-    task->s = NULL;
-    s->user_data = NULL;
-    return XF_OK;
-}
-
-xf_err_t xf_task_teardown_wait_until(xf_task_t *me)
-{
-    if (me == NULL) {
-        return XF_ERR_INVALID_ARG;
-    }
-    if (me->t) {
-        xf_stimer_destroy(me->t);
-        me->t = NULL;
-    }
-    if (me->s) {
-        xf_ps_unsubscribe_all(me->s);
-        xf_ps_destroy_subscriber(me->s);
-        me->s = NULL;
-    }
-    return XF_OK;
-}
-
-xf_err_t xf_task_setup_wait_until_1(
-    xf_task_t *me, xf_event_id_t id_1, xf_tick_t tick)
-{
-    xf_err_t xf_ret;
-    if (tick != XF_STIMER_INFINITY) {
-        me->t = xf_stimer_create_oneshot(
-                    (tick),
-                    (xf_stimer_cb_t)xf_stimer_call_co_cb,
-                    (void *)(me));
-        if (me->t == NULL) {
-            XF_FATAL_ERROR();
-        }
-    }
-    me->s = xf_ps_create_subscriber(
-                (xf_ps_subscr_cb_t)xf_subscr_call_co_cb,
-                (void *)(me));
-    if (!me->s) {
-        XF_FATAL_ERROR();
-    }
-    xf_ret = xf_ps_subscribe(me->s, id_1);
-    if (xf_ret != XF_OK) {
-        goto l_err;
-    }
-    return xf_ret;
-l_err:;
-    xf_task_teardown_wait_until(me);
-    return xf_ret;
-}
-
-xf_err_t xf_task_setup_wait_until_2(
-    xf_task_t *me, xf_event_id_t id_1, xf_event_id_t id_2, xf_tick_t tick)
-{
-    xf_err_t xf_ret;
-    xf_ret = xf_task_setup_wait_until_1(me, id_1, tick);
-    if (xf_ret != XF_OK) {
-        return xf_ret;
-    }
-    xf_ret = xf_ps_subscribe(me->s, id_2);
-    if (xf_ret != XF_OK) {
-        goto l_err;
-    }
-    return xf_ret;
-l_err:;
-    xf_task_teardown_wait_until(me);
-    return xf_ret;
-}
-
-#endif
-
 /* ==================== [Static Functions] ================================== */
 
 static void xf_task_sched_resume(void)
@@ -390,40 +310,41 @@ static void xf_task_sched_suspend(void)
     xf_stimer_set_period(s_sched_stimer, XF_STIMER_INFINITY);
 }
 
+static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg)
+{
+    xf_task_t *parent;
+    xf_task_t *root;
+    if (task == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    /* 将自己和所有父级都设为 ready, 并调用 root */
+    xf_task_set_ready(task);
+    parent = xf_task_id_to_task(task->id_parent);
+    if (parent == NULL) {
+        root = task;
+    } else {
+        do {
+            xf_task_set_ready(parent);
+            root = parent;
+            parent = xf_task_id_to_task(parent->id_parent);
+        } while (parent != NULL);
+    }
+    xf_task_resume_(root, arg);
+    return XF_OK;
+}
+
 static xf_err_t xf_task_sched(void *arg)
 {
     uint8_t i;
-    xf_task_t dummy;
-    xf_task_t *me = &dummy;
-    xf_task_state_t task_state;
     xf_task_t *task;
-    UNUSED(task_state);
     for (i = 0; i < XF_TASK_NUM_MAX; ++i) {
         task = &s_task_pool[i];
         if ((task->func)
                 && (xf_task_attr_get_state(task) == XF_TASK_READY)
                 && (task->id_parent == XF_TASK_ID_INVALID) /*!< 只调度顶级任务 */
            ) {
-            xf_task_resume(me, task, arg, task_state);
+            xf_task_resume_(task, arg);
         }
     }
     return XF_OK;
 }
-
-#if XF_TODO
-
-static xf_task_state_t xf_task_top(xf_task_top_t *me, void *arg)
-{
-    xf_task_begin(me);
-    me->co_main = xf_task_create(xf_task_main, 0);
-    me->co_main_state = XF_TASK_BLOCKED;
-    while (1) {
-        if (me->co_main_state != XF_TASK_TERMINATED) {
-            xf_task_resume(me, me->co_main, arg, me->co_main_state);
-        }
-        xf_task_yield(me);
-    }
-    xf_task_end(me);
-}
-
-#endif
