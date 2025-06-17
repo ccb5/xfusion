@@ -47,7 +47,6 @@ static void xf_ps_subscriber_init(
 
 static void xf_ps_subscriber_deinit(xf_ps_subscr_t *s);
 
-static xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s);
 static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t id);
 
 /* ==================== [Static Variables] ================================== */
@@ -208,6 +207,26 @@ xf_err_t xf_ps_dispatch(void)
     return xf_ret;
 }
 
+xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s)
+{
+    intptr_t idx;
+    if ((s == NULL)
+            || (s < &s_subscr_pool[0])
+            || (s > &s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX - 1])) {
+        return XF_PS_ID_INVALID;
+    }
+    idx = ((intptr_t)s - (intptr_t)&s_subscr_pool[0]) / (sizeof(s_subscr_pool[0]));
+    return (xf_ps_subscr_id_t)idx;
+}
+
+xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id)
+{
+    if (id >= XF_PS_SUBSCRIBER_NUM_MAX) {
+        return NULL;
+    }
+    return &s_subscr_pool[id];
+}
+
 /* ==================== [Static Functions] ================================== */
 
 static xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
@@ -233,18 +252,6 @@ static void xf_ps_subscriber_init(
 static void xf_ps_subscriber_deinit(xf_ps_subscr_t *s)
 {
     xf_memset(s, 0, sizeof(xf_ps_subscr_t));
-}
-
-static xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s)
-{
-    intptr_t idx;
-    if ((s == NULL)
-            || (s < &s_subscr_pool[0])
-            || (s > &s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX - 1])) {
-        return XF_PS_ID_INVALID;
-    }
-    idx = ((intptr_t)s - (intptr_t)&s_subscr_pool[0]) / (sizeof(s_subscr_pool[0]));
-    return (xf_ps_subscr_id_t)idx;
 }
 
 static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t id)
