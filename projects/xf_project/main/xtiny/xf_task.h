@@ -138,12 +138,12 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
                                         do { \
                                             xf_task_setup_wait_until((_me), (_id), (_tick)); \
                                             xf_task_yield((_me)); \
-                                            if (xf_task_cast(_me)->id_stimer == XF_STIMER_ID_INVALID) { \
-                                                /* 超时 */ \
-                                                (_xf_err) = XF_ERR_TIMEOUT; \
-                                            } else { \
+                                            if (xf_task_cast(_me)->id_subscr == XF_PS_ID_INVALID) { \
                                                 /* 事件到达 */ \
                                                 (_xf_err) = XF_OK; \
+                                            } else { \
+                                                /* 超时 */ \
+                                                (_xf_err) = XF_ERR_TIMEOUT; \
                                             } \
                                             xf_task_teardown_wait_until(xf_task_cast(_me)); \
                                         } while (0)
