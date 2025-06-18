@@ -273,9 +273,9 @@ static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t id)
 static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
 {
     uint8_t i;
-    xf_ps_info_t info = {0};
-    info.ref_cnt = xf_ps_get_event_ref_cnt(msg->id);
-    if (info.ref_cnt == 0) {
+    uint8_t ref_cnt;
+    ref_cnt = xf_ps_get_event_ref_cnt(msg->id);
+    if (ref_cnt == 0) {
         return XF_FAIL;
     }
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
@@ -283,9 +283,8 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
             continue;
         }
         if (s_subscr_pool[i].id == msg->id) {
-            info.s = &s_subscr_pool[i];
-            --info.ref_cnt;
-            s_subscr_pool[i].cb_func(&info, msg->arg);
+            --ref_cnt;
+            s_subscr_pool[i].cb_func(&s_subscr_pool[i], ref_cnt, msg->arg);
         }
     }
     return XF_OK;

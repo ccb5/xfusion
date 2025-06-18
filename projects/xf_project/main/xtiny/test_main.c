@@ -62,22 +62,22 @@ static uint32_t l_rnd = 42; // random seed
 
 #if EXAMPLE == EXAMPLE_PS
 
-void subscr_cb1(xf_ps_info_t *info, void *arg)
+void subscr_cb1(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
     const char *const tag = "subscr_cb1";
-    XF_LOGI(tag, "info->s->id:          %u", (unsigned int)(uintptr_t)info->s->id);
-    XF_LOGI(tag, "info->s->user_data:   %u", (unsigned int)(uintptr_t)info->s->user_data);
-    XF_LOGI(tag, "info->ref_cnt:        %u", (unsigned int)(uintptr_t)info->ref_cnt);
-    XF_LOGI(tag, "arg:                  %u", (unsigned int)(uintptr_t)arg);
+    XF_LOGI(tag, "s->id:        %u", (unsigned int)(uintptr_t)s->id);
+    XF_LOGI(tag, "s->user_data: %u", (unsigned int)(uintptr_t)s->user_data);
+    XF_LOGI(tag, "ref_cnt:      %u", (unsigned int)(uintptr_t)ref_cnt);
+    XF_LOGI(tag, "arg:          %u", (unsigned int)(uintptr_t)arg);
 }
 
-void subscr_cb2(xf_ps_info_t *info, void *arg)
+void subscr_cb2(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
-    const char *const tag = "subscr_cb2";
-    XF_LOGI(tag, "info->s->id:          %u", (unsigned int)(uintptr_t)info->s->id);
-    XF_LOGI(tag, "info->s->user_data:   %u", (unsigned int)(uintptr_t)info->s->user_data);
-    XF_LOGI(tag, "info->ref_cnt:        %u", (unsigned int)(uintptr_t)info->ref_cnt);
-    XF_LOGI(tag, "arg:                  %u", (unsigned int)(uintptr_t)arg);
+    const char *const tag = "subscr_cb1";
+    XF_LOGI(tag, "s->id:        %u", (unsigned int)(uintptr_t)s->id);
+    XF_LOGI(tag, "s->user_data: %u", (unsigned int)(uintptr_t)s->user_data);
+    XF_LOGI(tag, "ref_cnt:      %u", (unsigned int)(uintptr_t)ref_cnt);
+    XF_LOGI(tag, "arg:          %u", (unsigned int)(uintptr_t)arg);
 }
 
 #define EVENT_ID_1  1
@@ -149,7 +149,7 @@ void test_main(void)
 
 #elif EXAMPLE == EXAMPLE_TASK_BASIC
 
-xf_task_state_t xf_task_1(xf_task_t *const me, void *arg);
+xf_task_state_t xf_task_1(xf_task_t *me, void *arg);
 
 void test_main(void)
 {
@@ -168,7 +168,7 @@ void test_main(void)
     }
 }
 
-xf_task_state_t xf_task_1(xf_task_t *const me, void *arg)
+xf_task_state_t xf_task_1(xf_task_t *me, void *arg)
 {
     const char *const tag = "xf_task_1";
     xf_task_begin(me);

@@ -237,10 +237,12 @@ void xf_resume_task_timer_cb(xf_stimer_t *stimer)
     xf_task_resume_root(task, NULL);
 }
 
-void xf_resume_task_subscr_cb(xf_ps_info_t *info, void *arg)
+void xf_resume_task_subscr_cb(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
-    xf_task_t *task = xf_task_cast(info->s->user_data);
-    if (task->id_subscr != xf_ps_subscr_to_id(info->s)) {
+    UNUSED(ref_cnt);
+    UNUSED(arg);
+    xf_task_t *task = xf_task_cast(s->user_data);
+    if (task->id_subscr != xf_ps_subscr_to_id(s)) {
         XF_FATAL_ERROR();
     }
     xf_task_release_subscr(task);

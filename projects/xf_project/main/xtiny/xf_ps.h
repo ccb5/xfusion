@@ -36,14 +36,10 @@ typedef uint8_t xf_ps_subscr_id_t;
 #define XF_PS_ID_INVALID ((xf_ps_subscr_id_t)~(xf_ps_subscr_id_t)0) /*!< 无效订阅者 ID */
 
 typedef struct xf_ps_subscriber xf_ps_subscr_t;
-
-typedef struct xf_ps_info {
-    xf_ps_subscr_t                     *s;          /*!< 订阅者 */
-    uint8_t                             ref_cnt;    /*!< 剩余引用计数 */
-} xf_ps_info_t;
+typedef xf_ps_subscr_t xf_subscr_t;
 
 /* 订阅者回调 */
-typedef void (*xf_ps_subscr_cb_t)(xf_ps_info_t *info, void *arg);
+typedef void (*xf_ps_subscr_cb_t)(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
 
 struct xf_ps_subscriber {
     xf_event_id_t                       id;

@@ -171,7 +171,7 @@ xf_err_t xf_task_release_subscr(xf_task_t *me);
 
 void xf_task_sched_timer_cb(xf_stimer_t *stimer);
 void xf_resume_task_timer_cb(xf_stimer_t *stimer);
-void xf_resume_task_subscr_cb(xf_ps_info_t *info, void *arg);
+void xf_resume_task_subscr_cb(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
 
 xf_err_t xf_task_setup_wait_until(xf_task_t *me, xf_event_id_t id, xf_tick_t tick_period);
 xf_err_t xf_task_teardown_wait_until(xf_task_t *me);
