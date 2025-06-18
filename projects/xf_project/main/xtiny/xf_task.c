@@ -122,14 +122,12 @@ xf_err_t xf_task_destroy(xf_task_t *task)
 
 xf_task_id_t xf_task_to_id(xf_task_t *s)
 {
-    intptr_t idx;
     if ((s == NULL)
             || (s < &s_task_pool[0])
             || (s > &s_task_pool[XF_TASK_NUM_MAX - 1])) {
         return XF_STIMER_ID_INVALID;
     }
-    idx = ((intptr_t)s - (intptr_t)&s_task_pool[0]) / (sizeof(s_task_pool[0]));
-    return (xf_task_id_t)idx;
+    return (xf_task_id_t)(s - &s_task_pool[0]);
 }
 
 xf_task_t *xf_task_id_to_task(xf_task_id_t id)

@@ -67,12 +67,10 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
     if (stimer == NULL) {
         return XF_ERR_INVALID_ARG;
     }
-    /* 检查是否是池内的定时器 */
-    if ((stimer < &s_stimer_pool[0])
-            || (stimer > &s_stimer_pool[XF_STIMER_NUM_MAX - 1])) {
+    idx = xf_stimer_to_id(stimer);
+    if (idx == XF_STIMER_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
     }
-    idx = ((intptr_t)stimer - (intptr_t)&s_stimer_pool[0]) / (sizeof(s_stimer_pool[0]));
     if (XF_BITMAP32_GET(s_stimer_bm, idx) == 0) {
         return XF_ERR_INVALID_ARG;
     }
@@ -155,14 +153,12 @@ xf_err_t xf_stimer_destroy(xf_stimer_t *stimer)
 
 xf_stimer_id_t xf_stimer_to_id(xf_stimer_t *s)
 {
-    intptr_t idx;
     if ((s == NULL)
             || (s < &s_stimer_pool[0])
             || (s > &s_stimer_pool[XF_STIMER_NUM_MAX - 1])) {
         return XF_STIMER_ID_INVALID;
     }
-    idx = ((intptr_t)s - (intptr_t)&s_stimer_pool[0]) / (sizeof(s_stimer_pool[0]));
-    return (xf_stimer_id_t)idx;
+    return (xf_stimer_id_t)(s - &s_stimer_pool[0]);
 }
 
 xf_stimer_t *xf_stimer_id_to_stimer(xf_stimer_id_t id)

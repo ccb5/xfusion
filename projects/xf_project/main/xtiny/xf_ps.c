@@ -178,21 +178,23 @@ xf_err_t xf_ps_publish_sync(xf_event_id_t id, void *arg)
 xf_err_t xf_ps_dispatch(void)
 {
     xf_err_t xf_ret = XF_FAIL;
-    xf_dq_size_t popped_size;
     xf_dq_size_t filled_size;
-    xf_dq_size_t msg_cnt;
+    xf_dq_size_t popped_size;
     xf_ps_msg_t msg = {0};
-    uint8_t i;
     filled_size = xf_deque_get_filled(&sp_ch->event_queue);
     if (filled_size == 0) {
         return XF_OK;
     }
-    if (unlikely(!IS_ALIGNED(filled_size, XF_PS_ELEM_SIZE))) {
-        /* 正常情况下都是 XF_PS_ELEM_SIZE 的整数倍 */
+#if !defined(NDEBUG)
+    if (filled_size % XF_PS_ELEM_SIZE) {
+        /*
+            正常情况下都是 XF_PS_ELEM_SIZE 的整数倍。
+            XF_PS_ELEM_SIZE不一定是 2 的幂，不使用 IS_ALIGNED；
+         */
         XF_FATAL_ERROR();
     }
-    msg_cnt = filled_size / XF_PS_ELEM_SIZE;
-    for (i = 0; i < msg_cnt; i++) {
+#endif
+    while (filled_size >= XF_PS_ELEM_SIZE) {
         popped_size = xf_deque_front_pop(&sp_ch->event_queue,
                                          (void *)&msg, XF_PS_ELEM_SIZE);
         if (unlikely(popped_size == 0)) {
@@ -203,20 +205,19 @@ xf_err_t xf_ps_dispatch(void)
             XF_FATAL_ERROR();
         }
         xf_ret = xf_ps_notify(&msg);
+        filled_size -= XF_PS_ELEM_SIZE;
     }
     return xf_ret;
 }
 
 xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s)
 {
-    intptr_t idx;
     if ((s == NULL)
             || (s < &s_subscr_pool[0])
             || (s > &s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX - 1])) {
         return XF_PS_ID_INVALID;
     }
-    idx = ((intptr_t)s - (intptr_t)&s_subscr_pool[0]) / (sizeof(s_subscr_pool[0]));
-    return (xf_ps_subscr_id_t)idx;
+    return (xf_ps_subscr_id_t)(s - &s_subscr_pool[0]);
 }
 
 xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id)
