@@ -43,7 +43,7 @@
 #define EXAMPLE_TASK_WAIT_SUB           4
 #define EXAMPLE_TASK_WAIT_EVENT         5
 
-#define EXAMPLE                         EXAMPLE_TASK_WAIT_EVENT
+#define EXAMPLE                         EXAMPLE_TASK_WAIT_SUB
 
 /* ==================== [Typedefs] ========================================== */
 

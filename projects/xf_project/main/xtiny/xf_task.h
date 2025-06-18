@@ -64,19 +64,26 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 /* ==================== [Macros] ============================================ */
 
 /**
+ * @brief 声明或定义任务回调函数.
+ *
+ * @param _name         任务函数名。 @ref xf_task_cb_t.
+ */
+#define xf_task_cb(_name)               xf_task_state_t _name(xf_task_t *me, void *arg)
+
+/**
  * @brief 创建任务.
  *
  * @note 1. 创建的任务都在任务池中，可以不保存返回的句柄，通过 xf_task_sched() 调度。
  * @note 2. 任务创建后不会立即执行。
  *
- * @param _func         任务函数。 @ref xf_task_func_t.
+ * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @return xf_task_t*   创建的任务
  *      - NULL          创建失败
  *      - OTHER         创建成功的任务
  */
-#define xf_task_create(_func, _user_data) \
-                                        xf_task_create_i((_func), (_user_data))
+#define xf_task_create(_cb_func, _user_data) \
+                                        xf_task_create_i((_cb_func), (_user_data))
 
 /**
  * @brief 销毁任务.
@@ -84,7 +91,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @note 通常不需要手动销毁，在 @ref xf_task_end 分支结束后会自动销毁。
  *
  * @param _task         需要销毁的任务。 @ref xf_task_t.
- * @param _func         任务函数。 @ref xf_task_func_t.
+ * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @return xf_err_t
  *      - XF_ERR_INVALID_ARG    无效参数
@@ -98,7 +105,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @note 开始任务 = 创建任务 + 立即运行任务.
  *
  * @param[out] _task    传出的任务句柄。 @ref xf_task_t 指针.
- * @param _func         任务函数。 @ref xf_task_func_t.
+ * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
  * @return xf_task_state_t 任务状态。
@@ -106,8 +113,8 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  *      - XF_TASK_BLOCKED      阻塞
  *      - XF_TASK_TERMINATED   结束
  */
-#define xf_task_start(_task, _func, _user_data, _arg) \
-                                        xf_task_start_i((_task), (_func), (_user_data), (_arg))
+#define xf_task_start(_task, _cb_func, _user_data, _arg) \
+                                        xf_task_start_i((_task), (_cb_func), (_user_data), (_arg))
 
 /**
  * @brief 运行任务.
@@ -130,14 +137,14 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @note 2. 任务创建后不会立即执行。
  *
  * @param _me           父任务。 @ref xf_task_t.
- * @param _func         任务函数。 @ref xf_task_func_t.
+ * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @return xf_task_t*   创建的任务
  *      - NULL          创建失败
  *      - OTHER         创建成功的任务
  */
-#define xf_task_create_subtask(_me, _func, _user_data) \
-                                        xf_task_create_subtask_i((_me), (_func), (_user_data))
+#define xf_task_create_subtask(_me, _cb_func, _user_data) \
+                                        xf_task_create_subtask_i((_me), (_cb_func), (_user_data))
 
 /**
  * @brief 等待子任务结束.
@@ -157,15 +164,15 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @note 开始任务 = 创建子任务 + 等待子任务结束.
  *
  * @param _task         需要销毁的任务。 @ref xf_task_t.
- * @param _func         任务函数。 @ref xf_task_func_t.
+ * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
  * @return xf_err_t
  *      - XF_ERR_INVALID_ARG    无效参数
  *      - XF_OK                 成功
  */
-#define xf_task_start_subtask(_me, _func, _user_data, _arg) \
-                                        xf_task_start_subtask_i((_me), (_func), (_user_data), (_arg))
+#define xf_task_start_subtask(_me, _cb_func, _user_data, _arg) \
+                                        xf_task_start_subtask_i((_me), (_cb_func), (_user_data), (_arg))
 
 /**
  * @brief 任务块起始.

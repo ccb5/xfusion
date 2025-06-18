@@ -68,6 +68,13 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id);
 
 /* ==================== [Macros] ============================================ */
 
+/**
+ * @brief 声明或定义订阅回调函数.
+ *
+ * @param _name         回调函数名。 @ref xf_ps_subscr_cb_t.
+ */
+#define xf_subscr_cb(_name)             void _name(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
+
 #define xf_subscribe(_id, _cb_func, _user_data) \
                                         xf_ps_subscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
 #define xf_unsubscribe(_id, _cb_func)   xf_ps_unsubscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func))

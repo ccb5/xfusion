@@ -50,7 +50,7 @@ xf_task_t *xf_task_acquire(void)
 {
     uint8_t i;
     for (i = 0; i < XF_TASK_NUM_MAX; ++i) {
-        if (s_task_pool[i].func == NULL) {
+        if (s_task_pool[i].cb_func == NULL) {
             return &s_task_pool[i];
         }
     }
@@ -62,17 +62,17 @@ xf_err_t xf_task_release(xf_task_t *task)
     if (task == NULL) {
         return XF_ERR_INVALID_ARG;
     }
-    task->func = NULL;
+    task->cb_func = NULL;
     return XF_OK;
 }
 
-xf_err_t xf_task_init(xf_task_t *task, xf_task_func_t func, void *user_data)
+xf_err_t xf_task_init(xf_task_t *task, xf_task_cb_t cb_func, void *user_data)
 {
-    if ((task == NULL) || (func == NULL)) {
+    if ((task == NULL) || (cb_func == NULL)) {
         return XF_ERR_INVALID_ARG;
     }
     xf_task_lc_init(xf_task_cast(task)->lc);
-    xf_task_cast(task)->func = func;
+    xf_task_cast(task)->cb_func = cb_func;
     xf_task_cast(task)->user_data = user_data;
     task->id_stimer = XF_STIMER_ID_INVALID;
     task->id_subscr = XF_PS_ID_INVALID;
@@ -91,14 +91,14 @@ xf_err_t xf_task_deinit(xf_task_t *task)
     return XF_OK;
 }
 
-xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_func_t func, void *user_data)
+xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_cb_t cb_func, void *user_data)
 {
     xf_task_t *task = xf_task_acquire();
     if (task == NULL) {
         XF_FATAL_ERROR();
         return NULL;
     }
-    xf_task_init(task, func, user_data);
+    xf_task_init(task, cb_func, user_data);
     if (parent != NULL) {
         task->id_parent = xf_task_to_id(parent);
         parent->id_child = xf_task_to_id(task);
@@ -338,7 +338,7 @@ static xf_err_t xf_task_sched(void *arg)
     xf_task_t *task;
     for (i = 0; i < XF_TASK_NUM_MAX; ++i) {
         task = &s_task_pool[i];
-        if ((task->func)
+        if ((task->cb_func)
                 && (xf_task_attr_get_state(task) == XF_TASK_READY)
                 && (task->id_parent == XF_TASK_ID_INVALID) /*!< 只调度顶级任务 */
            ) {

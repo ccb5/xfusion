@@ -34,7 +34,7 @@ int8_t xf_task_get_nest_depth(void);
 xf_task_t *xf_task_acquire(void);
 xf_err_t xf_task_release(xf_task_t *task);
 
-xf_err_t xf_task_init(xf_task_t *task, xf_task_func_t func, void *user_data);
+xf_err_t xf_task_init(xf_task_t *task, xf_task_cb_t cb_func, void *user_data);
 xf_err_t xf_task_deinit(xf_task_t *task);
 
 xf_err_t xf_task_acquire_timer(xf_task_t *me, xf_tick_t tick_period);
@@ -50,17 +50,17 @@ void xf_resume_task_subscr_cb(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
 xf_err_t xf_task_setup_wait_until(xf_task_t *me, xf_event_id_t id, xf_tick_t tick_period);
 xf_err_t xf_task_teardown_wait_until(xf_task_t *me);
 
-xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_func_t func, void *user_data);
+xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_cb_t cb_func, void *user_data);
 xf_err_t xf_task_destroy_(xf_task_t *task);
 
 /* ==================== [Macros] ============================================ */
 
-#define xf_task_create_i(_func, _user_data) \
-                                        xf_task_create_(NULL, xf_task_func_cast(_func), \
+#define xf_task_create_i(_cb_func, _user_data) \
+                                        xf_task_create_(NULL, xf_task_cb_cast(_cb_func), \
                                                         ((void *)(uintptr_t)(_user_data)))
 
-#define xf_task_create_subtask_i(_me, _func, _user_data) \
-                                        xf_task_create_(xf_task_cast(_me), xf_task_func_cast(_func), \
+#define xf_task_create_subtask_i(_me, _cb_func, _user_data) \
+                                        xf_task_create_(xf_task_cast(_me), xf_task_cb_cast(_cb_func), \
                                                         ((void *)(uintptr_t)(_user_data)))
 
 #define xf_task_destroy_i(_task)        xf_task_destroy_(xf_task_cast(_task))
@@ -68,8 +68,8 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
 #define xf_task_run_i(_task, _arg)      (xf_task_attr_set_state((_task), XF_TASK_READY), \
                                             xf_task_run_direct((_task), (_arg)))
 
-#define xf_task_start_i(_task, _func, _user_data, _arg) \
-                                        ((_task) = xf_task_create_i((_func), (_user_data)), \
+#define xf_task_start_i(_task, _cb_func, _user_data, _arg) \
+                                        ((_task) = xf_task_create_i((_cb_func), (_user_data)), \
                                             xf_task_run_i((_task), (_arg)))
 
 #define xf_task_begin_i(_me)            { \
@@ -141,9 +141,9 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             xf_task_cast(_me)->id_child = XF_TASK_ID_INVALID; \
                                         } while (0)
 
-#define xf_task_start_subtask_i(_me, _func, _user_data, _arg) \
+#define xf_task_start_subtask_i(_me, _cb_func, _user_data, _arg) \
                                         do { \
-                                            xf_task_create_subtask_i((_me), (_func), (_user_data)); \
+                                            xf_task_create_subtask_i((_me), (_cb_func), (_user_data)); \
                                             xf_task_wait_subtask_i((_me), (_arg)); \
                                         } while (0)
 
