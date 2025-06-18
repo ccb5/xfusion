@@ -113,7 +113,6 @@ typedef volatile uint8_t xf_task_attr_t;
 struct xf_task {
 // public:
     void                   *user_data;      /*!< 用户数据 */
-#   define ud   user_data   /*!< 用户数据别名 */
 // private:
     xf_task_func_t          func;           /*!< 协程执行函数 */
     /**

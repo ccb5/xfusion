@@ -33,7 +33,7 @@ xf_err_t xf_task_sched_deinit(void);
 xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_func_t func, void *user_data);
 xf_err_t xf_task_destroy(xf_task_t *task);
 
-xf_task_id_t xf_task_to_id(xf_task_t *s);
+xf_task_id_t xf_task_to_id(const xf_task_t *s);
 xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 
 /* ==================== [Macros] ============================================ */

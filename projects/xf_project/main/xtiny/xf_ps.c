@@ -210,7 +210,7 @@ xf_err_t xf_ps_dispatch(void)
     return xf_ret;
 }
 
-xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s)
+xf_ps_subscr_id_t xf_ps_subscr_to_id(const xf_ps_subscr_t *s)
 {
     if ((s == NULL)
             || (s < &s_subscr_pool[0])

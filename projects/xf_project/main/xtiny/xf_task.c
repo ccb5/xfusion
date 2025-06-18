@@ -120,7 +120,7 @@ xf_err_t xf_task_destroy(xf_task_t *task)
     return XF_OK;
 }
 
-xf_task_id_t xf_task_to_id(xf_task_t *s)
+xf_task_id_t xf_task_to_id(const xf_task_t *s)
 {
     if ((s == NULL)
             || (s < &s_task_pool[0])

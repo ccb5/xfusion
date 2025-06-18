@@ -67,7 +67,7 @@ xf_err_t xf_ps_publish_sync(xf_event_id_t id, void *arg);
 
 xf_err_t xf_ps_dispatch(void);
 
-xf_ps_subscr_id_t xf_ps_subscr_to_id(xf_ps_subscr_t *s);
+xf_ps_subscr_id_t xf_ps_subscr_to_id(const xf_ps_subscr_t *s);
 xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id);
 
 /* ==================== [Macros] ============================================ */

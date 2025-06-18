@@ -151,14 +151,14 @@ xf_err_t xf_stimer_destroy(xf_stimer_t *stimer)
     return xf_stimer_release(stimer);
 }
 
-xf_stimer_id_t xf_stimer_to_id(xf_stimer_t *s)
+xf_stimer_id_t xf_stimer_to_id(const xf_stimer_t *stimer)
 {
-    if ((s == NULL)
-            || (s < &s_stimer_pool[0])
-            || (s > &s_stimer_pool[XF_STIMER_NUM_MAX - 1])) {
+    if ((stimer == NULL)
+            || (stimer < &s_stimer_pool[0])
+            || (stimer > &s_stimer_pool[XF_STIMER_NUM_MAX - 1])) {
         return XF_STIMER_ID_INVALID;
     }
-    return (xf_stimer_id_t)(s - &s_stimer_pool[0]);
+    return (xf_stimer_id_t)(stimer - &s_stimer_pool[0]);
 }
 
 xf_stimer_t *xf_stimer_id_to_stimer(xf_stimer_id_t id)
