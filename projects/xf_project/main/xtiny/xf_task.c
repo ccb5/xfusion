@@ -200,18 +200,18 @@ xf_err_t xf_task_release_timer(xf_task_t *me)
 
 xf_err_t xf_task_acquire_subscr(xf_task_t *me, xf_event_id_t id)
 {
-    xf_ps_subscr_id_t id_subscr;
+    xf_ps_subscr_t *s;
     if (me == NULL) {
         return XF_ERR_INVALID_ARG;
     }
     if (me->id_subscr != XF_PS_ID_INVALID) {
         return XF_ERR_INITED;
     }
-    id_subscr = xf_subscribe(id, xf_resume_task_subscr_cb, me);
-    if (id_subscr == XF_PS_ID_INVALID) {
+    s = xf_subscribe(id, xf_resume_task_subscr_cb, me);
+    if (s == NULL) {
         XF_FATAL_ERROR();
     }
-    me->id_subscr = id_subscr;
+    me->id_subscr = xf_ps_subscr_to_id(s);
     return XF_OK;
 }
 

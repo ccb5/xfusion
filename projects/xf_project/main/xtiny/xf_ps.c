@@ -75,7 +75,7 @@ xf_err_t xf_ps_init(void)
     return XF_OK;
 }
 
-xf_ps_subscr_id_t xf_ps_subscribe(
+xf_ps_subscr_t *xf_ps_subscribe(
     xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data)
 {
     uint8_t i;
@@ -84,16 +84,16 @@ xf_ps_subscr_id_t xf_ps_subscribe(
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
         if ((s_subscr_pool[i].id == id)
                 && (s_subscr_pool[i].cb_func == cb_func)) {
-            return i;
+            return &s_subscr_pool[i];
         }
     }
     s = xf_ps_acquire_subscriber();
     if (s == NULL) {
         XF_ERROR_LINE(); XF_LOGD(TAG, "no subscriber");
-        return XF_PS_ID_INVALID;
+        return NULL;
     }
     xf_ps_subscriber_init(s, id, cb_func, user_data);
-    return xf_ps_subscr_to_id(s);
+    return s;
 }
 
 xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func)
@@ -134,13 +134,13 @@ xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func)
     return XF_ERR_NOT_FOUND;
 }
 
-xf_err_t xf_ps_unsubscribe_by_id(xf_ps_subscr_id_t subscr_id)
+xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s)
 {
-    xf_ps_subscr_t *s;
-    if (subscr_id >= XF_PS_SUBSCRIBER_NUM_MAX) {
+    if ((s == NULL)
+            || (s < &s_subscr_pool[0])
+            || (s > &s_subscr_pool[XF_PS_SUBSCRIBER_NUM_MAX - 1])) {
         return XF_ERR_INVALID_ARG;
     }
-    s = &s_subscr_pool[subscr_id];
     xf_ps_subscriber_deinit(s);
     xf_ps_release_subscriber(s);
     return XF_OK;

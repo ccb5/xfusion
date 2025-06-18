@@ -51,10 +51,10 @@ struct xf_ps_subscriber {
 
 xf_err_t xf_ps_init(void);
 
-xf_ps_subscr_id_t xf_ps_subscribe(
+xf_ps_subscr_t *xf_ps_subscribe(
     xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data);
 xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func);
-xf_err_t xf_ps_unsubscribe_by_id(xf_ps_subscr_id_t subscr_id);
+xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s);
 
 xf_err_t xf_ps_publish(xf_event_id_t id, void *arg);
 xf_err_t xf_ps_publish_sync(xf_event_id_t id, void *arg);
@@ -71,12 +71,16 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id);
 #define xf_subscribe(_id, _cb_func, _user_data) \
                                         xf_ps_subscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
 #define xf_unsubscribe(_id, _cb_func)   xf_ps_unsubscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func))
+#define xf_unsubscribe_by_subscr(_s)    xf_ps_unsubscribe_by_subscr((xf_ps_subscr_t *)(_s))
 #define xf_unsubscribe_by_id(_subscr_id) \
-                                        xf_ps_unsubscribe_by_id((xf_ps_subscr_id_t)(_subscr_id))
+                                        xf_ps_unsubscribe_by_subscr(xf_ps_id_to_subscr((xf_ps_subscr_id_t)(_subscr_id)))
 #define xf_publish(_id, _arg)           xf_ps_publish((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
 #define xf_publish_sync(_id, _arg)      xf_ps_publish_sync((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
 #define xf_publish_safe(_id, _arg)      xf_ps_publish_safe((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
 #define xf_dispatch()                   xf_ps_dispatch()
+
+#define xf_subscr_to_id(_s)             xf_ps_subscr_to_id(_s)
+#define xf_id_to_subscr(_subscr_id)     xf_ps_id_to_subscr(_subscr_id)
 
 #ifdef __cplusplus
 } /* extern "C" */
