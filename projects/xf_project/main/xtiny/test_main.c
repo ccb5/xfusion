@@ -35,7 +35,7 @@
 
 /* ==================== [Defines] =========================================== */
 
-static const char *const TAG = "test_co";
+#define TAG "test_main"
 
 #define EXAMPLE_PS                      1
 #define EXAMPLE_STIMER                  2
@@ -153,11 +153,12 @@ xf_task_state_t xf_task_1(xf_task_t *me, void *arg);
 
 void test_main(void)
 {
+    xf_task_t *task;
     xf_tick_t delay_tick;
     xf_task_sched_init();
 
     /* 创建并调用 */
-    xf_task_start(xf_task_1, 12345678U);
+    xf_task_start(task, xf_task_1, NULL, 12345678U);
 
     while (1) {
         delay_tick = xf_stimer_handler();
@@ -190,11 +191,12 @@ xf_task_state_t xf_task_21(xf_task_t *const me, void *arg);
 
 void test_main(void)
 {
+    xf_task_t *task;
     xf_tick_t delay_tick;
     xf_task_sched_init();
 
     /* 创建并调用 */
-    xf_task_start(xf_task_1, 12345678U);
+    xf_task_start(task, xf_task_1, NULL, 12345678U);
     /* 只创建，不调用 */
     xf_task_create(xf_task_2, NULL);
 
@@ -206,6 +208,7 @@ void test_main(void)
         }
     }
 }
+
 xf_task_state_t xf_task_1(xf_task_t *const me, void *arg)
 {
     const char *const tag = "xf_task_1";
@@ -227,7 +230,7 @@ xf_task_state_t xf_task_2(xf_task_t *const me, void *arg)
     xf_task_begin(me);
     XF_LOGI(tag, "co%d begin", (int)xf_task_to_id(me));
     XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
-    xf_task_start_sub(me, xf_task_21, arg);
+    xf_task_start_subtask(me, xf_task_21, NULL, arg);
     XF_LOGI(tag, "hi: %u", xf_tick_get_count());
     XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
@@ -288,10 +291,12 @@ xf_task_state_t xf_task_publish(xf_task_t *const me, void *arg)
     me->user_data = NULL;
     while (1) {
         delay_tick = (ex_random() % 1500) + 1;
-        XF_LOGI(tag, "delay_tick: %u", (unsigned int)(uintptr_t)delay_tick);
         xf_task_delay_ms(me, delay_tick);
         me->user_data = (void *)((uintptr_t)me->user_data + 1);
         xf_publish(EVENT_ID_1, me->user_data);
+        XF_LOGI(tag, "publish: %u (%u)",
+                (unsigned int)(uintptr_t)me->user_data,
+                (unsigned int)(uintptr_t)xf_tick_get_count());
     }
     XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
@@ -307,7 +312,7 @@ xf_task_state_t xf_task_subscribe(xf_task_t *const me, void *arg)
     while (1) {
         xf_task_wait_until_ms(me, EVENT_ID_1, 500, xf_ret);
         if (xf_ret == XF_ERR_TIMEOUT) {
-            XF_LOGI(tag, "timeout: %u", xf_tick_get_count());
+            XF_LOGI(tag, "timeout. curr: %u", xf_tick_get_count());
         } else {
             XF_LOGI(tag, "got: %u", (unsigned int)(uintptr_t)arg);
         }

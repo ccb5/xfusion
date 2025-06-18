@@ -110,7 +110,7 @@ xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_func_t func, void *user_da
     return task;
 }
 
-xf_err_t xf_task_destroy(xf_task_t *task)
+xf_err_t xf_task_destroy_(xf_task_t *task)
 {
     if (task == NULL) {
         return XF_ERR_INVALID_ARG;
@@ -120,14 +120,14 @@ xf_err_t xf_task_destroy(xf_task_t *task)
     return XF_OK;
 }
 
-xf_task_id_t xf_task_to_id(const xf_task_t *s)
+xf_task_id_t xf_task_to_id(const xf_task_t *task)
 {
-    if ((s == NULL)
-            || (s < &s_task_pool[0])
-            || (s > &s_task_pool[XF_TASK_NUM_MAX - 1])) {
+    if ((task == NULL)
+            || (task < &s_task_pool[0])
+            || (task > &s_task_pool[XF_TASK_NUM_MAX - 1])) {
         return XF_STIMER_ID_INVALID;
     }
-    return (xf_task_id_t)(s - &s_task_pool[0]);
+    return (xf_task_id_t)(task - &s_task_pool[0]);
 }
 
 xf_task_t *xf_task_id_to_task(xf_task_id_t id)
@@ -318,7 +318,6 @@ static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg)
         return XF_ERR_INVALID_ARG;
     }
     /* 将自己和所有父级都设为 ready, 并调用 root */
-    xf_task_set_ready(task);
     parent = xf_task_id_to_task(task->id_parent);
     if (parent == NULL) {
         root = task;
@@ -329,7 +328,7 @@ static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg)
             parent = xf_task_id_to_task(parent->id_parent);
         } while (parent != NULL);
     }
-    xf_task_resume_(root, arg);
+    xf_task_run(root, arg);
     return XF_OK;
 }
 
@@ -343,7 +342,7 @@ static xf_err_t xf_task_sched(void *arg)
                 && (xf_task_attr_get_state(task) == XF_TASK_READY)
                 && (task->id_parent == XF_TASK_ID_INVALID) /*!< 只调度顶级任务 */
            ) {
-            xf_task_resume_(task, arg);
+            xf_task_run_direct(task, arg);
         }
     }
     return XF_OK;

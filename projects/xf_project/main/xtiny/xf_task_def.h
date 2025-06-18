@@ -84,6 +84,7 @@ enum _xf_task_state_t {
     XF_TASK_BLOCKED,                        /*!< 阻塞 */
     XF_TASK_STATE_MAX,                      /*!< （不含）协程状态最大值 */
 };
+
 /**
  * @brief 无栈协程基类预声明。
  */
@@ -119,8 +120,8 @@ struct xf_task {
      * @brief Local Continuations（本地延续，当前代码的执行位置）。
      */
     volatile xf_task_lc_t   lc;
-    xf_stimer_id_t          id_stimer;      /*!< 定时器 */
-    xf_ps_subscr_id_t       id_subscr;      /*!< 发布订阅 */
+    xf_stimer_id_t          id_stimer;      /*!< 定时器 id */
+    xf_ps_subscr_id_t       id_subscr;      /*!< 发布订阅 id */
     xf_task_id_t            id_parent;      /*!< 父任务 id */
     xf_task_id_t            id_child;       /*!< 子任务 id ，此处决定一个任务只能等一个子任务 */
     /**
@@ -153,58 +154,33 @@ struct xf_task {
 
 /* ==================== [Global Prototypes] ================================= */
 
-void xf_task_nest_depth_inc(void);
-void xf_task_nest_depth_dec(void);
-int8_t xf_task_get_nest_depth(void);
-
-xf_task_t *xf_task_acquire(void);
-xf_err_t xf_task_release(xf_task_t *task);
-
-xf_err_t xf_task_init(xf_task_t *task, xf_task_func_t func, void *user_data);
-xf_err_t xf_task_deinit(xf_task_t *task);
-
-xf_err_t xf_task_acquire_timer(xf_task_t *me, xf_tick_t tick_period);
-xf_err_t xf_task_release_timer(xf_task_t *me);
-
-xf_err_t xf_task_acquire_subscr(xf_task_t *me, xf_event_id_t id);
-xf_err_t xf_task_release_subscr(xf_task_t *me);
-
-void xf_task_sched_timer_cb(xf_stimer_t *stimer);
-void xf_resume_task_timer_cb(xf_stimer_t *stimer);
-void xf_resume_task_subscr_cb(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
-
-xf_err_t xf_task_setup_wait_until(xf_task_t *me, xf_event_id_t id, xf_tick_t tick_period);
-xf_err_t xf_task_teardown_wait_until(xf_task_t *me);
-
 /* ==================== [Macros] ============================================ */
 
 #define xf_task_cast(_task)             ((xf_task_t *)(_task))
 #define xf_task_func_cast(_co_func)     ((xf_task_func_t)(_co_func))
 
-#define xf_task_call(_task, _arg)       xf_task_cast(_task)->func(xf_task_cast(_task), (void *)(uintptr_t)(_arg))
-#define xf_task_call_explicit(_co_func, _task, _arg) \
-                                        xf_task_func_cast(_co_func)(xf_task_cast(_task), (_arg))
+#define xf_task_run_direct(_task, _arg) xf_task_cast(_task)->func(xf_task_cast(_task), (void *)(uintptr_t)(_arg))
+
+/*
+    NOTE 此处不使用 do {} while(0), 以便后续使用逗号表达式。
+ */
 
 #define xf_task_attr_get_state(_task)   BITSn_GET_RSH(xf_task_cast(_task)->attr, \
                                                       XF_TASK_ATTR_STATE_W, XF_TASK_ATTR_STATE_S)
 
 #define xf_task_attr_set_state(_task, _value) \
-                                        do { \
-                                            BITSn_SET(xf_task_cast(_task)->attr, \
-                                                      XF_TASK_ATTR_STATE_W, XF_TASK_ATTR_STATE_S, \
-                                                      (_value)); \
-                                        } while (0)
+                                        BITSn_SET(xf_task_cast(_task)->attr, \
+                                                  XF_TASK_ATTR_STATE_W, XF_TASK_ATTR_STATE_S, \
+                                                  (_value))
 
 #define xf_task_attr_get_reserved(_task) \
                                         BITSn_GET_RSH(xf_task_cast(_task)->attr, \
-                                            XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S)
+                                                      XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S)
 
 #define xf_task_attr_set_reserved(_task, _value) \
-                                        do { \
-                                            BITSn_SET(xf_task_cast(_task)->attr, \
-                                                      XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S, \
-                                                      (_value)); \
-                                        } while (0)
+                                        BITSn_SET(xf_task_cast(_task)->attr, \
+                                                  XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S, \
+                                                  (_value))
 
 #ifdef __cplusplus
 } /* extern "C" */
