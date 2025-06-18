@@ -722,6 +722,7 @@ static_assertion_failure \
 #if !defined(IS_ALIGNED) && XF_COM_USE_GNU
 /**
  * @brief 检查 x 是否对齐到 a.
+ * @note a 必须是 2 的幂。
  */
 #   define IS_ALIGNED(x, a)             (((x) & ((_typeof_(x))(a) - 1)) == 0)
 #elif !defined(IS_ALIGNED)
