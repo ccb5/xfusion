@@ -284,7 +284,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  *
  * @param _me           当前任务。 @ref xf_task_t.
  * @param _id           事件 ID。 @ref xf_event_id_t.
- * @param _tick         等待时间，单位 (tick)。 @ref xf_tick_t.
+ * @param _ms           等待时间，单位 (ms)。 @ref xf_tick_t.
  * @param[out] _xf_err  错误码。 @ref xf_err_t.
  *                      - XF_ERR_TIMEOUT     超时
  *                      - XF_OK              成功
