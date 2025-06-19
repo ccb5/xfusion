@@ -42,7 +42,7 @@ typedef xf_ps_subscr_t xf_subscr_t;
 typedef void (*xf_ps_subscr_cb_t)(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
 
 struct xf_ps_subscriber {
-    xf_event_id_t                       id;
+    xf_event_id_t                       event_id;
     xf_ps_subscr_cb_t                   cb_func;
     void                               *user_data;
 };
@@ -52,19 +52,19 @@ struct xf_ps_subscriber {
 xf_err_t xf_ps_init(void);
 
 xf_ps_subscr_t *xf_ps_subscribe(
-    xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data);
-xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func);
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data);
+xf_err_t xf_ps_unsubscribe(xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func);
 xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s);
 
-xf_err_t xf_ps_publish(xf_event_id_t id, void *arg);
-xf_err_t xf_ps_publish_sync(xf_event_id_t id, void *arg);
+xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg);
+xf_err_t xf_ps_publish_sync(xf_event_id_t event_id, void *arg);
 /* TODO xf_ps_publish_safe */
-// xf_err_t xf_ps_publish_safe(xf_event_id_t id, void *arg);
+// xf_err_t xf_ps_publish_safe(xf_event_id_t event_id, void *arg);
 
 xf_err_t xf_ps_dispatch(void);
 
 xf_ps_subscr_id_t xf_ps_subscr_to_id(const xf_ps_subscr_t *s);
-xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id);
+xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t subscr_id);
 
 /* ==================== [Macros] ============================================ */
 
@@ -75,15 +75,18 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id);
  */
 #define xf_subscr_cb(_name)             void _name(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 
-#define xf_subscribe(_id, _cb_func, _user_data) \
-                                        xf_ps_subscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
-#define xf_unsubscribe(_id, _cb_func)   xf_ps_unsubscribe((xf_event_id_t)(_id), (xf_ps_subscr_cb_t)(_cb_func))
+#define xf_subscribe(_event_id, _cb_func, _user_data) \
+                                        xf_ps_subscribe((xf_event_id_t)(_event_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
+#define xf_unsubscribe(_event_id, _cb_func) \
+                                        xf_ps_unsubscribe((xf_event_id_t)(_event_id), (xf_ps_subscr_cb_t)(_cb_func))
 #define xf_unsubscribe_by_subscr(_s)    xf_ps_unsubscribe_by_subscr((xf_ps_subscr_t *)(_s))
 #define xf_unsubscribe_by_id(_subscr_id) \
                                         xf_ps_unsubscribe_by_subscr(xf_ps_id_to_subscr((xf_ps_subscr_id_t)(_subscr_id)))
-#define xf_publish(_id, _arg)           xf_ps_publish((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
-#define xf_publish_sync(_id, _arg)      xf_ps_publish_sync((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
-#define xf_publish_safe(_id, _arg)      xf_ps_publish_safe((xf_event_id_t)(_id), (void *)(uintptr_t)(_arg))
+#define xf_publish(_event_id, _arg)     xf_ps_publish((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
+#define xf_publish_sync(_event_id, _arg) \
+                                        xf_ps_publish_sync((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
+#define xf_publish_safe(_event_id, _arg) \
+                                        xf_ps_publish_safe((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
 #define xf_dispatch()                   xf_ps_dispatch()
 
 #define xf_subscr_to_id(_s)             xf_ps_subscr_to_id(_s)

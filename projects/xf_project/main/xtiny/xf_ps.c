@@ -27,7 +27,7 @@ typedef struct xf_ps_channel {
 
 typedef uint16_t xf_event_id_t;
 typedef struct xf_ps_msg {
-    xf_event_id_t                       id;
+    xf_event_id_t                       event_id;
     void                               *arg;
 } xf_ps_msg_t;
 
@@ -43,11 +43,11 @@ static xf_ps_subscr_t *xf_ps_acquire_subscriber(void);
 
 static void xf_ps_subscriber_init(
     xf_ps_subscr_t *s,
-    xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data);
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data);
 
 static void xf_ps_subscriber_deinit(xf_ps_subscr_t *s);
 
-static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t id);
+static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t event_id);
 
 /* ==================== [Static Variables] ================================== */
 
@@ -76,13 +76,13 @@ xf_err_t xf_ps_init(void)
 }
 
 xf_ps_subscr_t *xf_ps_subscribe(
-    xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data)
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data)
 {
     uint8_t i;
     xf_ps_subscr_t *s;
     /* 查找 cb_func 是否已经订阅过当前事件 id, 同一个回调不允许订阅两次相同事件 id */
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if ((s_subscr_pool[i].id == id)
+        if ((s_subscr_pool[i].event_id == event_id)
                 && (s_subscr_pool[i].cb_func == cb_func)) {
             return &s_subscr_pool[i];
         }
@@ -92,18 +92,18 @@ xf_ps_subscr_t *xf_ps_subscribe(
         XF_ERROR_LINE(); XF_LOGD(TAG, "no subscriber");
         return NULL;
     }
-    xf_ps_subscriber_init(s, id, cb_func, user_data);
+    xf_ps_subscriber_init(s, event_id, cb_func, user_data);
     return s;
 }
 
-xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func)
+xf_err_t xf_ps_unsubscribe(xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func)
 {
     uint8_t i;
-    if ((id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
+    if ((event_id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
         return XF_ERR_INVALID_ARG;
     }
     /* 当前回调取消订阅所有事件 */
-    if ((id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func != NULL)) {
+    if ((event_id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func != NULL)) {
         for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
             if (s_subscr_pool[i].cb_func == cb_func) {
                 xf_ps_subscriber_deinit(&s_subscr_pool[i]);
@@ -113,9 +113,9 @@ xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func)
         return XF_OK;
     }
     /* 取消订阅指定事件所有回调 */
-    if ((id != XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
+    if ((event_id != XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
         for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-            if (s_subscr_pool[i].id == id) {
+            if (s_subscr_pool[i].event_id == event_id) {
                 xf_ps_subscriber_deinit(&s_subscr_pool[i]);
                 xf_ps_release_subscriber(&s_subscr_pool[i]);
             }
@@ -124,7 +124,7 @@ xf_err_t xf_ps_unsubscribe(xf_event_id_t id, xf_ps_subscr_cb_t cb_func)
     }
     /* 当前回调取消订阅指定事件 */
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if ((s_subscr_pool[i].id == id)
+        if ((s_subscr_pool[i].event_id == event_id)
                 && (s_subscr_pool[i].cb_func == cb_func)) {
             xf_ps_subscriber_deinit(&s_subscr_pool[i]);
             xf_ps_release_subscriber(&s_subscr_pool[i]);
@@ -146,14 +146,14 @@ xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s)
     return XF_OK;
 }
 
-xf_err_t xf_ps_publish(xf_event_id_t id, void *arg)
+xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
 {
     xf_ps_msg_t msg = {0};
     xf_dq_size_t pushed_size;
-    if (id == XF_EVENT_ID_INVALID) {
+    if (event_id == XF_EVENT_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
     }
-    msg.id = id;
+    msg.event_id = event_id;
     msg.arg = arg;
     /* 加入事件队列 */
     pushed_size = xf_deque_back_push(&sp_ch->event_queue, (void *)&msg, XF_PS_ELEM_SIZE);
@@ -164,13 +164,13 @@ xf_err_t xf_ps_publish(xf_event_id_t id, void *arg)
     return XF_OK;
 }
 
-xf_err_t xf_ps_publish_sync(xf_event_id_t id, void *arg)
+xf_err_t xf_ps_publish_sync(xf_event_id_t event_id, void *arg)
 {
     xf_ps_msg_t msg = {0};
-    if (id == XF_EVENT_ID_INVALID) {
+    if (event_id == XF_EVENT_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
     }
-    msg.id = id;
+    msg.event_id = event_id;
     msg.arg = arg;
     return xf_ps_notify(&msg);
 }
@@ -220,12 +220,12 @@ xf_ps_subscr_id_t xf_ps_subscr_to_id(const xf_ps_subscr_t *s)
     return (xf_ps_subscr_id_t)(s - &s_subscr_pool[0]);
 }
 
-xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t id)
+xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t subscr_id)
 {
-    if (id >= XF_PS_SUBSCRIBER_NUM_MAX) {
+    if (subscr_id >= XF_PS_SUBSCRIBER_NUM_MAX) {
         return NULL;
     }
-    return &s_subscr_pool[id];
+    return &s_subscr_pool[subscr_id];
 }
 
 /* ==================== [Static Functions] ================================== */
@@ -243,9 +243,9 @@ static xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
 
 static void xf_ps_subscriber_init(
     xf_ps_subscr_t *s,
-    xf_event_id_t id, xf_ps_subscr_cb_t cb_func, void *user_data)
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data)
 {
-    s->id = id;
+    s->event_id = event_id;
     s->cb_func = cb_func;
     s->user_data = user_data;
 }
@@ -255,15 +255,15 @@ static void xf_ps_subscriber_deinit(xf_ps_subscr_t *s)
     xf_memset(s, 0, sizeof(xf_ps_subscr_t));
 }
 
-static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t id)
+static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t event_id)
 {
     uint8_t ref_cnt = 0;
     uint8_t i;
-    if (id == XF_EVENT_ID_INVALID) {
+    if (event_id == XF_EVENT_ID_INVALID) {
         return 0;
     }
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if ((s_subscr_pool[i].cb_func) && (s_subscr_pool[i].id == id)) {
+        if ((s_subscr_pool[i].cb_func) && (s_subscr_pool[i].event_id == event_id)) {
             ref_cnt++;
         }
     }
@@ -274,7 +274,7 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
 {
     uint8_t i;
     uint8_t ref_cnt;
-    ref_cnt = xf_ps_get_event_ref_cnt(msg->id);
+    ref_cnt = xf_ps_get_event_ref_cnt(msg->event_id);
     if (ref_cnt == 0) {
         return XF_FAIL;
     }
@@ -282,7 +282,7 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
         if (s_subscr_pool[i].cb_func == NULL) {
             continue;
         }
-        if (s_subscr_pool[i].id == msg->id) {
+        if (s_subscr_pool[i].event_id == msg->event_id) {
             --ref_cnt;
             s_subscr_pool[i].cb_func(&s_subscr_pool[i], ref_cnt, msg->arg);
         }

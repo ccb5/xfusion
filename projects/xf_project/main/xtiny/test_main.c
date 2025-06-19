@@ -65,7 +65,7 @@ static uint32_t l_rnd = 42; // random seed
 void subscr_cb1(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
     const char *const tag = "subscr_cb1";
-    XF_LOGI(tag, "s->id:        %u", (unsigned int)(uintptr_t)s->id);
+    XF_LOGI(tag, "s->event_id:  %u", (unsigned int)(uintptr_t)s->event_id);
     XF_LOGI(tag, "s->user_data: %u", (unsigned int)(uintptr_t)s->user_data);
     XF_LOGI(tag, "ref_cnt:      %u", (unsigned int)(uintptr_t)ref_cnt);
     XF_LOGI(tag, "arg:          %u", (unsigned int)(uintptr_t)arg);
@@ -74,7 +74,7 @@ void subscr_cb1(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 void subscr_cb2(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
     const char *const tag = "subscr_cb1";
-    XF_LOGI(tag, "s->id:        %u", (unsigned int)(uintptr_t)s->id);
+    XF_LOGI(tag, "s->event_id:  %u", (unsigned int)(uintptr_t)s->event_id);
     XF_LOGI(tag, "s->user_data: %u", (unsigned int)(uintptr_t)s->user_data);
     XF_LOGI(tag, "ref_cnt:      %u", (unsigned int)(uintptr_t)ref_cnt);
     XF_LOGI(tag, "arg:          %u", (unsigned int)(uintptr_t)arg);
