@@ -90,9 +90,9 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             return XF_TASK_TERMINATED; \
                                         }
 
-#define xf_task_restart_i(_task)         do { \
-                                            xf_task_lc_init(xf_task_cast(_task)->lc); \
-                                            xf_task_attr_set_state((_task), XF_TASK_READY); \
+#define xf_task_restart_i(_me)          do { \
+                                            xf_task_lc_init(xf_task_cast(_me)->lc); \
+                                            xf_task_attr_set_state((_me), XF_TASK_READY); \
                                             xf_task_nest_depth_dec(); \
                                             return XF_TASK_READY; \
                                         } while (0)

@@ -105,7 +105,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  *
  * @note 开始任务 = 创建任务 + 立即运行任务.
  *
- * @param[out] _task    传出的任务句柄。 @ref xf_task_t 指针.
+ * @param[out] _task    传出的任务句柄。同时内部作为临时变量使用。 @ref xf_task_t 指针.
  * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
@@ -160,7 +160,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
                                         xf_task_wait_subtask_i((_me), (_arg))
 
 /**
- * @brief 开始子任务.
+ * @brief 开始并等待子任结束务.
  *
  * @note 开始任务 = 创建子任务 + 等待子任务结束.
  *
@@ -223,13 +223,14 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 #define xf_task_set_blocked(_task)      xf_task_attr_set_state((_task), XF_TASK_BLOCKED)
 
 /**
- * @brief 重启一个任务.
+ * @brief 重启当前任务.
  *
- * @note 不会离开重新执行，需要下一次进入后才能重新执行。
+ * @note 不会立刻回到 beging 重新执行，
+ *       需要下一次进入后才能重新执行（为了 begin 前的初始化正常工作）。
  *
- * @param _task         需要重启的任务。 @ref xf_task_t.
+ * @param _me           当前任务。 @ref xf_task_t.
  */
-#define xf_task_restart(_task)          xf_task_restart_i(_task)
+#define xf_task_restart(_me)            xf_task_restart_i(_me)
 
 /**
  * @brief 任务让出.
