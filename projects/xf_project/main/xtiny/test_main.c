@@ -44,7 +44,7 @@
 #define EXAMPLE_TASK_WAIT_EVENT         5
 #define EXAMPLE_TASK_SCENE              6
 
-#define EXAMPLE                         EXAMPLE_TASK_SCENE
+#define EXAMPLE                         EXAMPLE_PS
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -107,12 +107,12 @@ void test_main(void)
             break;
         }
     }
-    /* 取消订阅 EVENT_ID_3 的所有回调 */
-    xf_unsubscribe(EVENT_ID_3, NULL);
-    /* 取消 subscr_cb1 订阅的所有事件 */
-    xf_unsubscribe(XF_PS_SUBSCRIBER_NUM_MAX, subscr_cb1);
-    /* 取消 subscr_cb2 订阅的 EVENT_ID_3 事件 */
-    xf_unsubscribe(EVENT_ID_3, subscr_cb2);
+    /* 取消 subscr_cb2 订阅的 EVENT_ID_3 事件，且 user_data == 3 */
+    xf_unsubscribe(EVENT_ID_3, subscr_cb2, 3);
+    /* 忽略 user_data ，取消订阅订阅 EVENT_ID_3 的所有回调 */
+    xf_unsubscribe(EVENT_ID_3, NULL, XF_PS_USER_DATA_INVALID);
+    /* 忽略 user_data ，取消 subscr_cb1 订阅的所有事件 */
+    xf_unsubscribe(XF_PS_SUBSCRIBER_NUM_MAX, subscr_cb1, XF_PS_USER_DATA_INVALID);
 }
 
 #elif EXAMPLE == EXAMPLE_STIMER

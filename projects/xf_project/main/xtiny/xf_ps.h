@@ -46,6 +46,7 @@ struct xf_ps_subscriber {
     xf_ps_subscr_cb_t                   cb_func;
     void                               *user_data;
 };
+#define XF_PS_USER_DATA_INVALID ((uintptr_t)~(uintptr_t)0) /*!< 无效用户数据 */
 
 /* ==================== [Global Prototypes] ================================= */
 
@@ -53,7 +54,8 @@ xf_err_t xf_ps_init(void);
 
 xf_ps_subscr_t *xf_ps_subscribe(
     xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data);
-xf_err_t xf_ps_unsubscribe(xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func);
+xf_err_t xf_ps_unsubscribe(
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data);
 xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s);
 
 xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg);
@@ -78,8 +80,8 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t subscr_id);
 
 #define xf_subscribe(_event_id, _cb_func, _user_data) \
                                         xf_ps_subscribe((xf_event_id_t)(_event_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
-#define xf_unsubscribe(_event_id, _cb_func) \
-                                        xf_ps_unsubscribe((xf_event_id_t)(_event_id), (xf_ps_subscr_cb_t)(_cb_func))
+#define xf_unsubscribe(_event_id, _cb_func, _user_data) \
+                                        xf_ps_unsubscribe((xf_event_id_t)(_event_id), (xf_ps_subscr_cb_t)(_cb_func), (void *)(uintptr_t)(_user_data))
 #define xf_unsubscribe_by_subscr(_s)    xf_ps_unsubscribe_by_subscr((xf_ps_subscr_t *)(_s))
 #define xf_unsubscribe_by_id(_subscr_id) \
                                         xf_ps_unsubscribe_by_subscr(xf_ps_id_to_subscr((xf_ps_subscr_id_t)(_subscr_id)))

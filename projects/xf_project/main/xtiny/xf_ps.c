@@ -78,8 +78,15 @@ xf_err_t xf_ps_init(void)
 xf_ps_subscr_t *xf_ps_subscribe(
     xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data)
 {
-    uint8_t i;
     xf_ps_subscr_t *s;
+    /*
+        应当允许同一个回调订阅两次相同事件 id.
+        例如：
+            xf_task 中的 xf_resume_task_subscr_cb, 不同的 task 可能会订阅同一个事件 id.
+            但是 user_data 对应不同的 task.
+     */
+#if 0
+    uint8_t i;
     /* 查找 cb_func 是否已经订阅过当前事件 id, 同一个回调不允许订阅两次相同事件 id */
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
         if ((s_subscr_pool[i].event_id == event_id)
@@ -87,6 +94,7 @@ xf_ps_subscr_t *xf_ps_subscribe(
             return &s_subscr_pool[i];
         }
     }
+#endif
     s = xf_ps_acquire_subscriber();
     if (s == NULL) {
         XF_ERROR_LINE(); XF_LOGD(TAG, "no subscriber");
@@ -96,42 +104,46 @@ xf_ps_subscr_t *xf_ps_subscribe(
     return s;
 }
 
-xf_err_t xf_ps_unsubscribe(xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func)
+xf_err_t xf_ps_unsubscribe(
+    xf_event_id_t event_id, xf_ps_subscr_cb_t cb_func, void *user_data)
 {
     uint8_t i;
-    if ((event_id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
+    bool_t match_event = (event_id != XF_EVENT_ID_INVALID) ? TRUE : FALSE;
+    bool_t match_cb = (cb_func != NULL) ? TRUE : FALSE;
+    bool_t match_user = (user_data != (void *)XF_PS_USER_DATA_INVALID) ? TRUE : FALSE;
+    bool_t found = FALSE;
+    /* 无效参数检查 */
+    if (!match_cb && !match_event) {
         return XF_ERR_INVALID_ARG;
     }
-    /* 当前回调取消订阅所有事件 */
-    if ((event_id == XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func != NULL)) {
-        for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-            if (s_subscr_pool[i].cb_func == cb_func) {
-                xf_ps_subscriber_deinit(&s_subscr_pool[i]);
-                xf_ps_release_subscriber(&s_subscr_pool[i]);
-            }
-        }
-        return XF_OK;
-    }
-    /* 取消订阅指定事件所有回调 */
-    if ((event_id != XF_PS_SUBSCRIBER_NUM_MAX) && (cb_func == NULL)) {
-        for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-            if (s_subscr_pool[i].event_id == event_id) {
-                xf_ps_subscriber_deinit(&s_subscr_pool[i]);
-                xf_ps_release_subscriber(&s_subscr_pool[i]);
-            }
-        }
-        return XF_OK;
-    }
-    /* 当前回调取消订阅指定事件 */
+    /* 统一处理所有订阅者 */
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if ((s_subscr_pool[i].event_id == event_id)
-                && (s_subscr_pool[i].cb_func == cb_func)) {
+        bool_t match = TRUE;
+        /* 事件匹配检查 */
+        if (match_event
+                && (s_subscr_pool[i].event_id != event_id)) {
+            match = FALSE;
+        }
+        /* 回调函数匹配检查 */
+        if (match && match_cb
+                && (s_subscr_pool[i].cb_func != cb_func)) {
+            match = FALSE;
+        }
+        /* 用户数据匹配检查 */
+        if (match && match_cb && match_user
+                && (s_subscr_pool[i].user_data != user_data)) {
+            match = FALSE;
+        }
+        if (match) {
             xf_ps_subscriber_deinit(&s_subscr_pool[i]);
             xf_ps_release_subscriber(&s_subscr_pool[i]);
-            return XF_OK;
+            found = TRUE;
+            if (match_event && match_cb && match_user) {
+                return XF_OK;
+            }
         }
     }
-    return XF_ERR_NOT_FOUND;
+    return found ? XF_OK : XF_ERR_NOT_FOUND;
 }
 
 xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s)
