@@ -141,7 +141,7 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             xf_task_cast(_me)->id_child = XF_TASK_ID_INVALID; \
                                         } while (0)
 
-#define xf_task_start_subtask_i(_me, _cb_func, _user_data, _arg) \
+#define xf_task_await_i(_me, _cb_func, _user_data, _arg) \
                                         do { \
                                             xf_task_create_subtask_i((_me), (_cb_func), (_user_data)); \
                                             xf_task_wait_subtask_i((_me), (_arg)); \

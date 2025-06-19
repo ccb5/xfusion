@@ -69,7 +69,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @param _name         任务函数名。 @ref xf_task_cb_t.
  */
 #define XF_TASK_FUNC(_name)             XF_TASK_FUNC_IMPL(_name)
-#define XF_TASK_FUNC_IMPL(_name)        xf_task_state_t _name(xf_task_t *me, void *arg)
+#define XF_TASK_FUNC_IMPL(_name)        xf_task_async_t _name(xf_task_t *me, void *arg)
 
 /**
  * @brief 创建任务.
@@ -109,7 +109,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
- * @return xf_task_state_t 任务状态。
+ * @return xf_task_async_t 任务状态。
  *      - XF_TASK_READY        就绪
  *      - XF_TASK_BLOCKED      阻塞
  *      - XF_TASK_TERMINATED   结束
@@ -124,7 +124,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  *
  * @param _task         要运行的任务。 @ref xf_task_t.
  * @param _arg          传给任务的参数。
- * @return xf_task_state_t 任务状态。
+ * @return xf_task_async_t 任务状态。
  *      - XF_TASK_READY        就绪
  *      - XF_TASK_BLOCKED      阻塞
  *      - XF_TASK_TERMINATED   结束
@@ -160,17 +160,17 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
                                         xf_task_wait_subtask_i((_me), (_arg))
 
 /**
- * @brief 开始并等待子任结束务.
+ * @brief 等待子任务.
  *
- * @note 开始子任务 = 创建子任务 + 等待子任务结束.
+ * @note 等待子任务 = 创建子任务 + 等待子任务结束.
  *
  * @param _task         需要销毁的任务。 @ref xf_task_t.
  * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
  */
-#define xf_task_start_subtask(_me, _cb_func, _user_data, _arg) \
-                                        xf_task_start_subtask_i((_me), (_cb_func), (_user_data), (_arg))
+#define xf_task_await(_me, _cb_func, _user_data, _arg) \
+                                        xf_task_await_i((_me), (_cb_func), (_user_data), (_arg))
 
 /**
  * @brief 任务块起始.
@@ -194,7 +194,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  * @brief 获取任务状态.
  *
  * @param _task         任务句柄。 @ref xf_task_t.
- * @return xf_task_state_t @ref xf_task_state_t
+ * @return xf_task_async_t @ref xf_task_async_t
  *      - XF_TASK_READY        就绪
  *      - XF_TASK_BLOCKED      阻塞
  *      - XF_TASK_TERMINATED   结束

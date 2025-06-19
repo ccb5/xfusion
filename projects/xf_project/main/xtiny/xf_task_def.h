@@ -82,6 +82,7 @@ enum _xf_task_state_t {
     XF_TASK_BLOCKED,                        /*!< 阻塞 */
     XF_TASK_STATE_MAX,                      /*!< （不含）协程状态最大值 */
 };
+typedef xf_task_state_t xf_task_async_t;
 
 /**
  * @brief 无栈协程基类预声明。
@@ -93,12 +94,12 @@ typedef struct xf_task xf_task_t;
  *
  * @param me    协程指针。实现函数时必须使用此名称。
  * @param arg   外部传入参数。实现函数时必须使用此名称。
- * @return xf_task_state_t 协程状态。
+ * @return xf_task_async_t 协程状态。
  *      - XF_TASK_TERMINATED    已终止
  *      - XF_TASK_READY         就绪
  *      - XF_TASK_BLOCKED       阻塞
  */
-typedef xf_task_state_t (*xf_task_cb_t)(xf_task_t *me, void *arg);
+typedef xf_task_async_t (*xf_task_cb_t)(xf_task_t *me, void *arg);
 
 /**
  * @brief 无栈协程属性。
