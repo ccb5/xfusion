@@ -26,10 +26,7 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#define CONFIG_XF_EVENT_GC_NUM_MAX      (8U)    /*!< 事件池/事件回收回调的最大数量，至少大于 2 */
-#define XF_EVENT_GC_NUM_MAX             CONFIG_XF_EVENT_GC_NUM_MAX
-
-#define XF_EVENT_ID_NUM_MAX             (64U)      /*!< xf_event 管理的事件 ID 的最大数量 */
+#define XF_EVENT_ID_NUM_MAX             (64U)       /*!< xf_event 管理的事件 ID 的最大数量 */
 #define XF_EVENT_ID_OFFSET              (32768U)    /*!< xf_event 管理的事件 ID 的默认偏移量 */
 
 #if !defined(CONFIG_XF_EVENT_ID_SIZE)
@@ -57,7 +54,7 @@ typedef uintptr_t xf_event_id_t;
 enum _xf_event_id_t {
     XF_EVENT_ID_USER = 0x00,            /*!< 用户事件 ID 起始 */
     /* cppcheck-suppress misra-c2012-10.6 */
-    XF_EVENT_ID_MAX = (xf_event_id_t)~((xf_event_id_t)0),  /*!< 最大事件 ID （含） */
+    XF_EVENT_ID_MAX = (xf_event_id_t)~((xf_event_id_t)0),  /*!< 最大事件 ID （不含） */
 };
 
 /* ==================== [Global Prototypes] ================================= */
