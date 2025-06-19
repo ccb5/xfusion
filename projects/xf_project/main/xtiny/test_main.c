@@ -42,8 +42,9 @@
 #define EXAMPLE_TASK_BASIC              3
 #define EXAMPLE_TASK_WAIT_SUB           4
 #define EXAMPLE_TASK_WAIT_EVENT         5
+#define EXAMPLE_TASK_SCENE              6
 
-#define EXAMPLE                         EXAMPLE_TASK_WAIT_SUB
+#define EXAMPLE                         EXAMPLE_TASK_SCENE
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -319,6 +320,184 @@ xf_task_state_t xf_task_subscribe(xf_task_t *const me, void *arg)
     }
     XF_LOGI(tag, "co%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
+}
+
+#elif EXAMPLE == EXAMPLE_TASK_SCENE
+
+#define EVENT_ID_1              123
+#define EVENT_ID_UART_RECEIVE   345
+#define EVENT_TIMEOUT           1000
+#define LCD_RESET_IO            0
+
+void _lv_timer_handler(void);
+void _lv_init(void);
+void _xf_gpio_set(int io, int value);
+void _xf_uart_write(int uart_id, const char *buf, int len);
+
+XF_SUBSCR_FUNC(subscr_cb1);
+
+XF_TASK_FUNC(publish_task);
+XF_TASK_FUNC(subscribe_task);
+XF_TASK_FUNC(subtask);
+XF_TASK_FUNC(lcd_init_task);
+XF_TASK_FUNC(lv_task);
+XF_TASK_FUNC(uart_task);
+
+void test_main(void)
+{
+    xf_task_t *task;
+    xf_tick_t delay_tick;
+    xf_task_sched_init();
+    xf_ps_init();
+
+    xf_subscribe(EVENT_ID_1, subscr_cb1, 0);
+
+    xf_task_start(task, lv_task, NULL, "lv_task");
+    xf_task_start(task, subscribe_task, NULL, "subscribe_task");
+
+    xf_task_create(publish_task, NULL);
+    xf_task_create(uart_task, NULL);
+
+    while (1) {
+        xf_dispatch();
+        delay_tick = xf_stimer_handler();
+        if (delay_tick != 0) {
+            osDelayMs(delay_tick);
+            (void)xf_tick_inc(delay_tick);
+        }
+    }
+}
+
+void wait_at_response(void)
+{
+    // uart_read(1, buf);
+    // parse_data(buf);
+}
+
+XF_TASK_FUNC(uart_task)
+{
+    const char *const tag = "uart_task";
+    xf_err_t xf_ret;
+    xf_task_begin(me);
+    while (1) {
+        _xf_uart_write(1, "AT+RESET\r\n", sizeof("AT+RESET\r\n"));
+        xf_task_wait_until_ms(me, EVENT_ID_UART_RECEIVE, 5000, xf_ret);
+        if (xf_ret == XF_ERR_TIMEOUT) {
+            XF_LOGI(tag, "timeout");
+        } else {
+            wait_at_response();
+        }
+        // xf_task_waitevent(uart_receive, 5000);
+    }
+    xf_task_end(me);
+}
+
+XF_SUBSCR_FUNC(subscr_cb1)
+{
+    const char *const tag = "subscr_cb1";
+    // XF_LOGI(tag, "s->event_id:  %u", (unsigned int)(uintptr_t)s->event_id);
+    // XF_LOGI(tag, "s->user_data: %u", (unsigned int)(uintptr_t)s->user_data);
+    // XF_LOGI(tag, "ref_cnt:      %u", (unsigned int)(uintptr_t)ref_cnt);
+    XF_LOGI(tag, "arg:          %s", (char *)arg);
+}
+
+XF_TASK_FUNC(publish_task)
+{
+    const char *const tag = "publish_task";
+    xf_err_t xf_ret;
+    static uint8_t cnt = 0;
+    xf_task_begin(me);
+    while (1) {
+        if (cnt & 0x01) {
+            xf_ret = xf_publish(EVENT_ID_1, "hello");
+        } else {
+            xf_ret = xf_publish_sync(EVENT_ID_1, "world");
+        }
+        cnt++;
+        if (xf_ret != XF_OK) {
+            XF_LOGI(tag, "publish failed: %d", xf_ret);
+        }
+        xf_task_delay_ms(me, 3000);
+    }
+    xf_task_end(me);
+}
+
+XF_TASK_FUNC(subscribe_task)
+{
+    const char *const tag = "subscribe_task";
+    xf_err_t xf_ret;
+    xf_task_begin(me);
+    while (1) {
+        xf_task_wait_until_ms(me, EVENT_ID_1, EVENT_TIMEOUT, xf_ret);
+        if (xf_ret == XF_ERR_TIMEOUT) {
+            XF_LOGI(tag, "timeout");
+        } else {
+            XF_LOGI(tag, "got event");
+            xf_task_start_subtask(me, subtask, NULL, arg);
+        }
+    }
+    xf_task_end(me);
+}
+
+XF_TASK_FUNC(subtask)
+{
+    const char *const tag = "subtask";
+    xf_task_begin(me);
+    XF_LOGI(tag, "got: %s", (char *)arg);
+    xf_task_delay(me, 1000);
+    XF_LOGI(tag, "end");
+    xf_task_end(me);
+}
+
+XF_TASK_FUNC(lcd_init_task)
+{
+    xf_task_begin(me);
+    _xf_gpio_set(LCD_RESET_IO, 0);
+    xf_task_delay(me, 120);
+    _xf_gpio_set(LCD_RESET_IO, 1);
+    xf_task_delay(me, 10);
+    // cmd, data
+    XF_LOGI("lcd_init_task", "lcd init done");
+    xf_task_end(me);
+}
+
+XF_TASK_FUNC(lv_task)
+{
+    xf_task_begin(me);
+    xf_task_start_subtask(me, lcd_init_task, NULL, arg);
+    _lv_init();
+    while (1) {
+        _lv_timer_handler();
+        xf_task_delay(me, 30);
+    }
+    xf_task_end(me);
+}
+
+void _lv_timer_handler(void)
+{
+    const char *const tag = "subtask";
+    static uint8_t cnt = 0;
+    cnt++;
+    if (cnt == 100) {
+        XF_LOGI(tag, "running");
+        cnt = 0;
+    }
+    return;
+}
+
+void _lv_init(void)
+{
+    XF_LOGI("lv", "init");
+}
+
+void _xf_gpio_set(int io, int value)
+{
+    XF_LOGI("_xf_gpio_set", "io: %d, value: %d", io, value);
+}
+
+void _xf_uart_write(int uart_id, const char *buf, int len)
+{
+    XF_LOGI("_xf_uart_write", "uart_id: %d, buf: \"%s\", len: %d", uart_id, buf, len);
 }
 
 #endif
