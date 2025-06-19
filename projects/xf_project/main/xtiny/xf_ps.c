@@ -161,9 +161,15 @@ xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s)
 xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
 {
     xf_ps_msg_t msg = {0};
+    uint8_t ref_cnt;
     xf_dq_size_t pushed_size;
     if (event_id == XF_EVENT_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
+    }
+    ref_cnt = xf_ps_get_event_ref_cnt(event_id);
+    if (ref_cnt == 0) {
+        XF_ERROR_LINE(); XF_LOGD(TAG, "no subscriber");
+        return XF_FAIL;
     }
     msg.event_id = event_id;
     msg.arg = arg;
@@ -171,7 +177,7 @@ xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
     pushed_size = xf_deque_back_push(&sp_ch->event_queue, (void *)&msg, XF_PS_ELEM_SIZE);
     if (pushed_size != XF_PS_ELEM_SIZE) {
         XF_ERROR_LINE(); XF_LOGD(TAG, "push failed");
-        return XF_FAIL;
+        return XF_ERR_NO_MEM;
     }
     return XF_OK;
 }
