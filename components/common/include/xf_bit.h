@@ -896,7 +896,7 @@ static inline int __no_builtin_clzll(uint64_t x)
  *
  * @return 容纳 x 值所需要最小的二进制的位数.
  */
-#   define BIT_WIDTH(x)                 ((sizeof(_typeof_(x)) <= 4) ? FLS32(x) : FLS64(x))
+#   define BIT_WIDTH(x)                 ((sizeof(__typeof__(x)) <= 4) ? FLS32(x) : FLS64(x))
 #elif !defined(BIT_WIDTH)
 #   define BIT_WIDTH(x)                 (((x) < (~(BIT_IE - 1))) ? FLS32(x) : FLS64(x))
 #endif

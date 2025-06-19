@@ -88,266 +88,6 @@ extern "C" {
 
 /* ==================== [Macros] ============================================ */
 
-/*
-    https://en.cppreference.com/w/c/language/operator_arithmetic
- */
-
-#if !defined(xf_asgmt)
-#    define  xf_asgmt(_1, _2)           ((_1) = (_2)) /*!< Assignment */
-#endif
-
-#if !defined(xf_inc)
-#    define  xf_inc(_1)                 (++(_1))
-#endif
-#if !defined(xf_dec)
-#    define  xf_dec(_1)                 (--(_1))
-#endif
-#if !defined(xf_fetch_inc)
-#    define  xf_fetch_inc(_1)           ((_1)++)
-#endif
-#if !defined(xf_fetch_dec)
-#    define  xf_fetch_dec(_1)           ((_1)--)
-#endif
-
-#if !defined(xf_add)
-#    define  xf_add(_1, _2)             ((_1) + (_2))
-#endif
-#if !defined(xf_sub)
-#    define  xf_sub(_1, _2)             ((_1) - (_2))
-#endif
-#if !defined(xf_prod)
-#    define  xf_prod(_1, _2)            ((_1) * (_2))
-#endif
-#if !defined(xf_mul)
-#    define  xf_mul(_1, _2)             xf_prod((_1), (_2))
-#endif
-#if !defined(xf_div)
-#    define  xf_div(_1, _2)             ((_1) / (_2))
-#endif
-#if !defined(xf_rem)
-#    define  xf_rem(_1, _2)             ((_1) % (_2))
-#endif
-
-#if !defined(xf_not)
-#    define  xf_not(_1)                 (~(_1))
-#endif
-#if !defined(xf_and)
-#    define  xf_and(_1, _2)             ((_1) & (_2))
-#endif
-#if !defined(xf_or)
-#    define  xf_or(_1, _2)              ((_1) | (_2))
-#endif
-#if !defined(xf_xor)
-#    define  xf_xor(_1, _2)             ((_1) ^ (_2))
-#endif
-#if !defined(xf_lsh)
-#    define  xf_lsh(_1, _2)             ((_1) << (_2))
-#endif
-#if !defined(xf_rsh)
-#    define  xf_rsh(_1, _2)             ((_1) >> (_2))
-#endif
-
-#if !defined(xf_l_not)
-#    define  xf_l_not(_1)               (!(_1))
-#endif
-#if !defined(xf_l_and)
-#    define  xf_l_and(_1, _2)           ((_1) && (_2))
-#endif
-#if !defined(xf_l_or)
-#    define  xf_l_or(_1, _2)            ((_1) || (_2))
-#endif
-
-#if !defined(xf_eq)
-#    define  xf_eq(_1, _2)              ((_1) == (_2))
-#endif
-#if !defined(xf_ne)
-#    define  xf_ne(_1, _2)              ((_1) != (_2))
-#endif
-#if !defined(xf_lt)
-#    define  xf_lt(_1, _2)              ((_1) < (_2))
-#endif
-#if !defined(xf_gt)
-#    define  xf_gt(_1, _2)              ((_1) > (_2))
-#endif
-#if !defined(xf_le)
-#    define  xf_le(_1, _2)              ((_1) <= (_2))
-#endif
-#if !defined(xf_ge)
-#    define  xf_ge(_1, _2)              ((_1) >= (_2))
-#endif
-
-#if !defined(xf_arrsub)
-#    define  xf_arrsub(_1, _2)          ((_1)[(_2)]) /*!< array subscript */
-#endif
-#if !defined(xf_arrmb)
-#    define  xf_arrmb(_1, _2)           xf_arrsub((_1), (_2))
-#endif
-#if !defined(xf_deref)
-#    define  xf_deref(_1)               (*(_1))
-#endif
-#if !defined(xf_addr_of)
-#    define  xf_addr_of(_1)             (&(_1))
-#endif
-#if !defined(xf_addr)
-#    define  xf_addr(_1)                xf_addr_of(_1)
-#endif
-#if !defined(xf_ref)
-#    define  xf_ref(_1)                 xf_addr_of(_1)
-#endif
-#if !defined(xf_mbacc)
-#    define  xf_mbacc(_1, _2)           ((_1).(_2)) /*!< member access */
-#endif
-#if !defined(xf_mbacc_ptr)
-#    define  xf_mbacc_ptr(_1, _2)       ((_1)->(_2)) /*!< member access through pointer */
-#endif
-
-#if !defined(xf_call)
-#    define  xf_call(_1, ...)           ((_1)(##__VA_ARGS__))
-#endif
-#if !defined(xf_cast)
-#    define  xf_cast(_1, _2)            ((_1)(_2))
-#endif
-#if !defined(xf_cond)
-#    define  xf_cond(_1, _2, _3)        ((_1) ? (_2) : (_3))
-#endif
-#if !defined(xf_sizeof)
-#    define  xf_sizeof(_1)              sizeof((_1))
-#endif
-#if !defined(xf_alignof)
-#    define  xf_alignof(_1)             _Alignof((_1)) /*!< (alignof((_1))) if c23 */
-#endif
-#if !defined(xf_typeof)
-#    define  xf_typeof(_1)              __typeof__((_1))
-#endif
-
-#if !defined(_asgmt_)
-#    define  _asgmt_(...)               xf_asgmt(__VA_ARGS__)
-#endif
-
-#if !defined(_inc_)
-#    define  _inc_(...)                 xf_inc(__VA_ARGS__)
-#endif
-#if !defined(_dec_)
-#    define  _dec_(...)                 xf_dec(__VA_ARGS__)
-#endif
-#if !defined(_fetch_inc_)
-#    define  _fetch_inc_(...)           xf_fetch_inc(__VA_ARGS__)
-#endif
-#if !defined(_fetch_dec_)
-#    define  _fetch_dec_(...)           xf_fetch_dec(__VA_ARGS__)
-#endif
-
-#if !defined(_add_)
-#    define  _add_(...)                 xf_add(__VA_ARGS__)
-#endif
-#if !defined(_sub_)
-#    define  _sub_(...)                 xf_sub(__VA_ARGS__)
-#endif
-#if !defined(_prod_)
-#    define  _prod_(...)                xf_prod(__VA_ARGS__)
-#endif
-#if !defined(_mul_)
-#    define  _mul_(...)                 xf_mul(__VA_ARGS__)
-#endif
-#if !defined(_div_)
-#    define  _div_(...)                 xf_div(__VA_ARGS__)
-#endif
-#if !defined(_rem_)
-#    define  _rem_(...)                 xf_rem(__VA_ARGS__)
-#endif
-
-#if !defined(_not_)
-#    define  _not_(...)                 xf_not(__VA_ARGS__)
-#endif
-#if !defined(_and_)
-#    define  _and_(...)                 xf_and(__VA_ARGS__)
-#endif
-#if !defined(_or_)
-#    define  _or_(...)                  xf_or(__VA_ARGS__)
-#endif
-#if !defined(_xor_)
-#    define  _xor_(...)                 xf_xor(__VA_ARGS__)
-#endif
-#if !defined(_lsh_)
-#    define  _lsh_(...)                 xf_lsh(__VA_ARGS__)
-#endif
-#if !defined(_rsh_)
-#    define  _rsh_(...)                 xf_rsh(__VA_ARGS__)
-#endif
-
-#if !defined(_l_not_)
-#    define  _l_not_(...)               xf_l_not(__VA_ARGS__)
-#endif
-#if !defined(_l_and_)
-#    define  _l_and_(...)               xf_l_and(__VA_ARGS__)
-#endif
-#if !defined(_l_or_)
-#    define  _l_or_(...)                xf_l_or(__VA_ARGS__)
-#endif
-
-#if !defined(_eq_)
-#    define  _eq_(...)                  xf_eq(__VA_ARGS__)
-#endif
-#if !defined(_ne_)
-#    define  _ne_(...)                  xf_ne(__VA_ARGS__)
-#endif
-#if !defined(_lt_)
-#    define  _lt_(...)                  xf_lt(__VA_ARGS__)
-#endif
-#if !defined(_gt_)
-#    define  _gt_(...)                  xf_gt(__VA_ARGS__)
-#endif
-#if !defined(_le_)
-#    define  _le_(...)                  xf_le(__VA_ARGS__)
-#endif
-#if !defined(_ge_)
-#    define  _ge_(...)                  xf_ge(__VA_ARGS__)
-#endif
-
-#if !defined(_arrsubs_)
-#    define  _arrsubs_(...)             xf_arrsub(__VA_ARGS__)
-#endif
-#if !defined(_arrmb_)
-#    define  _arrmb_(...)               xf_arrmb(__VA_ARGS__)
-#endif
-#if !defined(_deref_)
-#    define  _deref_(...)               xf_deref(__VA_ARGS__)
-#endif
-#if !defined(_addr_of_)
-#    define  _addr_of_(...)             xf_addr_of(__VA_ARGS__)
-#endif
-#if !defined(_addr_)
-#    define  _addr_(...)                xf_addr(__VA_ARGS__)
-#endif
-#if !defined(_ref_)
-#    define  _ref_(...)                 xf_ref(__VA_ARGS__)
-#endif
-#if !defined(_mbacc_)
-#    define  _mbacc_(...)               xf_mbacc(__VA_ARGS__)
-#endif
-#if !defined(_mbacc_ptr_)
-#    define  _mbacc_ptr_(...)           xf_mbacc_ptr(__VA_ARGS__)
-#endif
-
-#if !defined(_call_)
-#    define  _call_(_1, ...)            xf_call(_1, ##__VA_ARGS__)
-#endif
-#if !defined(_cast_)
-#    define  _cast_(...)                xf_cast(__VA_ARGS__)
-#endif
-#if !defined(_cond_)
-#    define  _cond_(...)                xf_cond(__VA_ARGS__)
-#endif
-#if !defined(_sizeof_)
-#    define  _sizeof_(...)              xf_sizeof(__VA_ARGS__)
-#endif
-#if !defined(_alignof_)
-#    define  _alignof_(...)             xf_alignof(__VA_ARGS__)
-#endif
-#if !defined(_typeof_)
-#    define  _typeof_(...)              xf_typeof(__VA_ARGS__)
-#endif
-
 #if !defined(UNUSED)
 /**
  * @brief 未使用的变量通过 UNUSED 防止编译器警告.
@@ -462,66 +202,6 @@ extern "C" {
 #   define XF_DEREF(t, ptr)             (*(t *)(ptr))
 #endif
 
-#if XF_COMMON_TODO && XF_COM_USE_GNU
-/*
-    https://gcc.gnu.org/onlinedocs/gcc/Typeof.html
- */
-#   define pointer(T)                   _typeof_(T *)
-#   define array(T, N)                  _typeof_(T [N])
-#endif
-
-#define mo_offsetof(type, member)       ((size_t)&((type *)0)->member)
-#define mo_container_of(ptr, type, member) \
-                                        ((type *)((char *)(ptr) - mo_offsetof(type, member)))
-#define MO_ARRAY_SIZE(arr)              (sizeof(arr) / sizeof((arr)[0]))
-#define MO_ALIGN(x, a)                  __ALIGN_MASK(x, (a) - 1)
-#define MO_ALIGN_DOWN(x, a)             MO_ALIGN((x) - ((a) - 1), (a))
-#define MO_PTR_ALIGN(p, a)              MO_ALIGN((uintptr_t)(p), (a))
-#define MO_IS_ALIGNED(x, a)             (((x) & ((a) - 1)) == 0)
-#define MO_ALIGN_NUM(x, n)              (((n) - 1) + (x) - (((n) - 1) % (x)))
-#define MO_IS_POWER_OF_TWO(x)           (((x) != 0) && ((((x) - 1) & (x)) == 0))
-#define mo_swap(a, b)                   do { /* 只是为了不使用新类型 */ \
-                                             if ((a) != (b)) { \
-                                                 (a) ^= (b); (b) ^= (a); (a) ^= (b); \
-                                             } \
-                                         } while (0)
-#define mo_abs(x)                       ((x) < 0 ? -(x) : (x))
-#define mo_max(x, y)                    ((x) > (y) ? (x) : (y))
-#define mo_min(x, y)                    ((x) < (y) ? (x) : (y))
-#define mo_div_round_up(n, d)           (((n) + (d) - 1) / (d))
-#define mo_div_round_down(n, d)         ((n) / (d))
-#define mo_roundup(x, y)                ((((x) + ((y) - 1)) / (y)) * (y))
-#define mo_rounddown(x, y)              ((x) - ((x) % (y)))
-#define mo_div_round_closest(x, divisor) \
-                                        ( \
-                                            ((((x) >= 0) && ((divisor) >= 0)) \
-                                                    || (((x) < 0) && ((divisor) < 0))) \
-                                                ? (((x) + ((divisor) >> 1)) / (divisor)) \
-                                                : (((x) - ((divisor) >> 1)) / (divisor)) \
-                                        )
-#define mo_mult_frac(x, numer, denom) \
-                                        ((((x) / (denom)) * (numer)) \
-                                            + ((((x) % (denom)) * (numer)) / (denom)))
-#define mo_clamp(val, low, high)        (((val) <= (low)) ? (low) : mo_min(val, high))
-#define mo_in_range(val, min, max)      ((val) >= (min) && (val) <= (max))
-
-#if !defined(CHOOSE_CONST_EXPR) && XF_COM_USE_BUILTIN
-/**
- * @brief 选择常量表达式。
- *
- * 如果表达式是常量表达式则返回常量表达式运算结果，否则返回 0。
- *
- * @param e 需要判断是否为常量表达式的表达式。
- *
- * @return
- *      - e 常量表达式运算结果
- *      - 0 不是常量表达式
- */
-#   define CHOOSE_CONST_EXPR(e)         __builtin_choose_expr(__builtin_constant_p(e), (e), 0)
-#elif !defined(CHOOSE_CONST_EXPR)
-#   define CHOOSE_CONST_EXPR(e)         (e)
-#endif
-
 #if !defined(STATIC_ASSERT)
 /**
  * @brief 静态断言。
@@ -534,7 +214,7 @@ extern "C" {
     *O_o( \
         char \
 static_assertion_failure \
-            [1 - 2 * !CHOOSE_CONST_EXPR(e)] \
+            [1 - 2 * !(e)] \
         ) \
     )
 #endif
@@ -552,7 +232,7 @@ static_assertion_failure \
     *O_o( \
         char \
 static_assertion_failure \
-            [1 - 2 * !CHOOSE_CONST_EXPR(e)] \
+            [1 - 2 * !(e)] \
         ) \
     )
 #endif
@@ -587,7 +267,7 @@ static_assertion_failure \
 #   define BUILD_BUG_ON_NOT_POWER_OF_2(n)   BUILD_BUG_ON(IS_POWER_OF_TWO(n))
 #endif
 
-#if !defined(xf_offsetof) && XF_COM_USE_BUILTIN
+#if !defined(xf_offsetof)
 /**
  * @brief offsetof - 返回结构成员相对于结构开头的字节偏移量.
  *
@@ -596,12 +276,10 @@ static_assertion_failure \
  *
  * @return 结构成员相对于结构开头的字节偏移量.
  */
-#   define xf_offsetof(type, member)    __builtin_offsetof(type, member)
-#elif !defined(xf_offsetof)
-#   define xf_offsetof(type, member)    mo_offsetof(type, member)
+#   define xf_offsetof(type, member)    ((size_t)&((type *)0)->member)
 #endif
 
-#if !defined(xf_container_of) && XF_COM_USE_GNU
+#if !defined(xf_container_of)
 /**
  * @brief container_of - 通过结构体成员变量地址获取结构体的地址.
  *
@@ -639,37 +317,10 @@ static_assertion_failure \
  * @endcode
  */
 #   define xf_container_of(ptr, type, member) \
-                                        ({ \
-                                            const _typeof_(((type *)0)->member) *__mptr = (const _typeof_(((type *)0)->member) *)(ptr); \
-                                            (type *)((char *)__mptr - xf_offsetof(type, member)); \
-                                        })
-#elif !defined(xf_container_of)
-#   define xf_container_of(ptr, type, member) \
-                                        mo_container_of(ptr, type, member)
+                                        ((type *)((char *)(ptr) - xf_offsetof(type, member)))
 #endif
 
-#if !defined(__same_type) && XF_COM_USE_BUILTIN
-/**
- * @brief 判断类型是否相同。
- * @return
- *      - (1)         a 和 b 的类型兼容
- *      - (0)         a 和 b 的类型不兼容
- */
-#   define __same_type(a, b)            __builtin_types_compatible_p(typeof(a), typeof(b))
-#elif !defined(__same_type)
-#   define __same_type(a, b)            0
-#endif
-
-#if !defined(__must_be_array) && XF_COM_USE_BUILTIN
-/**
- * @brief a 必须是数组，否则编译报错。
- */
-#   define __must_be_array(a)           BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
-#elif !defined(__must_be_array)
-#   define __must_be_array(a)           (0)
-#endif
-
-#if !defined(ARRAY_SIZE) && XF_COM_USE_BUILTIN
+#if !defined(ARRAY_SIZE)
 /**
  * @brief ARRAY_SIZE - 获取数组 arr 中的元素数量。
  *
@@ -677,14 +328,14 @@ static_assertion_failure \
  *
  * @return 数组元素个数。
  */
-#   define ARRAY_SIZE(arr)              (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+#   define ARRAY_SIZE(arr)              (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
 #if !defined(__ALIGN_MASK)
 #   define __ALIGN_MASK(x, mask)        (((x) + (mask)) & ~(mask))
 #endif
 
-#if !defined(ALIGN) && XF_COM_USE_GNU
+#if !defined(ALIGN)
 /**
  * @brief 将 x 向上对齐（增加）到 a 最接近（较大）倍数.
  *
@@ -693,9 +344,7 @@ static_assertion_failure \
  *
  * @return 已对齐（增加）的数.
  */
-#   define ALIGN(x, a)                  __ALIGN_MASK(x, (_typeof_(x))(a) - 1)
-#elif !defined(ALIGN)
-#   define ALIGN(x, a)                  MO_ALIGN(x, a)
+#   define ALIGN(x, a)                  __ALIGN_MASK(x, (a) - 1)
 #endif
 
 #if !defined(ALIGN_DOWN)
@@ -710,23 +359,19 @@ static_assertion_failure \
 #   define ALIGN_DOWN(x, a)             ALIGN((x) - ((a) - 1), (a))
 #endif
 
-#if !defined(PTR_ALIGN) && XF_COM_USE_GNU
+#if !defined(PTR_ALIGN)
 /**
  * @brief 将指针向上对齐到 a.
  */
-#   define PTR_ALIGN(p, a)              ((_typeof_(p))ALIGN((unsigned long)(p), (a)))
-#elif !defined(PTR_ALIGN)
-#   define PTR_ALIGN(p, a)              MO_PTR_ALIGN(p, a)
+#   define PTR_ALIGN(p, a)              ALIGN((uintptr_t)(p), (a))
 #endif
 
-#if !defined(IS_ALIGNED) && XF_COM_USE_GNU
+#if !defined(IS_ALIGNED)
 /**
  * @brief 检查 x 是否对齐到 a.
  * @note a 必须是 2 的幂。
  */
-#   define IS_ALIGNED(x, a)             (((x) & ((_typeof_(x))(a) - 1)) == 0)
-#elif !defined(IS_ALIGNED)
-#   define IS_ALIGNED(x, a)             MO_IS_ALIGNED(x, a)
+#   define IS_ALIGNED(x, a)             (((x) & ((a) - 1)) == 0)
 #endif
 
 #if !defined(ALIGN_NUM)
@@ -749,70 +394,49 @@ static_assertion_failure \
  * @brief 数据相关.
  */
 
-#if !defined(xf_swap) && XF_COM_USE_GNU
+#if !defined(xf_swap)
 /**
  * @brief 交换 a 和 b 的值.
  */
-#   define xf_swap(a, b)                do { \
-                                            _typeof_(a) __tmp = (a); \
-                                            (a) = (b); \
-                                            (b) = __tmp; \
+#   define xf_swap(a, b)                do { /* 只是为了不使用新类型 */ \
+                                             if ((a) != (b)) { \
+                                                 (a) ^= (b); (b) ^= (a); (a) ^= (b); \
+                                             } \
                                         } while (0)
-#elif !defined(xf_swap)
-#   define xf_swap(a, b)                mo_swap(a, b)
 #endif
 
 /**
  * @brief 算数相关.
  */
 
-#if !defined(xf_abs) && XF_COM_USE_GNU
+#if !defined(xf_abs)
 /**
  * @brief abs - 返回参数的绝对值
  *
  * @return x 的绝对值.
  */
-#   define xf_abs(x)                    ({ \
-                                            _typeof_(x) __x = (x); \
-                                            (__x < 0 ? -__x : __x); \
-                                        })
-#elif !defined(xf_abs)
-#   define xf_abs(x)                    mo_abs(x)
+#   define xf_abs(x)                    ((x) < 0 ? -(x) : (x))
 #endif
 
-#if !defined(xf_max) && XF_COM_USE_GNU
+#if !defined(xf_max)
 /**
  * @brief 求最大值.
  *
  * @return x 和 y 中较大者.
  */
-#   define xf_max(x, y)                 ({ \
-                                            _typeof_(x) _max1 = (x); \
-                                            _typeof_(y) _max2 = (y); \
-                                            (void) (&_max1 == &_max2); \
-                                            (_max1 > _max2 ? _max1 : _max2); \
-                                        })
-#elif !defined(xf_max)
-#   define xf_max(x, y)                 mo_max(x, y)
+#   define xf_max(x, y)                 ((x) > (y) ? (x) : (y))
 #endif
 
-#if !defined(xf_min) && XF_COM_USE_GNU
+#if !defined(xf_min)
 /**
  * @brief 求最小值.
  *
  * @return x 和 y 中较小者.
  */
-#   define xf_min(x, y)                 ({ \
-                                            _typeof_(x) _min1 = (x); \
-                                            _typeof_(y) _min2 = (y); \
-                                            (void) (&_min1 == &_min2); \
-                                            (_min1 < _min2 ? _min1 : _min2); \
-                                        })
-#elif !defined(xf_min)
-#   define xf_min(x, y)                 mo_min(x, y)
+#   define xf_min(x, y)                 ((x) < (y) ? (x) : (y))
 #endif
 
-#if !defined(xf_div_round_up) && XF_COM_USE_GNU
+#if !defined(xf_div_round_up)
 /**
  * @brief 向上取整.
  *
@@ -826,12 +450,7 @@ static_assertion_failure \
  * xf_div_round_up(100, 4) == 25
  * xf_div_round_up(100, 6) == 17
  */
-#   define xf_div_round_up(n, d)        ({ \
-                                            _typeof_(d) __d = (d); \
-                                            (((n) + __d - 1) / __d); \
-                                        })
-#elif !defined(xf_div_round_up)
-#   define xf_div_round_up(n, d)        mo_div_round_up(n, d)
+#   define xf_div_round_up(n, d)        (((n) + (d) - 1) / (d))
 #endif
 
 #if !defined(xf_div_round_down)
@@ -851,7 +470,7 @@ static_assertion_failure \
 #   define xf_div_round_down(n, d)      ((n) / (d))
 #endif
 
-#if !defined(xf_roundup) && XF_COM_USE_GNU
+#if !defined(xf_roundup)
 /**
  * @brief 向上圆整.
  *
@@ -865,15 +484,10 @@ static_assertion_failure \
  * roundup(100, 4) == 100 ///!< 100 能被 4 整除
  * roundup(100, 7) == 105 ///!< 100 不能被 7 整除, 100 以上能被 7 整除的最小数是 105
  */
-#   define xf_roundup(x, y)             ({ \
-                                            const _typeof_(y) __y = y; \
-                                            ((((x) + (__y - 1)) / __y) * __y); \
-                                        })
-#elif !defined(xf_roundup)
-#   define xf_roundup(x, y)             mo_roundup(x, y)
+#   define xf_roundup(x, y)             ((((x) + ((y) - 1)) / (y)) * (y))
 #endif
 
-#if !defined(xf_rounddown) && XF_COM_USE_GNU
+#if !defined(xf_rounddown)
 /**
  * @brief 向下圆整.
  *
@@ -887,15 +501,10 @@ static_assertion_failure \
  * rounddown(100, 4) == 100  ///!< 100 能被 4 整除
  * rounddown(100, 7) == 98   ///!< 100 不能被 7 整除, 100 以下能被 7 整除的最大数是 98
  */
-#   define xf_rounddown(x, y)           ({ \
-                                            _typeof_(x) __x = (x); \
-                                            (__x - (__x % (y))); \
-                                        })
-#elif !defined(xf_rounddown)
-#   define xf_rounddown(x, y)           mo_rounddown(x, y)
+#   define xf_rounddown(x, y)           ((x) - ((x) % (y)))
 #endif
 
-#if !defined(xf_div_round_closest) && XF_COM_USE_GNU
+#if !defined(xf_div_round_closest)
 /**
  * @brief 四舍五入到整数.
  *
@@ -909,25 +518,15 @@ static_assertion_failure \
  * @return 四舍五入的整数结果.
  */
 #   define xf_div_round_closest(x, divisor) \
-                                        ({ \
-                                            _typeof_(x) __x = x; \
-                                            _typeof_(divisor) __d = divisor; \
-                                            (((_typeof_(x))-1) > 0 \
-                                                || ((_typeof_(divisor))-1) > 0 \
-                                                || (((__x) > 0) == ((__d) > 0))) ? \
-                                            (((__x) + ((__d) / 2)) / (__d)) : \
-                                            (((__x) - ((__d) / 2)) / (__d)); \
-                                        })
-#elif !defined(xf_div_round_closest)
-/**
- * @brief 只支持 x 和 divisor 都是整数.
- * @todo 待验证.
- */
-#   define xf_div_round_closest(x, divisor) \
-                                        mo_div_round_closest(x, divisor)
+                                        ( \
+                                            ((((x) >= 0) && ((divisor) >= 0)) \
+                                                    || (((x) < 0) && ((divisor) < 0))) \
+                                                ? (((x) + ((divisor) >> 1)) / (divisor)) \
+                                                : (((x) - ((divisor) >> 1)) / (divisor)) \
+                                        )
 #endif
 
-#if !defined(xf_mult_frac) && XF_COM_USE_GNU
+#if !defined(xf_mult_frac)
 /**
  * @brief 将整数乘以分数.
  *
@@ -940,17 +539,11 @@ static_assertion_failure \
  * @return 整数乘与分数相乘结果
  */
 #   define xf_mult_frac(x, numer, denom) \
-                                        ({ \
-                                            _typeof_(x) quot = (x) / (denom); \
-                                            _typeof_(x) rem  = (x) % (denom); \
-                                            (quot * (numer)) + ((rem * (numer)) / (denom)); \
-                                        })
-#elif !defined(xf_mult_frac)
-#   define xf_mult_frac(x, numer, denom) \
-                                        mo_mult_frac(x, numer, denom)
+                                        ((((x) / (denom)) * (numer)) \
+                                            + ((((x) % (denom)) * (numer)) / (denom)))
 #endif
 
-#if !defined(xf_clamp) && XF_COM_USE_GNU
+#if !defined(xf_clamp)
 /**
  * @brief 将值限制在给定范围内.
  *
@@ -959,15 +552,10 @@ static_assertion_failure \
  * @param high 最高允许值（含）.
  * @return 限制值
  */
-#   define xf_clamp(val, low, high)     ({ \
-                                            _typeof_(low) __low = low; \
-                                            (((val) <= (__low)) ? (__low) : xf_min(val, high)); \
-                                        })
-#elif !defined(xf_clamp)
-#   define xf_clamp(val, low, high)     mo_clamp(val, low, high)
+#   define xf_clamp(val, low, high)     (((val) <= (low)) ? (low) : xf_min(val, high))
 #endif
 
-#if !defined(xf_in_range) && XF_COM_USE_GNU
+#if !defined(xf_in_range)
 /**
  * @brief 检查值是否在范围内.
  *
@@ -978,12 +566,7 @@ static_assertion_failure \
  * @return true 在范围内
  * @return false 不在范围内
  */
-#   define xf_in_range(val, min, max)   ({ \
-                                            _typeof_(val) __val = val; \
-                                            ((__val >= (min)) && (__val <= (max))); \
-                                        })
-#elif !defined(xf_in_range)
-#   define xf_in_range(val, min, max)   mo_in_range(val, min, max)
+#   define xf_in_range(val, min, max)   ((val) >= (min) && (val) <= (max))
 #endif
 
 /**
@@ -1155,9 +738,9 @@ static_assertion_failure \
  */
 #   define XF_WAIT_FOR(_condition, _attempts, _delay_num, _result) \
         do { \
+            uint32_t remaining_attempts = (_attempts); \
             if (!(_attempts)) { break; } \
             (_result) = false; \
-            uint32_t remaining_attempts = (_attempts); \
             do { \
                 if (_condition) { \
                     (_result) = true; \
