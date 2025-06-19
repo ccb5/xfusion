@@ -162,15 +162,12 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
 /**
  * @brief 开始并等待子任结束务.
  *
- * @note 开始任务 = 创建子任务 + 等待子任务结束.
+ * @note 开始子任务 = 创建子任务 + 等待子任务结束.
  *
  * @param _task         需要销毁的任务。 @ref xf_task_t.
  * @param _cb_func      任务函数。 @ref xf_task_cb_t.
  * @param _user_data    任务内的用户数据。 @ref xf_task_t.user_data.
  * @param _arg          传给任务的参数。
- * @return xf_err_t
- *      - XF_ERR_INVALID_ARG    无效参数
- *      - XF_OK                 成功
  */
 #define xf_task_start_subtask(_me, _cb_func, _user_data, _arg) \
                                         xf_task_start_subtask_i((_me), (_cb_func), (_user_data), (_arg))

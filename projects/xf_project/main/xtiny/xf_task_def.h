@@ -130,7 +130,6 @@ struct xf_task {
      *    类型见 @ref xf_task_state_t. 此处只可能是：
      *    - XF_TASK_TERMINATED (默认)
      *    - XF_TASK_READY
-     *    - XF_TASK_RUNNING
      *    - XF_TASK_BLOCKED
      *
      * 2. B2 ~ B7: 保留位 (reserved).
