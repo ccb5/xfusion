@@ -68,7 +68,8 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
  *
  * @param _name         任务函数名。 @ref xf_task_cb_t.
  */
-#define xf_task_cb(_name)               xf_task_state_t _name(xf_task_t *me, void *arg)
+#define XF_TASK_FUNC(_name)             XF_TASK_FUNC_IMPL(_name)
+#define XF_TASK_FUNC_IMPL(_name)        xf_task_state_t _name(xf_task_t *me, void *arg)
 
 /**
  * @brief 创建任务.

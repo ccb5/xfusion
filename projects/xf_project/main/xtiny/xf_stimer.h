@@ -72,7 +72,10 @@ uint8_t xf_stimer_get_idle_percentage(void);
 
 /* ==================== [Macros] ============================================ */
 
-#define xf_stimer_cast(_stimer)                 ((xf_stimer_t *)(_stimer))
+#define xf_stimer_cast(_stimer)         ((xf_stimer_t *)(_stimer))
+
+#define XF_STIMER_FUNC(_name)           XF_STIMER_FUNC_IMPL(_name)
+#define XF_STIMER_FUNC_IMPL(_name)      void _name(xf_stimer_t *stimer)
 
 #ifdef __cplusplus
 } /* extern "C" */
