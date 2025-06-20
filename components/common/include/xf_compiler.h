@@ -198,7 +198,7 @@ extern "C" {
           (new_val) )
 
 #if !defined(__fallthrough)
-#   define __fallthrough
+#   define __fallthrough                __attribute__((fallthrough));
 #endif
 
 #else /* !XF_COM_USE_GNU */

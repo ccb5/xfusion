@@ -32,9 +32,6 @@ extern "C" {
 /* ==================== [Typedefs] ========================================== */
 
 /* 协程数量 */
-/*
-    ID 为 XF_TASK_NUM_MAX - 1 的协程默认被 xf_task_top 占用
- */
 #define XF_TASK_NUM_MAX                   (16U)
 /*
     maximum depth of state nesting in a coroutine (including the top level),
@@ -56,9 +53,9 @@ typedef void *xf_task_lc_t;
 typedef uint16_t xf_task_lc_t;
 #define XF_TASK_LC_INIT_VALUE   0
 #define xf_task_lc_init(s)      s = XF_TASK_LC_INIT_VALUE;
-#define xf_task_lc_resume(s)    switch(s) { /* fall-through */ /* FALLTHRU */ case XF_TASK_LC_INIT_VALUE:
-#define xf_task_lc_set(s)       s = __LINE__; /* fall-through */ /* FALLTHRU */ case __LINE__:
-#define xf_task_lc_end(s)       }
+#define xf_task_lc_resume(s)    switch(s) { case XF_TASK_LC_INIT_VALUE:
+#define xf_task_lc_set(s)       s = __LINE__; /* fall-through */ /* FALLTHRU */ __fallthrough case __LINE__:
+#define xf_task_lc_end(s)       default:; break; }
 #endif
 
 /**
