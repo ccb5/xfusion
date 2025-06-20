@@ -22,7 +22,6 @@
 
 static const char s_lvl_to_prompt[] = {
     '\0',
-    'U',
     'E',
     'W',
     'I',

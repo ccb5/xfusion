@@ -26,14 +26,11 @@ extern "C" {
 /* ==================== [Defines] =========================================== */
 
 #define XF_LOG_NONE             (0)
-#define XF_LOG_USER             (1)
-#define XF_LOG_ERROR            (2)
-#define XF_LOG_WARN             (3)
-#define XF_LOG_INFO             (4)
-#define XF_LOG_DEBUG            (5)
-#define XF_LOG_VERBOSE          (6)
-
-#define XF_LOG_LEVEL            CONFIG_XF_LOG_LEVEL
+#define XF_LOG_ERROR            (1)
+#define XF_LOG_WARN             (2)
+#define XF_LOG_INFO             (3)
+#define XF_LOG_DEBUG            (4)
+#define XF_LOG_VERBOSE          (5)
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -44,7 +41,6 @@ extern "C" {
  *
  * @param level 日志等级。
  *      - XF_LOG_NONE       无
- *      - XF_LOG_USER       用户
  *      - XF_LOG_ERROR      错误
  *      - XF_LOG_WARN       警告
  *      - XF_LOG_INFO       信息
@@ -85,23 +81,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #define XF_MLOG_DEFINE_THIS_FILE()          static const char *const MTAG = (__FILENAME__)
 #define XF_MLOG_DEFINE()                    XF_MLOG_DEFINE_THIS_FILE()
 
-#if XF_LOG_LEVEL >= XF_LOG_USER
-/**
- * @brief 用户等级日志。始终显示文件名、行号等信息。
- *
- * @param tag 日志标签。
- * @param format 日志格式化字符串。
- * @param ... 可变参数。
- * @return size_t 本次日志字节数。
- */
-#   define XF_LOGU(tag, format, ...)    xf_log_level(XF_LOG_USER,     tag, format, ##__VA_ARGS__)
-#   define XF_MLOGU(format, ...)        xf_log_level(XF_LOG_USER,    MTAG, format, ##__VA_ARGS__)
-#else
-#   define XF_LOGU(tag, format, ...)    UNUSED(tag)
-#   define XF_MLOGU(format, ...)        UNUSED(MTAG)
-#endif
-
-#if XF_LOG_LEVEL >= XF_LOG_ERROR
+#if defined(CONFIG_XF_LOG_ENABLE_ERROR) && CONFIG_XF_LOG_ENABLE_ERROR
 /**
  * @brief 错误等级日志。始终显示文件名、行号等信息。
  *
@@ -110,14 +90,14 @@ char xf_log_level_to_prompt(uint32_t level);
  * @param ... 可变参数。
  * @return size_t 本次日志字节数。
  */
-#   define XF_LOGE(tag, format, ...)    xf_log_level(XF_LOG_ERROR,    tag, format, ##__VA_ARGS__)
-#   define XF_MLOGE(format, ...)        xf_log_level(XF_LOG_ERROR,   MTAG, format, ##__VA_ARGS__)
+#   define XF_LOGE(tag, format, ...)    xf_log_level(XF_LOG_ERROR,  tag,  format, ##__VA_ARGS__)
+#   define XF_MLOGE(format, ...)        xf_log_level(XF_LOG_ERROR,  MTAG, format, ##__VA_ARGS__)
 #else
 #   define XF_LOGE(tag, format, ...)    UNUSED(tag)
 #   define XF_MLOGE(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_LEVEL >= XF_LOG_WARN
+#if defined(CONFIG_XF_LOG_ENABLE_WARN) && CONFIG_XF_LOG_ENABLE_WARN
 /**
  * @brief 警告等级日志。
  *
@@ -126,14 +106,14 @@ char xf_log_level_to_prompt(uint32_t level);
  * @param ... 可变参数。
  * @return size_t 本次日志字节数。
  */
-#   define XF_LOGW(tag, format, ...)    xf_log_level(XF_LOG_WARN,     tag, format, ##__VA_ARGS__)
-#   define XF_MLOGW(format, ...)        xf_log_level(XF_LOG_WARN,    MTAG, format, ##__VA_ARGS__)
+#   define XF_LOGW(tag, format, ...)    xf_log_level(XF_LOG_WARN,  tag,  format, ##__VA_ARGS__)
+#   define XF_MLOGW(format, ...)        xf_log_level(XF_LOG_WARN,  MTAG, format, ##__VA_ARGS__)
 #else
 #   define XF_LOGW(tag, format, ...)    UNUSED(tag)
 #   define XF_MLOGW(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_LEVEL >= XF_LOG_INFO
+#if defined(CONFIG_XF_LOG_ENABLE_INFO) && CONFIG_XF_LOG_ENABLE_INFO
 /**
  * @brief 信息等级日志。
  *
@@ -142,14 +122,14 @@ char xf_log_level_to_prompt(uint32_t level);
  * @param ... 可变参数。
  * @return size_t 本次日志字节数。
  */
-#   define XF_LOGI(tag, format, ...)    xf_log_level(XF_LOG_INFO,     tag, format, ##__VA_ARGS__)
-#   define XF_MLOGI(format, ...)        xf_log_level(XF_LOG_INFO,    MTAG, format, ##__VA_ARGS__)
+#   define XF_LOGI(tag, format, ...)    xf_log_level(XF_LOG_INFO,  tag,  format, ##__VA_ARGS__)
+#   define XF_MLOGI(format, ...)        xf_log_level(XF_LOG_INFO,  MTAG, format, ##__VA_ARGS__)
 #else
 #   define XF_LOGI(tag, format, ...)    UNUSED(tag)
 #   define XF_MLOGI(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_LEVEL >= XF_LOG_DEBUG
+#if defined(CONFIG_XF_LOG_ENABLE_DEBUG) && CONFIG_XF_LOG_ENABLE_DEBUG
 /**
  * @brief 调试等级日志。
  *
@@ -158,14 +138,14 @@ char xf_log_level_to_prompt(uint32_t level);
  * @param ... 可变参数。
  * @return size_t 本次日志字节数。
  */
-#   define XF_LOGD(tag, format, ...)    xf_log_level(XF_LOG_DEBUG,    tag, format, ##__VA_ARGS__)
-#   define XF_MLOGD(format, ...)        xf_log_level(XF_LOG_DEBUG,   MTAG, format, ##__VA_ARGS__)
+#   define XF_LOGD(tag, format, ...)    xf_log_level(XF_LOG_DEBUG,  tag,  format, ##__VA_ARGS__)
+#   define XF_MLOGD(format, ...)        xf_log_level(XF_LOG_DEBUG,  MTAG, format, ##__VA_ARGS__)
 #else
 #   define XF_LOGD(tag, format, ...)    UNUSED(tag)
 #   define XF_MLOGD(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_LEVEL >= XF_LOG_VERBOSE
+#if defined(CONFIG_XF_LOG_ENABLE_VERBOSE) && CONFIG_XF_LOG_ENABLE_VERBOSE
 /**
  * @brief 冗余等级日志。
  *
@@ -174,7 +154,7 @@ char xf_log_level_to_prompt(uint32_t level);
  * @param ... 可变参数。
  * @return size_t 本次日志字节数。
  */
-#   define XF_LOGV(tag, format, ...)    xf_log_level(XF_LOG_VERBOSE,  tag, format, ##__VA_ARGS__)
+#   define XF_LOGV(tag, format, ...)    xf_log_level(XF_LOG_VERBOSE, tag,  format, ##__VA_ARGS__)
 #   define XF_MLOGV(format, ...)        xf_log_level(XF_LOG_VERBOSE, MTAG, format, ##__VA_ARGS__)
 #else
 #   define XF_LOGV(tag, format, ...)    UNUSED(tag)
