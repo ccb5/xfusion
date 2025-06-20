@@ -41,11 +41,11 @@
 #define EXAMPLE_STIMER                  2
 #define EXAMPLE_TASK_BASIC              3
 #define EXAMPLE_TASK_WAIT_SUB           4
-#define EXAMPLE_TASK_SUBTASK            5
+#define EXAMPLE_TASK_AWAIT              5
 #define EXAMPLE_TASK_WAIT_EVENT         6
 #define EXAMPLE_TASK_SCENE              7
 
-#define EXAMPLE                         EXAMPLE_TASK_WAIT_EVENT
+#define EXAMPLE                         EXAMPLE_TASK_AWAIT
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -263,11 +263,12 @@ xf_task_async_t xf_task_21(xf_task_t *me, void *arg)
     xf_task_end(me);
 }
 
-#elif EXAMPLE == EXAMPLE_TASK_SUBTASK
+#elif EXAMPLE == EXAMPLE_TASK_AWAIT
 
 xf_task_async_t xf_task_1(xf_task_t *me, void *arg);
 xf_task_async_t xf_task_2(xf_task_t *me, void *arg);
 xf_task_async_t xf_task_11(xf_task_t *me, void *arg);
+xf_task_async_t xf_task_111(xf_task_t *me, void *arg);
 
 void test_main(void)
 {
@@ -329,6 +330,23 @@ xf_task_async_t xf_task_11(xf_task_t *me, void *arg)
     xf_task_begin(me);
     XF_LOGI(tag, "task%d begin", (int)xf_task_to_id(me));
     XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+
+    XF_LOGI(tag, "hi: %u", xf_tick_get_count());
+
+    /* 嵌套 await */
+    xf_task_await(me, xf_task_111, NULL, arg);
+
+    XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
+    xf_task_end(me);
+}
+
+xf_task_async_t xf_task_111(xf_task_t *me, void *arg)
+{
+    const char *const tag = "xf_task_111";
+    xf_task_begin(me);
+    XF_LOGI(tag, "task%d begin", (int)xf_task_to_id(me));
+    XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
+
     me->user_data = NULL;
     while (1) {
         XF_LOGI(tag, "hi: %u", xf_tick_get_count());
@@ -338,6 +356,7 @@ xf_task_async_t xf_task_11(xf_task_t *me, void *arg)
             break;
         }
     }
+
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
 }
