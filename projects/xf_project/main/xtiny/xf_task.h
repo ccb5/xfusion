@@ -160,7 +160,7 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id);
                                         xf_task_wait_subtask_i((_me), (_arg))
 
 /**
- * @brief 等待子任务.
+ * @brief 等待子任务（概念上约等于调用函数）.
  *
  * @note 等待子任务 = 创建子任务 + 等待子任务结束.
  *

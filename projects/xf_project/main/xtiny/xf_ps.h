@@ -60,8 +60,6 @@ xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s);
 
 xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg);
 xf_err_t xf_ps_publish_sync(xf_event_id_t event_id, void *arg);
-/* TODO xf_ps_publish_safe */
-// xf_err_t xf_ps_publish_safe(xf_event_id_t event_id, void *arg);
 
 xf_err_t xf_ps_dispatch(void);
 
@@ -88,8 +86,6 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t subscr_id);
 #define xf_publish(_event_id, _arg)     xf_ps_publish((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
 #define xf_publish_sync(_event_id, _arg) \
                                         xf_ps_publish_sync((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
-#define xf_publish_safe(_event_id, _arg) \
-                                        xf_ps_publish_safe((xf_event_id_t)(_event_id), (void *)(uintptr_t)(_arg))
 #define xf_dispatch()                   xf_ps_dispatch()
 
 #define xf_subscr_to_id(_s)             xf_ps_subscr_to_id(_s)

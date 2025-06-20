@@ -73,11 +73,11 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             xf_task_run_i((_task), (_arg)))
 
 #define xf_task_begin_i(_me)            { \
-                                            xf_task_state_t __state = XF_TASK_READY; \
+                                            xf_task_state_t __task_state = XF_TASK_READY; \
                                             xf_task_t *__task; \
                                             UNUSED(me); /*!< 仅用于规定参数名必须为 me */ \
                                             UNUSED(arg); /*!< 仅用于规定参数名必须为 arg */ \
-                                            UNUSED(__state); /*!< 可能未使用 */ \
+                                            UNUSED(__task_state); /*!< 可能未使用 */ \
                                             UNUSED(__task); /*!< 可能未使用 */ \
                                             xf_task_nest_depth_inc(); \
                                             xf_task_lc_resume(xf_task_cast(_me)->lc) \
@@ -98,10 +98,10 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                         } while (0)
 
 #define xf_task_yield_i(_me)            do { \
-                                            __state = XF_TASK_BLOCKED; \
+                                            __task_state = XF_TASK_BLOCKED; \
                                             xf_task_lc_set(xf_task_cast(_me)->lc); \
                                             /* 此处临时阻塞一次 */ \
-                                            if (__state == XF_TASK_BLOCKED) { \
+                                            if (__task_state == XF_TASK_BLOCKED) { \
                                                 xf_task_nest_depth_dec(); \
                                                 return XF_TASK_READY; \
                                             } \
@@ -123,13 +123,13 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             while (1) { \
                                                 __task = xf_task_id_to_task(xf_task_cast(_me)->id_child); \
                                                 if (__task == NULL) { XF_FATAL_ERROR(); } \
-                                                __state = xf_task_run_i((__task), (_arg)); \
-                                                if (__state != XF_TASK_TERMINATED) { \
+                                                __task_state = xf_task_run_i((__task), (_arg)); \
+                                                if (__task_state != XF_TASK_TERMINATED) { \
                                                     /* 复制子任务的状态，此时子任务可能是 READY 或 BLOCKED */ \
-                                                    xf_task_attr_set_state((_me), __state); \
-                                                    __state = XF_TASK_BLOCKED; /*!< 临时阻塞一次 */ \
+                                                    xf_task_attr_set_state((_me), __task_state); \
+                                                    __task_state = XF_TASK_BLOCKED; /*!< 临时阻塞一次 */ \
                                                     xf_task_lc_set(xf_task_cast(_me)->lc); \
-                                                    if (__state == XF_TASK_BLOCKED) { \
+                                                    if (__task_state == XF_TASK_BLOCKED) { \
                                                         xf_task_nest_depth_dec(); \
                                                         /* 返回子任务状态 */ \
                                                         return xf_task_attr_get_state(_me); \

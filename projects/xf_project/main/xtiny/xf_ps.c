@@ -163,6 +163,7 @@ xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
     xf_ps_msg_t msg = {0};
     uint8_t ref_cnt;
     xf_dq_size_t pushed_size;
+    XF_CRIT_STAT();
     if (event_id == XF_EVENT_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
     }
@@ -173,8 +174,10 @@ xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
     }
     msg.event_id = event_id;
     msg.arg = arg;
+    XF_CRIT_ENTRY();
     /* 加入事件队列 */
     pushed_size = xf_deque_back_push(&sp_ch->event_queue, (void *)&msg, XF_PS_ELEM_SIZE);
+    XF_CRIT_EXIT();
     if (pushed_size != XF_PS_ELEM_SIZE) {
         XF_ERROR_LINE(); XF_LOGD(TAG, "push failed");
         return XF_ERR_NO_MEM;
@@ -199,7 +202,10 @@ xf_err_t xf_ps_dispatch(void)
     xf_dq_size_t filled_size;
     xf_dq_size_t popped_size;
     xf_ps_msg_t msg = {0};
+    XF_CRIT_STAT();
+    XF_CRIT_ENTRY();
     filled_size = xf_deque_get_filled(&sp_ch->event_queue);
+    XF_CRIT_EXIT();
     if (filled_size == 0) {
         return XF_OK;
     }
@@ -213,8 +219,10 @@ xf_err_t xf_ps_dispatch(void)
     }
 #endif
     while (filled_size >= XF_PS_ELEM_SIZE) {
+        XF_CRIT_ENTRY();
         popped_size = xf_deque_front_pop(&sp_ch->event_queue,
                                          (void *)&msg, XF_PS_ELEM_SIZE);
+        XF_CRIT_EXIT();
         if (unlikely(popped_size == 0)) {
             /* 说明有别处取走了，不算致命错误 */
             break;
@@ -251,11 +259,16 @@ xf_ps_subscr_t *xf_ps_id_to_subscr(xf_ps_subscr_id_t subscr_id)
 static xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
 {
     uint8_t i;
+    XF_CRIT_STAT();
+    XF_CRIT_ENTRY();
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
         if (s_subscr_pool[i].cb_func == NULL) {
+            s_subscr_pool[i].cb_func = XF_CRIT_PTR_UNINIT;
+            XF_CRIT_EXIT();
             return &s_subscr_pool[i];
         }
     }
+    XF_CRIT_EXIT();
     return NULL;
 }
 
@@ -277,14 +290,19 @@ static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t event_id)
 {
     uint8_t ref_cnt = 0;
     uint8_t i;
+    XF_CRIT_STAT();
     if (event_id == XF_EVENT_ID_INVALID) {
         return 0;
     }
+    XF_CRIT_ENTRY();
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if ((s_subscr_pool[i].cb_func) && (s_subscr_pool[i].event_id == event_id)) {
+        if ((s_subscr_pool[i].cb_func)
+                && (s_subscr_pool[i].cb_func != XF_CRIT_PTR_UNINIT)
+                && (s_subscr_pool[i].event_id == event_id)) {
             ref_cnt++;
         }
     }
+    XF_CRIT_EXIT();
     return ref_cnt;
 }
 
@@ -292,14 +310,19 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
 {
     uint8_t i;
     uint8_t ref_cnt;
+    XF_CRIT_STAT();
     ref_cnt = xf_ps_get_event_ref_cnt(msg->event_id);
     if (ref_cnt == 0) {
         return XF_FAIL;
     }
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
-        if (s_subscr_pool[i].cb_func == NULL) {
+        XF_CRIT_ENTRY();
+        if (!(s_subscr_pool[i].cb_func)
+                || (s_subscr_pool[i].cb_func == XF_CRIT_PTR_UNINIT)) {
+            XF_CRIT_EXIT();
             continue;
         }
+        XF_CRIT_EXIT();
         if (s_subscr_pool[i].event_id == msg->event_id) {
             --ref_cnt;
             s_subscr_pool[i].cb_func(&s_subscr_pool[i], ref_cnt, msg->arg);

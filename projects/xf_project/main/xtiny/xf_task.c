@@ -49,11 +49,16 @@ static xf_stimer_t *s_sched_stimer = NULL;
 xf_task_t *xf_task_acquire(void)
 {
     uint8_t i;
+    XF_CRIT_STAT();
+    XF_CRIT_ENTRY();
     for (i = 0; i < XF_TASK_NUM_MAX; ++i) {
         if (s_task_pool[i].cb_func == NULL) {
+            s_task_pool[i].cb_func = XF_CRIT_PTR_UNINIT;
+            XF_CRIT_EXIT();
             return &s_task_pool[i];
         }
     }
+    XF_CRIT_EXIT();
     return NULL;
 }
 
@@ -317,13 +322,12 @@ static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg)
     if (task == NULL) {
         return XF_ERR_INVALID_ARG;
     }
-    /* 将自己和所有父级都设为 ready, 并调用 root */
+    /* 调用 root */
     parent = xf_task_id_to_task(task->id_parent);
     if (parent == NULL) {
         root = task;
     } else {
         do {
-            xf_task_set_ready(parent);
             root = parent;
             parent = xf_task_id_to_task(parent->id_parent);
         } while (parent != NULL);

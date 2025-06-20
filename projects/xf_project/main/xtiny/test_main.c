@@ -45,7 +45,7 @@
 #define EXAMPLE_TASK_WAIT_EVENT         6
 #define EXAMPLE_TASK_SCENE              7
 
-#define EXAMPLE                         EXAMPLE_TASK_SCENE
+#define EXAMPLE                         EXAMPLE_TASK_WAIT_EVENT
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -429,12 +429,16 @@ XF_TASK_FUNC(lcd_init_task);
 XF_TASK_FUNC(lv_task);
 XF_TASK_FUNC(uart_task);
 
+XF_MLOG_DEFINE();
+
 void test_main(void)
 {
     xf_task_t *task;
     xf_tick_t delay_tick;
     xf_task_sched_init();
     xf_ps_init();
+
+    XF_MLOGE("test_main");
 
     xf_subscribe(EVENT_ID_1, subscr_cb1, 0);
 

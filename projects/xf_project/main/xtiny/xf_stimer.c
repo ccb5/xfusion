@@ -51,12 +51,17 @@ static bool_t sb_stimer_ready = FALSE;
 xf_stimer_t *xf_stimer_acquire(void)
 {
     int32_t idx;
+    XF_CRIT_STAT();
+    XF_CRIT_ENTRY();
     idx = xf_bitmap32_flz(s_stimer_bm, XF_STIMER_NUM_MAX);
+    XF_CRIT_EXIT();
     if (idx < 0) {
         XF_FATAL_ERROR();
         return NULL;
     }
+    XF_CRIT_ENTRY();
     XF_BITMAP32_SET1(s_stimer_bm, idx);
+    XF_CRIT_EXIT();
     sb_stimer_created = TRUE;
     return &sp_pool[idx];
 }
@@ -64,6 +69,7 @@ xf_stimer_t *xf_stimer_acquire(void)
 xf_err_t xf_stimer_release(xf_stimer_t *stimer)
 {
     intptr_t idx;
+    XF_CRIT_STAT();
     if (stimer == NULL) {
         return XF_ERR_INVALID_ARG;
     }
@@ -74,8 +80,10 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
     if (XF_BITMAP32_GET(s_stimer_bm, idx) == 0) {
         return XF_ERR_INVALID_ARG;
     }
+    XF_CRIT_ENTRY();
     XF_BITMAP32_SET0(s_stimer_bm, idx);
     xf_memset(stimer, 0, sizeof(xf_stimer_t));
+    XF_CRIT_EXIT();
     sb_stimer_deleted = TRUE;
     return XF_OK;
 }
@@ -177,6 +185,7 @@ xf_tick_t xf_stimer_handler(void)
     /* cppcheck-suppress misra-c2012-18.8 */
     xf_bitmap32_t stimer_bm_temp[XF_BITMAP32_GET_BLK_SIZE(XF_STIMER_NUM_MAX)];
     xf_tick_t handler_start = xf_tick_get_count();
+    XF_CRIT_STAT();
 
     /* 检查是否正常调用 xf_tick_inc */
     if (handler_start == 0) {
@@ -201,7 +210,9 @@ xf_tick_t xf_stimer_handler(void)
                    可能会重复执行已执行定时器，或者未执行可能需要执行的定时器” 的问题。
             此处全部再次扫描。
          */
+        XF_CRIT_ENTRY();
         xf_memcpy(stimer_bm_temp, s_stimer_bm, sizeof(s_stimer_bm));
+        XF_CRIT_EXIT();
         stimer_idx = xf_bitmap32_fls(stimer_bm_temp, XF_STIMER_NUM_MAX);
         while (stimer_idx >= 0) {
             if (xf_stimer_exec(&sp_pool[stimer_idx])) {
@@ -265,14 +276,19 @@ static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
     int32_t j; /*!< j: 最小时间定时事件所在索引 */
     xf_tick_t tick_temp;
     xf_tick_t tick_min;
+    XF_CRIT_STAT();
+    XF_CRIT_ENTRY();
     i = xf_bitmap32_fls(s_stimer_bm, XF_STIMER_NUM_MAX);
+    XF_CRIT_EXIT();
     if (i < 0) {
         return XF_STIMER_NO_READY;
     }
     tick_min = xf_stimer_time_remaining(&sp_pool[i]);
     j = i;
     while (i > 0) {
+        XF_CRIT_ENTRY();
         i = xf_bitmap32_fls(s_stimer_bm, i);
+        XF_CRIT_EXIT();
         if (i >= 0) {
             tick_temp = xf_stimer_time_remaining(&sp_pool[i]);
             if (tick_temp < tick_min) {
