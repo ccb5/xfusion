@@ -391,7 +391,7 @@ static_assertion_failure \
 #endif
 
 /**
- * @brief 数据相关.
+ * @brief 算数相关.
  */
 
 #if !defined(xf_swap)
@@ -399,15 +399,22 @@ static_assertion_failure \
  * @brief 交换 a 和 b 的值.
  */
 #   define xf_swap(a, b)                do { /* 只是为了不使用新类型 */ \
-                                             if ((a) != (b)) { \
-                                                 (a) ^= (b); (b) ^= (a); (a) ^= (b); \
-                                             } \
+                                            if ((a) != (b)) { \
+                                                (a) ^= (b); (b) ^= (a); (a) ^= (b); \
+                                            } \
                                         } while (0)
 #endif
 
+#if !defined(xf_swap_t)
 /**
- * @brief 算数相关.
+ * @brief 交换 a 和 b 的值.
  */
+#   define xf_swap_t(type, a, b)        do { \
+                                            type __tmp = (a); \
+                                            (a) = (b); \
+                                            (b) = __tmp; \
+                                        } while (0)
+#endif
 
 #if !defined(xf_abs)
 /**
