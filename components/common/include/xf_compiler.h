@@ -183,20 +183,6 @@ extern "C" {
 #endif
 #endif
 
-#define XF_READ_ONCE(ptr_expr) \
-        ((void *)(*(volatile void * const *)&(ptr_expr)))
-
-#define XF_WRITE_ONCE(ptr_lvalue, new_val) \
-        ( (void)(*(volatile void **)&(ptr_lvalue) = (void *)(new_val)), \
-          (void *)(new_val) )
-
-#define XF_READ_ONCE_T(type, lvalue) \
-        (*(volatile type const *)&(lvalue))
-
-#define XF_WRITE_ONCE_T(type, lvalue, new_val) \
-        ( (void)(*(volatile type *)&(lvalue) = (new_val)), \
-          (new_val) )
-
 #if !defined(__fallthrough)
 #   define __fallthrough                __attribute__((fallthrough));
 #endif

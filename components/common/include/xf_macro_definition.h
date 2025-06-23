@@ -202,6 +202,27 @@ extern "C" {
 #   define XF_DEREF(t, ptr)             (*(t *)(ptr))
 #endif
 
+#if !defined(XF_READ_ONCE)
+#   define XF_READ_ONCE(ptr_expr)       ((void *)(*(volatile void * const *)&(ptr_expr)))
+#endif
+
+#if !defined(XF_WRITE_ONCE)
+#   define XF_WRITE_ONCE(ptr_lvalue, new_val) \
+                                        ( (void)(*(volatile void **)&(ptr_lvalue) = (void *)(new_val)), \
+                                          (void *)(new_val) )
+#endif
+
+#if !defined(XF_READ_ONCE_T)
+#   define XF_READ_ONCE_T(type, lvalue) (*(volatile type const *)&(lvalue))
+
+#endif
+
+#if !defined(XF_WRITE_ONCE_T)
+#   define XF_WRITE_ONCE_T(type, lvalue, new_val) \
+                                        ( (void)(*(volatile type *)&(lvalue) = (new_val)), \
+                                          (void *)(new_val) )
+#endif
+
 #if !defined(STATIC_ASSERT)
 /**
  * @brief 静态断言。
