@@ -230,14 +230,14 @@ extern "C" {
  * @param e 需要断言的常量表达式(const expression)。
  *          当 e 不成立时编译报错。必须是字面常量。
  */
-#define STATIC_ASSERT(e) \
-    extern char ( \
-    *O_o( \
-        char \
+#   define STATIC_ASSERT(e) \
+        extern char ( \
+            *O_o( \
+                char \
 static_assertion_failure \
-            [1 - 2 * !(e)] \
-        ) \
-    )
+                    [1 - 2 * !(e)] \
+                ) \
+            )
 #endif
 
 #if !defined(STATIC_ASSERT_MSG)
@@ -249,13 +249,13 @@ static_assertion_failure \
  * @param msg 提示消息。
  */
 #define STATIC_ASSERT_MSG(e, msg) \
-    extern char ( \
-    *O_o( \
-        char \
+        extern char ( \
+            *O_o( \
+                char \
 static_assertion_failure \
-            [1 - 2 * !(e)] \
-        ) \
-    )
+                    [1 - 2 * !(e)] \
+                ) \
+            )
 #endif
 
 #if !defined(BUILD_BUG_ON)
@@ -285,7 +285,8 @@ static_assertion_failure \
 /**
  * @brief 如果常量表达式不是 2 的幂，则强制出现编译错误。
  */
-#   define BUILD_BUG_ON_NOT_POWER_OF_2(n)   BUILD_BUG_ON(IS_POWER_OF_TWO(n))
+#   define BUILD_BUG_ON_NOT_POWER_OF_2(n) \
+                                        BUILD_BUG_ON(IS_POWER_OF_TWO(n))
 #endif
 
 #if !defined(xf_offsetof)

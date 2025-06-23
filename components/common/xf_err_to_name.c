@@ -23,6 +23,7 @@ extern "C" {
  * @brief Error Table Item.
  * 错误码和说明字符串。
  */
+/* cppcheck-suppress misra-c2012-20.10 */
 #define ERR_TBL_IT(err) {((-(err)) & BIT_MASK(XF_RET_COMMON_ERRNO_BITSIZE)), #err}
 
 /* ==================== [Typedefs] ========================================== */
@@ -61,13 +62,11 @@ static const xf_err_msg_t xf_err_msg_table[] = {
 };
 #endif /* CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP */
 
-static const char xf_unknown_msg[] = {
 #if CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP
-    "ERROR",
+static const char xf_unknown_msg[] = "ERROR";
 #else
-    "UNKNOWN ERROR",
+static const char xf_unknown_msg[] = "UNKNOWN ERROR";
 #endif
-};
 
 /* ==================== [Macros] ============================================ */
 
@@ -82,6 +81,8 @@ const char *xf_err_to_name(xf_err_t code)
             return xf_err_msg_table[i].msg;
         }
     }
+#else
+    UNUSED(code);
 #endif /* CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP */
     return xf_unknown_msg;
 }
