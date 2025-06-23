@@ -16,9 +16,15 @@
 
 /* ==================== [Defines] =========================================== */
 
+#define FIND_SET    0
+#define FIND_ZERO   1
+
 /* ==================== [Typedefs] ========================================== */
 
 /* ==================== [Static Prototypes] ================================= */
+
+static int32_t bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
+static int32_t bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
 
 /* ==================== [Static Variables] ================================== */
 
@@ -28,150 +34,93 @@
 
 int32_t xf_bitmap32_ffs(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
-    uint32_t blk_cnt;
-    int32_t last_blk;
-    int32_t blk_idx;
-    xf_bitmap32_t bm_blk;
-    uint32_t ffs_bit;
-    if ((!p_bm) || (!bit_size)) {
-        return -1;
-    }
-    blk_cnt = xf_bitmap_div_round_up(bit_size, XF_BITMAP32_BLK_BIT_SIZE);
-    last_blk = blk_cnt;
-    if (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE)) {
-        --last_blk;
-    }
-    for (blk_idx = 0; blk_idx < last_blk; ++blk_idx) {
-        bm_blk = p_bm[blk_idx];
-        if (bm_blk) {
-            ffs_bit = xf_am_ctz_u32(bm_blk);
-            return (int32_t)(ffs_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE));
-        }
-    }
-    if (last_blk < blk_cnt) {
-        uint32_t valid;
-        uint32_t mask;
-        /* 最后一块，屏蔽无效位 */
-        valid = bit_size % XF_BITMAP32_BLK_BIT_SIZE;
-        mask  = BIT_MASK(valid);
-        bm_blk = p_bm[last_blk] & mask;
-        if (bm_blk) {
-            ffs_bit = xf_am_ctz_u32(bm_blk);
-            return (int32_t)(ffs_bit + (last_blk * XF_BITMAP32_BLK_BIT_SIZE));
-        }
-    }
-    return -1;
-}
-
-int32_t xf_bitmap32_fls(const xf_bitmap32_t *p_bm, uint32_t bit_size)
-{
-    int32_t blk_idx;
-    xf_bitmap32_t bm_blk;
-    uint32_t fls_bit;
-    if ((!p_bm) || (!bit_size)) {
-        return -1;
-    }
-    blk_idx = xf_div_round_down(bit_size, XF_BITMAP32_BLK_BIT_SIZE);
-    if (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE)) {
-        int32_t valid_bit_num;
-        uint32_t invalid_mask;
-        /* 屏蔽无效位 */
-        valid_bit_num = bit_size % XF_BITMAP32_BLK_BIT_SIZE;
-        invalid_mask = ~BIT_MASK(valid_bit_num);
-        bm_blk = p_bm[blk_idx];
-        BITS_SET0(bm_blk, invalid_mask);
-        /* 1 和 0 log2 结果都为 0 */
-        fls_bit = xf_am_log2_u32((uint32_t)bm_blk);
-        if ((fls_bit != 0) || (bm_blk == 1)) {
-            return fls_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE);
-        }
-    }
-    /* 最高块为 0 或已对齐，找低位块 */
-    --blk_idx;
-    for (; blk_idx >= 0; --blk_idx) {
-        bm_blk = p_bm[blk_idx];
-        fls_bit = xf_am_log2_u32((uint32_t)bm_blk);
-        if ((fls_bit != 0) || (bm_blk == 1)) {
-            return fls_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE);
-        }
-    }
-    return -1;
+    return bitmap32_find_first(p_bm, bit_size, FIND_SET);
 }
 
 int32_t xf_bitmap32_ffz(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
+    return bitmap32_find_first(p_bm, bit_size, FIND_ZERO);
+}
+
+int32_t xf_bitmap32_fls(const xf_bitmap32_t *p_bm, uint32_t bit_size)
+{
+    return bitmap32_find_last(p_bm, bit_size, FIND_SET);
+}
+
+int32_t xf_bitmap32_flz(const xf_bitmap32_t *p_bm, uint32_t bit_size)
+{
+    return bitmap32_find_last(p_bm, bit_size, FIND_ZERO);
+}
+
+/* ==================== [Static Functions] ================================== */
+
+static int32_t bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
+{
     uint32_t blk_cnt;
-    int32_t last_blk;
-    int32_t blk_idx;
+    uint32_t last_blk;
+    uint32_t blk_idx;
     xf_bitmap32_t bm_blk;
-    xf_bitmap32_t zm_blk;
-    uint32_t ffz_bit;
+    uint32_t valid_bit_num;
     if ((!p_bm) || (!bit_size)) {
         return -1;
     }
     blk_cnt = xf_bitmap_div_round_up(bit_size, XF_BITMAP32_BLK_BIT_SIZE);
-    last_blk = blk_cnt;
-    if (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE)) {
-        --last_blk;
-    }
+    last_blk = blk_cnt - (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE) ? 1 : 0);
     for (blk_idx = 0; blk_idx < last_blk; ++blk_idx) {
         bm_blk = p_bm[blk_idx];
-        zm_blk = ~bm_blk;
-        if (zm_blk) {
-            ffz_bit = xf_am_ctz_u32(zm_blk);
-            return (int32_t)(ffz_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE));
+        if (invert) {
+            bm_blk = ~bm_blk;
+        }
+        if (bm_blk) {
+            return (int32_t)(xf_am_ctz_u32(bm_blk) + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE));
         }
     }
     if (last_blk < blk_cnt) {
-        uint32_t valid;
-        uint32_t mask;
-        valid = bit_size % XF_BITMAP32_BLK_BIT_SIZE;
-        mask = BIT_MASK(valid);
         bm_blk = p_bm[last_blk];
-        zm_blk = (~bm_blk) & mask;
-        if (zm_blk) {
-            ffz_bit = xf_am_ctz_u32(zm_blk);
-            return (int32_t)(ffz_bit + (last_blk * XF_BITMAP32_BLK_BIT_SIZE));
+        if (invert) {
+            bm_blk = ~bm_blk;
         }
-    }
-    return -1;
-}
-int32_t xf_bitmap32_flz(const xf_bitmap32_t *p_bm, uint32_t bit_size)
-{
-    int32_t blk_idx;
-    xf_bitmap32_t bm_blk;
-    xf_bitmap32_t zm_blk;
-    uint32_t flz_bit;
-    if ((!p_bm) || (!bit_size)) {
-        return -1;
-    }
-    blk_idx = xf_div_round_down(bit_size, XF_BITMAP32_BLK_BIT_SIZE);
-    if (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE)) {
-        int32_t valid_bit_num;
-        uint32_t invalid_mask;
         valid_bit_num = bit_size % XF_BITMAP32_BLK_BIT_SIZE;
-        invalid_mask = ~BIT_MASK(valid_bit_num);
-        bm_blk = p_bm[blk_idx];
-        BITS_SET1(bm_blk, invalid_mask); /* 设为1以屏蔽无效位 */
-        zm_blk = ~bm_blk;
-        flz_bit = xf_am_log2_u32((uint32_t)zm_blk);
-        if ((flz_bit != 0) || (zm_blk == 1)) {
-            return flz_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE);
-        }
-    }
-    --blk_idx;
-    for (; blk_idx >= 0; --blk_idx) {
-        bm_blk = p_bm[blk_idx];
-        zm_blk = ~bm_blk;
-        flz_bit = xf_am_log2_u32((uint32_t)zm_blk);
-        if ((flz_bit != 0) || (zm_blk == 1)) {
-            return flz_bit + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE);
+        bm_blk &= BIT_MASK(valid_bit_num);  /*!< 屏蔽无效位 */
+        if (bm_blk) {
+            return (int32_t)(xf_am_ctz_u32(bm_blk) + (last_blk * XF_BITMAP32_BLK_BIT_SIZE));
         }
     }
     return -1;
 }
 
-/* ==================== [Static Functions] ================================== */
+static int32_t bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
+{
+    int32_t blk_idx;
+    uint32_t valid_bit_num;
+    xf_bitmap32_t bm_blk;
+    if ((!p_bm) || (!bit_size)) {
+        return -1;
+    }
+    blk_idx = xf_div_round_down(bit_size, XF_BITMAP32_BLK_BIT_SIZE);
+    if (!IS_ALIGNED(bit_size, XF_BITMAP32_BLK_BIT_SIZE)) {
+        valid_bit_num = bit_size % XF_BITMAP32_BLK_BIT_SIZE;
+        bm_blk = p_bm[blk_idx];
+        if (invert) {
+            bm_blk = ~bm_blk;
+        }
+        bm_blk &= BIT_MASK(valid_bit_num);
+        if (bm_blk) {
+            return (int32_t)(xf_am_log2_u32(bm_blk) + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE));
+        }
+    }
+    --blk_idx;
+    for (; blk_idx >= 0; --blk_idx) {
+        bm_blk = p_bm[blk_idx];
+        if (invert) {
+            bm_blk = ~bm_blk;
+        }
+        if (bm_blk) {
+            return (int32_t)(xf_am_log2_u32(bm_blk) + (blk_idx * XF_BITMAP32_BLK_BIT_SIZE));
+        }
+    }
+    return -1;
+}
 
 #if 0
 // 测试用例：
