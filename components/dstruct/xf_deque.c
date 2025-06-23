@@ -188,9 +188,6 @@ xf_dq_size_t xf_deque_front_push_force(xf_dq_t *p_dq, const void *src, xf_dq_siz
         return 0;
     }
     if (size_bytes > p_dq->buf_size) {
-        return 0;
-    }
-    if (size_bytes > p_dq->buf_size) {
         src = (const uint8_t *)src + (size_bytes - p_dq->buf_size);
         size_bytes = p_dq->buf_size;
     }
