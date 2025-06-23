@@ -203,10 +203,10 @@ void test_main(void)
     xf_tick_t delay_tick;
     xf_task_sched_init();
 
-    /* 创建并调用 */
-    xf_task_start(task, xf_task_1, NULL, 12345678U);
     /* 只创建，不调用 */
     xf_task_create(xf_task_2, NULL);
+    /* 创建并调用 */
+    xf_task_start(task, xf_task_1, NULL, 12345678U);
 
     while (1) {
         delay_tick = xf_stimer_handler();
@@ -390,6 +390,7 @@ void test_main(void)
 xf_task_async_t xf_task_publish(xf_task_t *me, void *arg)
 {
     const char *const tag = "xf_task_1";
+    xf_err_t xf_ret;
     xf_tick_t delay_tick;
     xf_task_begin(me);
     XF_LOGI(tag, "task%d begin", (int)xf_task_to_id(me));
@@ -399,10 +400,11 @@ xf_task_async_t xf_task_publish(xf_task_t *me, void *arg)
         delay_tick = (ex_random() % 1500) + 1;
         xf_task_delay_ms(me, delay_tick);
         me->user_data = (void *)((uintptr_t)me->user_data + 1);
-        xf_publish(EVENT_ID_1, me->user_data);
-        XF_LOGI(tag, "publish: %u (%u)",
+        xf_ret = xf_publish(EVENT_ID_1, me->user_data);
+        XF_LOGI(tag, "publish: %u (%u), ret: %d",
                 (unsigned int)(uintptr_t)me->user_data,
-                (unsigned int)(uintptr_t)xf_tick_get_count());
+                (unsigned int)(uintptr_t)xf_tick_get_count(),
+                (int)xf_ret);
     }
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
@@ -448,16 +450,12 @@ XF_TASK_FUNC(lcd_init_task);
 XF_TASK_FUNC(lv_task);
 XF_TASK_FUNC(uart_task);
 
-XF_MLOG_DEFINE();
-
 void test_main(void)
 {
     xf_task_t *task;
     xf_tick_t delay_tick;
     xf_task_sched_init();
     xf_ps_init();
-
-    XF_MLOGE("test_main");
 
     xf_subscribe(EVENT_ID_1, subscr_cb1, 0);
 
