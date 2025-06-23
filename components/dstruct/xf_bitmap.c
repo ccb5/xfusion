@@ -23,8 +23,8 @@
 
 /* ==================== [Static Prototypes] ================================= */
 
-static int32_t bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
-static int32_t bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
+static int32_t xf_bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
+static int32_t xf_bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert);
 
 /* ==================== [Static Variables] ================================== */
 
@@ -34,27 +34,27 @@ static int32_t bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, 
 
 int32_t xf_bitmap32_ffs(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
-    return bitmap32_find_first(p_bm, bit_size, FIND_SET);
+    return xf_bitmap32_find_first(p_bm, bit_size, FIND_SET);
 }
 
 int32_t xf_bitmap32_ffz(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
-    return bitmap32_find_first(p_bm, bit_size, FIND_ZERO);
+    return xf_bitmap32_find_first(p_bm, bit_size, FIND_ZERO);
 }
 
 int32_t xf_bitmap32_fls(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
-    return bitmap32_find_last(p_bm, bit_size, FIND_SET);
+    return xf_bitmap32_find_last(p_bm, bit_size, FIND_SET);
 }
 
 int32_t xf_bitmap32_flz(const xf_bitmap32_t *p_bm, uint32_t bit_size)
 {
-    return bitmap32_find_last(p_bm, bit_size, FIND_ZERO);
+    return xf_bitmap32_find_last(p_bm, bit_size, FIND_ZERO);
 }
 
 /* ==================== [Static Functions] ================================== */
 
-static int32_t bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
+static int32_t xf_bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
 {
     uint32_t blk_cnt;
     uint32_t last_blk;
@@ -89,7 +89,7 @@ static int32_t bitmap32_find_first(const xf_bitmap32_t *p_bm, uint32_t bit_size,
     return -1;
 }
 
-static int32_t bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
+static int32_t xf_bitmap32_find_last(const xf_bitmap32_t *p_bm, uint32_t bit_size, int invert)
 {
     int32_t blk_idx;
     uint32_t valid_bit_num;
