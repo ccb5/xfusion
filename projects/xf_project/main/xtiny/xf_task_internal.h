@@ -65,7 +65,7 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
 
 #define xf_task_destroy_i(_task)        xf_task_destroy_(xf_task_cast(_task))
 
-#define xf_task_run_i(_task, _arg)      (xf_task_attr_set_state((_task), XF_TASK_READY), \
+#define xf_task_run_i(_task, _arg)      (xf_task_attr_set_state(xf_task_cast(_task), XF_TASK_READY), \
                                             xf_task_run_direct((_task), (_arg)))
 
 #define xf_task_start_i(_task, _cb_func, _user_data, _arg) \
@@ -85,7 +85,7 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
 #define xf_task_end_i(_me)                  xf_task_lc_end(xf_task_cast(_me)->lc); \
                                             xf_task_lc_init(xf_task_cast(_me)->lc); \
                                             xf_task_attr_set_state((_me), XF_TASK_TERMINATED); \
-                                            xf_task_destroy_i(xf_task_cast(_me)); \
+                                            xf_task_destroy_i((_me)); \
                                             xf_task_nest_depth_dec(); \
                                             return XF_TASK_TERMINATED; \
                                         }
@@ -157,7 +157,7 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
 
 #define xf_task_wait_until_i(_me, _id, _tick, _xf_err) \
                                         do { \
-                                            xf_task_setup_wait_until((_me), (_id), (_tick)); \
+                                            xf_task_setup_wait_until(xf_task_cast(_me), (_id), (_tick)); \
                                             xf_task_block_i((_me)); \
                                             if (xf_task_cast(_me)->id_subscr == XF_PS_ID_INVALID) { \
                                                 /* 事件到达 */ \
