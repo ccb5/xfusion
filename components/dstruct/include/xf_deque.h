@@ -46,8 +46,8 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include <string.h>
 #include "xf_common.h"
+#include "xf_std.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,7 +64,6 @@ extern "C" {
 /* ==================== [Typedefs] ========================================== */
 
 typedef uint16_t xf_dq_size_t;
-typedef uint8_t  xf_dq_bool_t;
 
 /**
  * @brief 双向队列（deque）结构体。
@@ -74,8 +73,8 @@ typedef uint8_t  xf_dq_bool_t;
 typedef struct xf_dq {
     volatile xf_dq_size_t   head;
     volatile xf_dq_size_t   tail;
-    volatile xf_dq_bool_t   head_mirror;
-    volatile xf_dq_bool_t   tail_mirror;
+    volatile bool_t         head_mirror;
+    volatile bool_t         tail_mirror;
     xf_dq_size_t            buf_size;       /*!< 缓冲区总大小（字节） */
 #if CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
     uint8_t                 p_buf[0];           /*!< 尾随的缓冲区 */
@@ -88,11 +87,11 @@ typedef struct xf_dq {
 
 xf_err_t xf_deque_init(xf_dq_t *p_dq, void *p_buf, xf_dq_size_t buf_size_bytes);
 xf_err_t xf_deque_reset(xf_dq_t *p_dq);
-__STATIC_INLINE xf_dq_bool_t xf_deque_is_empty(const xf_dq_t *p_dq);
-__STATIC_INLINE xf_dq_bool_t xf_deque_is_full(const xf_dq_t *p_dq);
+bool_t xf_deque_is_empty(const xf_dq_t *p_dq);
+bool_t xf_deque_is_full(const xf_dq_t *p_dq);
 xf_dq_size_t xf_deque_get_filled(const xf_dq_t *p_dq);
 xf_dq_size_t xf_deque_get_empty(const xf_dq_t *p_dq);
-__STATIC_INLINE xf_dq_size_t xf_deque_get_size(const xf_dq_t *p_dq);
+xf_dq_size_t xf_deque_get_size(const xf_dq_t *p_dq);
 
 xf_dq_size_t xf_deque_front_push(xf_dq_t *p_dq, const void *src, xf_dq_size_t size_bytes);
 xf_dq_size_t xf_deque_front_push_force(xf_dq_t *p_dq, const void *src, xf_dq_size_t size_bytes);
@@ -115,32 +114,8 @@ xf_dq_size_t xf_deque_back_remove(xf_dq_t *p_dq, xf_dq_size_t size_bytes);
 #define XF_DQ_EMPTY(q)                  (((q)->head == (q)->tail) && ((q)->head_mirror == (q)->tail_mirror))
 #define XF_DQ_FULL(q)                   (((q)->head == (q)->tail) && ((q)->head_mirror != (q)->tail_mirror))
 
-#define XF_DQ_MEMCPY(dst, src, size)    memcpy((void *)(dst), (const void *)(src), (size))
-#define XF_DQ_MEMSET(dst, c, size)      memset((void *)(dst), (c), (size))
-
-__STATIC_INLINE xf_dq_bool_t xf_deque_is_empty(const xf_dq_t *p_dq)
-{
-    if (!p_dq) {
-        return XF_FAIL;
-    }
-    return XF_DQ_EMPTY(p_dq);
-}
-
-__STATIC_INLINE xf_dq_bool_t xf_deque_is_full(const xf_dq_t *p_dq)
-{
-    if (!p_dq) {
-        return XF_FAIL;
-    }
-    return XF_DQ_FULL(p_dq);
-}
-
-__STATIC_INLINE xf_dq_size_t xf_deque_get_size(const xf_dq_t *p_dq)
-{
-    if (!p_dq) {
-        return 0;
-    }
-    return p_dq->buf_size;
-}
+#define XF_DQ_MEMCPY(dst, src, size)    xf_memcpy((void *)(dst), (const void *)(src), (size))
+#define XF_DQ_MEMSET(dst, c, size)      xf_memset((void *)(dst), (c), (size))
 
 #ifdef __cplusplus
 } /* extern "C" */
