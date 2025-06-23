@@ -15,8 +15,6 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include <inttypes.h>
-
 #include "xf_common.h"
 
 #ifdef __cplusplus
@@ -53,6 +51,7 @@ char xf_log_level_to_prompt(uint32_t level);
 /* ==================== [Macros] ============================================ */
 
 #if !defined(xf_log_printf)
+/* cppcheck-suppress misra-c2012-20.1 */
 #include <stdio.h>
 #   define xf_log_printf(format, ...)   do { \
                                             printf(format, ##__VA_ARGS__); \
@@ -65,6 +64,8 @@ char xf_log_level_to_prompt(uint32_t level);
 #endif
 
 #if !defined(xf_log_level) && defined(xf_log_printf)
+/* cppcheck-suppress misra-c2012-20.1 */
+#include <inttypes.h>
 #   define xf_log_level(level, tag, format, ...) \
         do { \
             xf_log_printf( \
