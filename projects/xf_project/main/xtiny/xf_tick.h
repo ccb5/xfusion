@@ -35,40 +35,13 @@ xf_tick_t xf_tick_inc(xf_tick_t tick);
 xf_tick_t xf_tick_get_count(void);
 xf_tick_t xf_tick_elaps(xf_tick_t prev_tick);
 
-__STATIC_INLINE xf_tick_t xf_tick_get_tick_freq(void)
-{
-    return CONFIG_XF_TICK_FREQ;
-}
-
-__STATIC_INLINE xf_tick_t xf_tick_to_us(xf_tick_t tick)
-{
-    return tick / xf_tick_get_tick_freq();
-}
-
-__STATIC_INLINE xf_tick_t xf_tick_to_ms(xf_tick_t tick)
-{
-    return (tick * 1000U) / xf_tick_get_tick_freq();
-}
-
-__STATIC_INLINE xf_tick_t xf_us_to_tick(xf_tick_t us)
-{
-    return us * xf_tick_get_tick_freq();
-}
-
-__STATIC_INLINE xf_tick_t xf_ms_to_tick(xf_tick_t ms)
-{
-    return (ms * xf_tick_get_tick_freq()) / 1000U;
-}
-
-__STATIC_INLINE xf_tick_t xf_tick_get_us(void)
-{
-    return (xf_tick_get_count() * 1000U * 1000U) / xf_tick_get_tick_freq();
-}
-
-__STATIC_INLINE xf_tick_t xf_tick_get_ms(void)
-{
-    return xf_tick_get_us() / 1000U;
-}
+#define xf_tick_get_tick_freq()         (CONFIG_XF_TICK_FREQ)
+#define xf_tick_to_us(_tick)            (((_tick) * 1000000U) / (CONFIG_XF_TICK_FREQ))
+#define xf_tick_to_ms(_tick)            (((_tick) * 1000U) / (CONFIG_XF_TICK_FREQ))
+#define xf_us_to_tick(_us)              ((_us) * (CONFIG_XF_TICK_FREQ) / (1000000U))
+#define xf_ms_to_tick(_ms)              (((_ms) * (CONFIG_XF_TICK_FREQ)) / (1000U))
+#define xf_tick_get_us()                ((xf_tick_get_count() * 1000000U) / (CONFIG_XF_TICK_FREQ))
+#define xf_tick_get_ms()                ((xf_tick_get_count() * 1000U) / (CONFIG_XF_TICK_FREQ))
 
 /* ==================== [Macros] ============================================ */
 
