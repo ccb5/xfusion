@@ -111,6 +111,16 @@ menu "XFusion"
 
             depends on XF_ENABLE_system
 
+            config XF_ENABLE_event
+                bool "event"
+                default y
+
+            menu "event"
+
+                depends on XF_ENABLE_event
+
+            endmenu # event
+
             config XF_ENABLE_osal
                 bool "osal"
                 default y
@@ -119,7 +129,47 @@ menu "XFusion"
 
                 depends on XF_ENABLE_osal
 
-            endmenu # system
+            endmenu # osal
+
+            config XF_ENABLE_ps
+                bool "ps"
+                default y
+
+            menu "ps"
+
+                depends on XF_ENABLE_ps
+
+            endmenu # ps
+
+            config XF_ENABLE_stimer
+                bool "stimer"
+                default y
+
+            menu "stimer"
+
+                depends on XF_ENABLE_stimer
+
+            endmenu # stimer
+
+            config XF_ENABLE_task
+                bool "task"
+                default y
+
+            menu "task"
+
+                depends on XF_ENABLE_task
+
+            endmenu # task
+
+            config XF_ENABLE_tick
+                bool "tick"
+                default y
+
+            menu "tick"
+
+                depends on XF_ENABLE_tick
+
+            endmenu # tick
 
         endmenu # system
 

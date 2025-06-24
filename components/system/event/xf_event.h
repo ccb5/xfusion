@@ -17,8 +17,6 @@
 
 #include "xf_common.h"
 #include "xf_dstruct.h"
-#include "xf_log.h"
-#include "xf_check.h"
 #include "xf_safe.h"
 
 #ifdef __cplusplus
