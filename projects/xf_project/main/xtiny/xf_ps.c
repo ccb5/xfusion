@@ -25,17 +25,11 @@ typedef struct xf_ps_channel {
     xf_dq_t                             event_queue;
 } xf_ps_ch_t;
 
-typedef uint16_t xf_event_id_t;
-typedef struct xf_ps_msg {
-    xf_event_id_t                       event_id;
-    void                               *arg;
-} xf_ps_msg_t;
-
-#define XF_PS_ELEM_SIZE                 (sizeof(xf_ps_msg_t))
+#define XF_PS_ELEM_SIZE                 (sizeof(xf_event_msg_t))
 
 /* ==================== [Static Prototypes] ================================= */
 
-static xf_err_t xf_ps_notify(xf_ps_msg_t *msg);
+static xf_err_t xf_ps_notify(xf_event_msg_t *msg);
 
 static xf_ps_subscr_t *xf_ps_acquire_subscriber(void);
 
@@ -61,7 +55,7 @@ static xf_ps_ch_t s_default_ch = {0};
 static xf_ps_ch_t *const sp_ch = &s_default_ch;
 
 /* 消息池 */
-static xf_ps_msg_t s_msg_pool[XF_PS_MSG_NUM_MAX] = {0};
+static xf_event_msg_t s_msg_pool[XF_PS_MSG_NUM_MAX] = {0};
 
 /* ==================== [Macros] ============================================ */
 
@@ -160,7 +154,7 @@ xf_err_t xf_ps_unsubscribe_by_subscr(xf_ps_subscr_t *s)
 
 xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
 {
-    xf_ps_msg_t msg = {0};
+    xf_event_msg_t msg = {0};
     uint8_t ref_cnt;
     xf_dq_size_t pushed_size;
     XF_CRIT_STAT();
@@ -172,7 +166,7 @@ xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
         XF_ERROR_LINE(); XF_LOGD(TAG, "no subscriber");
         return XF_FAIL;
     }
-    msg.event_id = event_id;
+    msg.id = event_id;
     msg.arg = arg;
     XF_CRIT_ENTRY();
     /* 加入事件队列 */
@@ -187,11 +181,11 @@ xf_err_t xf_ps_publish(xf_event_id_t event_id, void *arg)
 
 xf_err_t xf_ps_publish_sync(xf_event_id_t event_id, void *arg)
 {
-    xf_ps_msg_t msg = {0};
+    xf_event_msg_t msg = {0};
     if (event_id == XF_EVENT_ID_INVALID) {
         return XF_ERR_INVALID_ARG;
     }
-    msg.event_id = event_id;
+    msg.id = event_id;
     msg.arg = arg;
     return xf_ps_notify(&msg);
 }
@@ -201,7 +195,7 @@ xf_err_t xf_ps_dispatch(void)
     xf_err_t xf_ret = XF_FAIL;
     xf_dq_size_t filled_size;
     xf_dq_size_t popped_size;
-    xf_ps_msg_t msg = {0};
+    xf_event_msg_t msg = {0};
     XF_CRIT_STAT();
     XF_CRIT_ENTRY();
     filled_size = xf_deque_get_filled(&sp_ch->event_queue);
@@ -306,12 +300,12 @@ static uint8_t xf_ps_get_event_ref_cnt(xf_event_id_t event_id)
     return ref_cnt;
 }
 
-static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
+static xf_err_t xf_ps_notify(xf_event_msg_t *msg)
 {
     uint8_t i;
     uint8_t ref_cnt;
     XF_CRIT_STAT();
-    ref_cnt = xf_ps_get_event_ref_cnt(msg->event_id);
+    ref_cnt = xf_ps_get_event_ref_cnt(msg->id);
     if (ref_cnt == 0) {
         return XF_FAIL;
     }
@@ -323,7 +317,7 @@ static xf_err_t xf_ps_notify(xf_ps_msg_t *msg)
             continue;
         }
         XF_CRIT_EXIT();
-        if (s_subscr_pool[i].event_id == msg->event_id) {
+        if (s_subscr_pool[i].event_id == msg->id) {
             --ref_cnt;
             s_subscr_pool[i].cb_func(&s_subscr_pool[i], ref_cnt, msg->arg);
         }
