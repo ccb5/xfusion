@@ -1,12 +1,13 @@
 /**
  * @file xf_string.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief
+ * @brief 
  * @version 1.0
- * @date 2025-01-18
- *
- * @copyright Copyright (c) 2025
- *
+ * @date 2025-06-16
+ * 
+ * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
+ * SPDX-License-Identifier: Apache-2.0
+ * 
  */
 
 #ifndef __XF_STRING_H__

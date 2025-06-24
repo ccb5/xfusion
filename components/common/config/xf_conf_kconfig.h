@@ -4,11 +4,10 @@
  * @brief 兼容各平台 Kconfig 头文件。
  * @version 1.0
  * @date 2025-05-14
- */
-
-/*
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 #ifndef __XF_CONF_KCONFIG_H__

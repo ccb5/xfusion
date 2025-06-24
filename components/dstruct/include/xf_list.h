@@ -5,6 +5,9 @@
  * @version 1.0
  * @date 2024-06-25
  *
+ * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * @details
  *
  * 简单的双链表实现.
@@ -16,11 +19,6 @@
  * 1. 添加 `xf_` 前缀防止冲突. 优先使用类型定义而不是结构体.
  * 2. 添加中文注释.
  * 3. 移除 GNU 特性, 如 `typeof`, 因此需要显式写出类型.
- */
-
-/*
- * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
- * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __XF_LIST_H__

@@ -55,9 +55,6 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#define XF_DQ_TRUE  1
-#define XF_DQ_FALSE 0
-
 // #define CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS   0
 #define CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER       1
 

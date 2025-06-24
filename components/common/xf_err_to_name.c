@@ -4,6 +4,10 @@
  * @brief 错误码转字符串.
  * @version 1.0
  * @date 2025-05-14
+ *
+ * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
+ * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 #ifndef __XF_ERR_TO_NAME_H__

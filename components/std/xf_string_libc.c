@@ -1,5 +1,13 @@
 /**
- * @file xf_string.c
+ * @file xf_string_libc.c
+ * @author catcatBlue (catcatblue@qq.com)
+ * @brief 
+ * @version 1.0
+ * @date 2025-06-24
+ * 
+ * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
+ * SPDX-License-Identifier: Apache-2.0
+ * 
  */
 
 /* ==================== [Includes] ========================================== */
