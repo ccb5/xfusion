@@ -50,11 +50,12 @@ typedef void *xf_task_lc_t;
                                 } while (0)
 #define xf_task_lc_end(s)
 #else
+// xf_task_lc_set 宏内添加 fall-through; FALLTHRU 注释不起作用，故使用 __fallthrough
 typedef uint16_t xf_task_lc_t;
 #define XF_TASK_LC_INIT_VALUE   0
 #define xf_task_lc_init(s)      s = XF_TASK_LC_INIT_VALUE;
 #define xf_task_lc_resume(s)    switch(s) { case XF_TASK_LC_INIT_VALUE:
-#define xf_task_lc_set(s)       s = __LINE__; /* fall-through */ /* FALLTHRU */ __fallthrough case __LINE__:
+#define xf_task_lc_set(s)       s = __LINE__; __fallthrough case __LINE__:
 #define xf_task_lc_end(s)       default:; break; }
 #endif
 
