@@ -166,7 +166,7 @@ void test_main(void)
     xf_task_sched_init();
 
     /* 创建并调用 */
-    xf_task_start(task, xf_task_1, NULL, 12345678U);
+    xf_task_start(xf_task_1, NULL, 12345678, &task);
 
     while (1) {
         delay_tick = xf_stimer_handler();
@@ -206,7 +206,7 @@ void test_main(void)
     /* 只创建，不调用 */
     xf_task_create(xf_task_2, NULL);
     /* 创建并调用 */
-    xf_task_start(task, xf_task_1, NULL, 12345678U);
+    xf_task_start(xf_task_1, NULL, 12345678U, &task);
 
     while (1) {
         delay_tick = xf_stimer_handler();
@@ -238,7 +238,7 @@ xf_task_async_t xf_task_2(xf_task_t *me, void *arg)
     xf_task_begin(me);
     XF_LOGI(tag, "task%d begin", (int)xf_task_to_id(me));
     XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
-    xf_task_await(me, xf_task_21, NULL, arg);
+    xf_task_await(me, xf_task_21, NULL, NULL);
     XF_LOGI(tag, "hi: %u", xf_tick_get_count());
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
@@ -276,7 +276,7 @@ void test_main(void)
     xf_tick_t delay_tick;
     xf_task_sched_init();
 
-    xf_task_start(task, xf_task_1, NULL, 12345678);
+    xf_task_start(xf_task_1, NULL, 12345678, &task);
 
     while (1) {
         delay_tick = xf_stimer_handler();
@@ -299,11 +299,11 @@ xf_task_async_t xf_task_1(xf_task_t *me, void *arg)
     XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
 
     XF_LOGI(tag, "start xf_task_2");
-    task_state = xf_task_start(task, xf_task_2, NULL, arg);
+    task_state = xf_task_start(xf_task_2, NULL, NULL, &task);
     XF_LOGI(tag, "xf_task_2 task_state: %d", (int)task_state);
 
     XF_LOGI(tag, "start_subtask xf_task_11");
-    xf_task_await(me, xf_task_11, NULL, arg);
+    xf_task_await(me, xf_task_11, NULL, NULL);
     XF_LOGI(tag, "xf_task_11 will definitely terminate.");
 
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
@@ -334,7 +334,7 @@ xf_task_async_t xf_task_11(xf_task_t *me, void *arg)
     XF_LOGI(tag, "hi: %u", xf_tick_get_count());
 
     /* 嵌套 await */
-    xf_task_await(me, xf_task_111, NULL, arg);
+    xf_task_await(me, xf_task_111, NULL, NULL);
 
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
     xf_task_end(me);
@@ -363,8 +363,8 @@ xf_task_async_t xf_task_111(xf_task_t *me, void *arg)
 
 #elif EXAMPLE == EXAMPLE_TASK_WAIT_EVENT
 
-xf_task_async_t xf_task_publish(xf_task_t *me, void *arg);
-xf_task_async_t xf_task_subscribe(xf_task_t *me, void *arg);
+xf_task_async_t publish_task(xf_task_t *me, void *arg);
+xf_task_async_t subscribe_task(xf_task_t *me, void *arg);
 
 void test_main(void)
 {
@@ -372,8 +372,8 @@ void test_main(void)
     xf_task_sched_init();
     xf_ps_init();
 
-    xf_task_create(xf_task_subscribe, NULL);
-    xf_task_create(xf_task_publish, NULL);
+    xf_task_create(subscribe_task, NULL);
+    xf_task_create(publish_task, NULL);
 
     while (1) {
         xf_dispatch();
@@ -387,7 +387,7 @@ void test_main(void)
 
 #define EVENT_ID_1  1
 
-xf_task_async_t xf_task_publish(xf_task_t *me, void *arg)
+xf_task_async_t publish_task(xf_task_t *me, void *arg)
 {
     const char *const tag = "xf_task_1";
     xf_err_t xf_ret;
@@ -410,19 +410,20 @@ xf_task_async_t xf_task_publish(xf_task_t *me, void *arg)
     xf_task_end(me);
 }
 
-xf_task_async_t xf_task_subscribe(xf_task_t *me, void *arg)
+xf_task_async_t subscribe_task(xf_task_t *me, void *arg)
 {
     const char *const tag = "xf_task_2";
+    xf_event_msg_t msg;
     xf_err_t xf_ret;
     xf_task_begin(me);
     XF_LOGI(tag, "task%d begin", (int)xf_task_to_id(me));
     XF_LOGI(tag, "arg: %u", (unsigned int)(uintptr_t)arg);
     while (1) {
-        xf_task_wait_until_ms(me, EVENT_ID_1, 500, xf_ret);
-        if (xf_ret == XF_ERR_TIMEOUT) {
-            XF_LOGI(tag, "timeout. curr: %u", xf_tick_get_count());
+        xf_task_wait_until_ms(me, EVENT_ID_1, 500, &xf_ret, &msg);
+        if (xf_ret == XF_OK) {
+            XF_LOGI(tag, "got: %u", (unsigned int)(uintptr_t)msg.arg);
         } else {
-            XF_LOGI(tag, "got: %u", (unsigned int)(uintptr_t)arg);
+            XF_LOGI(tag, "timeout. curr: %u", xf_tick_get_count());
         }
     }
     XF_LOGI(tag, "task%d end", (int)xf_task_to_id(me));
@@ -459,8 +460,8 @@ void test_main(void)
 
     xf_subscribe(EVENT_ID_1, subscr_cb1, 0);
 
-    xf_task_start(task, lv_task, NULL, "lv_task");
-    xf_task_start(task, subscribe_task, NULL, "subscribe_task");
+    xf_task_start(lv_task, NULL, "lv_task", &task);
+    xf_task_start(subscribe_task, NULL, "subscribe_task", &task);
 
     xf_task_create(publish_task, NULL);
     xf_task_create(uart_task, NULL);
@@ -485,10 +486,11 @@ XF_TASK_FUNC(uart_task)
 {
     const char *const tag = "uart_task";
     xf_err_t xf_ret;
+    xf_event_msg_t msg;
     xf_task_begin(me);
     while (1) {
         _xf_uart_write(1, "AT+RESET\r\n", sizeof("AT+RESET\r\n"));
-        xf_task_wait_until_ms(me, EVENT_ID_UART_RECEIVE, 5000, xf_ret);
+        xf_task_wait_until_ms(me, EVENT_ID_UART_RECEIVE, 5000, &xf_ret, &msg);
         if (xf_ret == XF_ERR_TIMEOUT) {
             XF_LOGI(tag, "timeout");
         } else {
@@ -532,15 +534,16 @@ XF_TASK_FUNC(publish_task)
 XF_TASK_FUNC(subscribe_task)
 {
     const char *const tag = "subscribe_task";
+    xf_event_msg_t msg;
     xf_err_t xf_ret;
     xf_task_begin(me);
     while (1) {
-        xf_task_wait_until_ms(me, EVENT_ID_1, EVENT_TIMEOUT, xf_ret);
+        xf_task_wait_until_ms(me, EVENT_ID_1, EVENT_TIMEOUT, &xf_ret, &msg);
         if (xf_ret == XF_ERR_TIMEOUT) {
             XF_LOGI(tag, "timeout");
         } else {
             XF_LOGI(tag, "got event");
-            xf_task_await(me, subtask, NULL, arg);
+            xf_task_await(me, subtask, NULL, msg.arg);
         }
     }
     xf_task_end(me);
