@@ -93,8 +93,8 @@ xf_err_t xf_deque_reset(xf_dq_t *p_dq)
     }
     p_dq->head = 0;
     p_dq->tail = 0;
-    p_dq->head_mirror = XF_DQ_FALSE;
-    p_dq->tail_mirror = XF_DQ_FALSE;
+    p_dq->head_mirror = 0;
+    p_dq->tail_mirror = 0;
 #if _EN_READ_AND_CLR
     XF_DQ_MEMSET(p_dq->p_buf, _FILL_VAL, p_dq->buf_size);
 #endif
