@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 #if XF_AM_POPCOUNT_U32_ENABLE_MASK & BIT(XF_AM_POPCOUNT_U32_GUN)
-static inline uint32_t xf_am_popcount_u32_gnu(uint32_t n)
+__STATIC_INLINE uint32_t xf_am_popcount_u32_gnu(uint32_t n)
 {
     return __builtin_popcount(n);
 }
@@ -58,7 +58,7 @@ uint32_t xf_am_log2_u32(uint32_t n);
  * @param n
  * @return uint32_t
  */
-static inline uint32_t xf_am_popcount_u32(uint32_t n)
+__STATIC_INLINE uint32_t xf_am_popcount_u32(uint32_t n)
 {
 #if     (XF_AM_POPCOUNT_U32_DEFAULT == XF_AM_POPCOUNT_U32_GUN)
     return xf_am_popcount_u32_gnu(n);
@@ -83,7 +83,7 @@ uint32_t xf_am_ctz_u32(uint32_t n);
  * @return uint32_t
  */
 uint32_t xf_am_flp2_u32(uint32_t n);
-static inline uint32_t xf_am_round_down_to_power_of_2_u32(uint32_t n)
+__STATIC_INLINE uint32_t xf_am_round_down_to_power_of_2_u32(uint32_t n)
 {
     return xf_am_flp2_u32(n);
 }

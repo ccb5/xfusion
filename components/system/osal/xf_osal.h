@@ -30,17 +30,17 @@ extern "C" {
 
 /* ==================== [Global Prototypes] ================================= */
 
-static inline uint32_t osKernelTickToMs(uint32_t ticks)
+__STATIC_INLINE uint32_t osKernelTickToMs(uint32_t ticks)
 {
     return osKernelGetTickFreq() * ticks / 1000;
 }
 
-static inline uint32_t osKernelMsToTick(uint32_t ms)
+__STATIC_INLINE uint32_t osKernelMsToTick(uint32_t ms)
 {
     return osKernelGetTickFreq() * ms / 1000;
 }
 
-static inline osStatus_t osDelayMs(uint32_t ms)
+__STATIC_INLINE osStatus_t osDelayMs(uint32_t ms)
 {
     return osDelay(osKernelMsToTick(ms));
 }

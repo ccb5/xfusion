@@ -818,7 +818,7 @@ extern "C" {
  */
 #   define FLS32(x)                     (32 - __builtin_clz(x))
 #elif !defined(FLS32)
-static inline int __no_builtin_clz(uint32_t x)
+__STATIC_INLINE int __no_builtin_clz(uint32_t x)
 {
 /* *INDENT-OFF* */
     int n = 0;
@@ -844,7 +844,7 @@ static inline int __no_builtin_clz(uint32_t x)
  */
 #   define FLS64(x)                     (64 - __builtin_clzll(x))
 #elif !defined(FLS64)
-static inline int __no_builtin_clzll(uint64_t x)
+__STATIC_INLINE int __no_builtin_clzll(uint64_t x)
 {
 /* *INDENT-OFF* */
     int n = 0;

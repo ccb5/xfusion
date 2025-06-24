@@ -106,7 +106,7 @@ typedef struct xf_hlist_node {
  *
  * @param list 被初始化的链表节点.
  */
-static inline void xf_list_init(xf_list_t *list)
+__STATIC_INLINE void xf_list_init(xf_list_t *list)
 {
     list->next = list;
     list->prev = list;
@@ -130,7 +130,7 @@ static inline void xf_list_init(xf_list_t *list)
  * @param prev
  * @param next
  */
-static inline void __xf_list_add(
+__STATIC_INLINE void __xf_list_add(
     xf_list_t *new_node, xf_list_t *prev, xf_list_t *next)
 {
     next->prev      = new_node;
@@ -157,7 +157,7 @@ static inline void __xf_list_add(
  * @param head 需要添加 new_node 到其后面的节点,
  * 也就是 new_node 将添加到 head 节点后面.
  */
-static inline void xf_list_add(xf_list_t *new_node, xf_list_t *head)
+__STATIC_INLINE void xf_list_add(xf_list_t *new_node, xf_list_t *head)
 {
     __xf_list_add(new_node, head, head->next);
 }
@@ -180,7 +180,7 @@ static inline void xf_list_add(xf_list_t *new_node, xf_list_t *head)
  * @param head 需要添加 new_node 到其前面的节点,
  * 也就是 new_node 将添加到 head 节点前面.
  */
-static inline void xf_list_add_tail(xf_list_t *new_node, xf_list_t *head)
+__STATIC_INLINE void xf_list_add_tail(xf_list_t *new_node, xf_list_t *head)
 {
     __xf_list_add(new_node, head->prev, head);
 }
@@ -200,7 +200,7 @@ static inline void xf_list_add_tail(xf_list_t *new_node, xf_list_t *head)
  * @param prev
  * @param next
  */
-static inline void __xf_list_del(xf_list_t *prev, xf_list_t *next)
+__STATIC_INLINE void __xf_list_del(xf_list_t *prev, xf_list_t *next)
 {
     next->prev = prev;
     prev->next = next;
@@ -213,7 +213,7 @@ static inline void __xf_list_del(xf_list_t *prev, xf_list_t *next)
  * in an undefined state.
  */
 
-static inline void __xf_list_del_entry(xf_list_t *entry)
+__STATIC_INLINE void __xf_list_del_entry(xf_list_t *entry)
 {
     __xf_list_del(entry->prev, entry->next);
 }
@@ -225,7 +225,7 @@ static inline void __xf_list_del_entry(xf_list_t *entry)
  *
  * @note 之后, 节点上的 xf_list_empty() 不会返回 true, 此时节点处于未定义状态.
  */
-static inline void xf_list_del(xf_list_t *entry)
+__STATIC_INLINE void xf_list_del(xf_list_t *entry)
 {
     __xf_list_del(entry->prev, entry->next);
     entry->next = (xf_list_t *)XF_LIST_POISON1;
@@ -248,7 +248,7 @@ static inline void xf_list_del(xf_list_t *entry)
  * @param old 被替换的节点.
  * @param new_node 要插入的 new_node 节点.
  */
-static inline void xf_list_replace(xf_list_t *old, xf_list_t *new_node)
+__STATIC_INLINE void xf_list_replace(xf_list_t *old, xf_list_t *new_node)
 {
     new_node->next          = old->next;
     new_node->next->prev    = new_node;
@@ -262,7 +262,7 @@ static inline void xf_list_replace(xf_list_t *old, xf_list_t *new_node)
  * @param old 被替换的节点.
  * @param new_node 要插入的 new_node 节点.
  */
-static inline void xf_list_replace_init(xf_list_t *old, xf_list_t *new_node)
+__STATIC_INLINE void xf_list_replace_init(xf_list_t *old, xf_list_t *new_node)
 {
     xf_list_replace(old, new_node);
     xf_list_init(old);
@@ -278,7 +278,7 @@ static inline void xf_list_replace_init(xf_list_t *old, xf_list_t *new_node)
  *
  * @param entry 要从链表中删除的节点.
  */
-static inline void xf_list_del_init(xf_list_t *entry)
+__STATIC_INLINE void xf_list_del_init(xf_list_t *entry)
 {
     __xf_list_del_entry(entry);
     xf_list_init(entry);
@@ -297,7 +297,7 @@ static inline void xf_list_del_init(xf_list_t *entry)
  * @param head list 节点进入之前的头节点,
  *  也就是 list 进入之后, head 变为 list 后一个节点.
  */
-static inline void xf_list_move(xf_list_t *list, xf_list_t *head)
+__STATIC_INLINE void xf_list_move(xf_list_t *list, xf_list_t *head)
 {
     __xf_list_del_entry(list);
     xf_list_add(list, head);
@@ -315,7 +315,7 @@ static inline void xf_list_move(xf_list_t *list, xf_list_t *head)
  * @param list 要移动的节点.
  * @param head list 节点进入之后的头节点.
  */
-static inline void xf_list_move_tail(xf_list_t *list, xf_list_t *head)
+__STATIC_INLINE void xf_list_move_tail(xf_list_t *list, xf_list_t *head)
 {
     __xf_list_del_entry(list);
     xf_list_add_tail(list, head);
@@ -336,7 +336,7 @@ static inline void xf_list_move_tail(xf_list_t *list, xf_list_t *head)
  * - 1          是最后一个节点
  * - 0          不是最后一个节点
  */
-static inline int xf_list_is_last(const xf_list_t *list, const xf_list_t *head)
+__STATIC_INLINE int xf_list_is_last(const xf_list_t *list, const xf_list_t *head)
 {
     return list->next == head;
 }
@@ -354,7 +354,7 @@ static inline int xf_list_is_last(const xf_list_t *list, const xf_list_t *head)
  * - 1          空表
  * - 0          非空表
  */
-static inline int xf_list_empty(const xf_list_t *head)
+__STATIC_INLINE int xf_list_empty(const xf_list_t *head)
 {
     return head->next == head;
 }
@@ -387,7 +387,7 @@ static inline int xf_list_empty(const xf_list_t *head)
  * - 1          为空且未被修改
  * - 0          不为空或正在被修改
  */
-static inline int xf_list_empty_careful(const xf_list_t *head)
+__STATIC_INLINE int xf_list_empty_careful(const xf_list_t *head)
 {
     xf_list_t *next = head->next;
     return (next == head) && (next == head->prev);
@@ -403,7 +403,7 @@ static inline int xf_list_empty_careful(const xf_list_t *head)
  *
  * @param head 链表头节点.
  */
-static inline void xf_list_rotate_left(xf_list_t *head)
+__STATIC_INLINE void xf_list_rotate_left(xf_list_t *head)
 {
     xf_list_t *first;
 
@@ -426,12 +426,12 @@ static inline void xf_list_rotate_left(xf_list_t *head)
  * - 1          只有一个节点
  * - 0          不只有一个节点
  */
-static inline int xf_list_is_singular(const xf_list_t *head)
+__STATIC_INLINE int xf_list_is_singular(const xf_list_t *head)
 {
     return !xf_list_empty(head) && (head->next == head->prev);
 }
 
-static inline void __xf_list_cut_position(
+__STATIC_INLINE void __xf_list_cut_position(
     xf_list_t *list, xf_list_t *head, xf_list_t *entry)
 {
     xf_list_t *new_node_first   = entry->next;
@@ -469,7 +469,7 @@ static inline void __xf_list_cut_position(
  * @param head 包含节点的链表
  * @param entry head 中的一个节点, 可以是 head 本身, 如果这样, 则不会删除该链表.
  */
-static inline void xf_list_cut_position(
+__STATIC_INLINE void xf_list_cut_position(
     xf_list_t *list, xf_list_t *head, xf_list_t *entry)
 {
     if (xf_list_empty(head)) {
@@ -486,7 +486,7 @@ static inline void xf_list_cut_position(
     }
 }
 
-static inline void __xf_list_splice(
+__STATIC_INLINE void __xf_list_splice(
     const xf_list_t *list, xf_list_t *prev, xf_list_t *next)
 {
     xf_list_t *first = list->next;
@@ -511,7 +511,7 @@ static inline void __xf_list_splice(
  * @param list 要添加的 new_node 链表.
  * @param head 将其添加到第一个链表中的位置.
  */
-static inline void xf_list_splice(
+__STATIC_INLINE void xf_list_splice(
     const xf_list_t *list, xf_list_t *head)
 {
     if (!xf_list_empty(list)) {
@@ -531,7 +531,7 @@ static inline void xf_list_splice(
  * @param list 要添加的 new_node 链表.
  * @param head 将其添加到第一个链表中的位置.
  */
-static inline void xf_list_splice_tail(xf_list_t *list, xf_list_t *head)
+__STATIC_INLINE void xf_list_splice_tail(xf_list_t *list, xf_list_t *head)
 {
     if (!xf_list_empty(list)) {
         __xf_list_splice(list, head->prev, head);
@@ -554,7 +554,7 @@ static inline void xf_list_splice_tail(xf_list_t *list, xf_list_t *head)
  * @param list 要添加的 new_node 链表.
  * @param head 将其添加到第一个链表中的位置.
  */
-static inline void xf_list_splice_init(xf_list_t *list, xf_list_t *head)
+__STATIC_INLINE void xf_list_splice_init(xf_list_t *list, xf_list_t *head)
 {
     if (!xf_list_empty(list)) {
         __xf_list_splice(list, head, head->next);
@@ -580,7 +580,7 @@ static inline void xf_list_splice_init(xf_list_t *list, xf_list_t *head)
  * @param list 要添加的 new_node 链表.
  * @param head 将其添加到第一个链表中的位置.
  */
-static inline void xf_list_splice_tail_init(xf_list_t *list, xf_list_t *head)
+__STATIC_INLINE void xf_list_splice_tail_init(xf_list_t *list, xf_list_t *head)
 {
     if (!xf_list_empty(list)) {
         __xf_list_splice(list, head->prev, head);
@@ -588,7 +588,7 @@ static inline void xf_list_splice_tail_init(xf_list_t *list, xf_list_t *head)
     }
 }
 
-static inline void xf_init_hlist_node(xf_hlist_node_t *h)
+__STATIC_INLINE void xf_init_hlist_node(xf_hlist_node_t *h)
 {
     h->next = NULL;
     h->pprev = NULL;
@@ -603,7 +603,7 @@ static inline void xf_init_hlist_node(xf_hlist_node_t *h)
  * state.  For example, xf_hlist_nulls_del_init_rcu() does leave the
  * node in unhashed state, but xf_hlist_nulls_del() does not.
  */
-static inline int xf_hlist_unhashed(const xf_hlist_node_t *h)
+__STATIC_INLINE int xf_hlist_unhashed(const xf_hlist_node_t *h)
 {
     return !h->pprev;
 }
@@ -616,7 +616,7 @@ static inline int xf_hlist_unhashed(const xf_hlist_node_t *h)
  * to avoid potential load-tearing.  The XF_READ_ONCE() is paired with the
  * various XF_WRITE_ONCE() in hlist helpers that are defined below.
  */
-static inline int xf_hlist_unhashed_lockless(const xf_hlist_node_t *h)
+__STATIC_INLINE int xf_hlist_unhashed_lockless(const xf_hlist_node_t *h)
 {
     return !XF_READ_ONCE(h->pprev);
 }
@@ -625,12 +625,12 @@ static inline int xf_hlist_unhashed_lockless(const xf_hlist_node_t *h)
  * xf_hlist_empty - Is the specified xf_hlist_head structure an empty hlist?
  * @h: Structure to check.
  */
-static inline int xf_hlist_empty(const xf_hlist_t *h)
+__STATIC_INLINE int xf_hlist_empty(const xf_hlist_t *h)
 {
     return !XF_READ_ONCE(h->first);
 }
 
-static inline void __xf_hlist_del(xf_hlist_node_t *n)
+__STATIC_INLINE void __xf_hlist_del(xf_hlist_node_t *n)
 {
     xf_hlist_node_t *next = n->next;
     xf_hlist_node_t **pprev = n->pprev;
@@ -648,7 +648,7 @@ static inline void __xf_hlist_del(xf_hlist_node_t *n)
  * Note that this function leaves the node in hashed state.  Use
  * xf_hlist_del_init() or similar instead to unhash @n.
  */
-static inline void xf_hlist_del(xf_hlist_node_t *n)
+__STATIC_INLINE void xf_hlist_del(xf_hlist_node_t *n)
 {
     __xf_hlist_del(n);
     n->next = (xf_hlist_node_t *)XF_LIST_POISON1;
@@ -661,7 +661,7 @@ static inline void xf_hlist_del(xf_hlist_node_t *n)
  *
  * Note that this function leaves the node in unhashed state.
  */
-static inline void xf_hlist_del_init(xf_hlist_node_t *n)
+__STATIC_INLINE void xf_hlist_del_init(xf_hlist_node_t *n)
 {
     if (!xf_hlist_unhashed(n)) {
         __xf_hlist_del(n);
@@ -677,7 +677,7 @@ static inline void xf_hlist_del_init(xf_hlist_node_t *n)
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static inline void xf_hlist_add_head(xf_hlist_node_t *n, xf_hlist_t *h)
+__STATIC_INLINE void xf_hlist_add_head(xf_hlist_node_t *n, xf_hlist_t *h)
 {
     xf_hlist_node_t *first = h->first;
     XF_WRITE_ONCE(n->next, first);
@@ -693,7 +693,7 @@ static inline void xf_hlist_add_head(xf_hlist_node_t *n, xf_hlist_t *h)
  * @n: new entry to be added
  * @next: hlist node to add it before, which must be non-NULL
  */
-static inline void xf_hlist_add_before(xf_hlist_node_t *n, xf_hlist_node_t *next)
+__STATIC_INLINE void xf_hlist_add_before(xf_hlist_node_t *n, xf_hlist_node_t *next)
 {
     XF_WRITE_ONCE(n->pprev, next->pprev);
     XF_WRITE_ONCE(n->next, next);
@@ -706,7 +706,7 @@ static inline void xf_hlist_add_before(xf_hlist_node_t *n, xf_hlist_node_t *next
  * @n: new entry to be added
  * @prev: hlist node to add it after, which must be non-NULL
  */
-static inline void xf_hlist_add_behind(xf_hlist_node_t *n, xf_hlist_node_t *prev)
+__STATIC_INLINE void xf_hlist_add_behind(xf_hlist_node_t *n, xf_hlist_node_t *prev)
 {
     XF_WRITE_ONCE(n->next, prev->next);
     XF_WRITE_ONCE(prev->next, n);
@@ -725,7 +725,7 @@ static inline void xf_hlist_add_behind(xf_hlist_node_t *n, xf_hlist_node_t *prev
  * The point of this is to allow things like xf_hlist_del() to work correctly
  * in cases where there is no list.
  */
-static inline void xf_hlist_add_fake(xf_hlist_node_t *n)
+__STATIC_INLINE void xf_hlist_add_fake(xf_hlist_node_t *n)
 {
     n->pprev = &n->next;
 }
@@ -734,7 +734,7 @@ static inline void xf_hlist_add_fake(xf_hlist_node_t *n)
  * xf_hlist_fake: Is this node a fake hlist?
  * @h: Node to check for being a self-referential fake hlist.
  */
-static inline bool xf_hlist_fake(xf_hlist_node_t *h)
+__STATIC_INLINE bool xf_hlist_fake(xf_hlist_node_t *h)
 {
     return h->pprev == &h->next;
 }
@@ -747,7 +747,7 @@ static inline bool xf_hlist_fake(xf_hlist_node_t *h)
  * Check whether the node is the only node of the head without
  * accessing head, thus avoiding unnecessary cache misses.
  */
-static inline bool
+__STATIC_INLINE bool
 hlist_is_singular_node(xf_hlist_node_t *n, xf_hlist_t *h)
 {
     return !n->next && n->pprev == &h->first;
@@ -761,7 +761,7 @@ hlist_is_singular_node(xf_hlist_node_t *n, xf_hlist_t *h)
  * Move a list from one list head to another. Fixup the pprev
  * reference of the first entry if it exists.
  */
-static inline void xf_hlist_move_list(xf_hlist_t *old, xf_hlist_t *new)
+__STATIC_INLINE void xf_hlist_move_list(xf_hlist_t *old, xf_hlist_t *new)
 {
     new->first = old->first;
     if (new->first) {
@@ -778,7 +778,7 @@ static inline void xf_hlist_move_list(xf_hlist_t *old, xf_hlist_t *new)
  *
  * @to can be empty, @from must contain at least @last.
  */
-static inline void xf_hlist_splice_init(
+__STATIC_INLINE void xf_hlist_splice_init(
     xf_hlist_t *from, xf_hlist_node_t *last, xf_hlist_t *to)
 {
     if (to->first) {
@@ -1220,7 +1220,7 @@ static inline void xf_hlist_splice_init(
  * list_count_nodes - count nodes in the list
  * @head:   the head for your list.
  */
-static inline size_t xf_list_count_nodes(xf_list_t *head)
+__STATIC_INLINE size_t xf_list_count_nodes(xf_list_t *head)
 {
     xf_list_t *pos;
     size_t count = 0;
@@ -1286,7 +1286,7 @@ static inline size_t xf_list_count_nodes(xf_list_t *head)
  * xf_hlist_count_nodes - count nodes in the hlist
  * @head:   the head for your hlist.
  */
-static inline size_t xf_hlist_count_nodes(xf_hlist_t *head)
+__STATIC_INLINE size_t xf_hlist_count_nodes(xf_hlist_t *head)
 {
     xf_hlist_node_t *pos;
     size_t count = 0;
