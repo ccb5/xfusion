@@ -320,6 +320,9 @@ static xf_err_t xf_ps_notify(xf_event_msg_t *msg)
         if (s_subscr_pool[i].event_id == msg->id) {
             --ref_cnt;
             s_subscr_pool[i].cb_func(&s_subscr_pool[i], ref_cnt, msg->arg);
+            /* 
+                TODO 如果有在回调中订阅或取消订阅，需要重新计算 ref_cnt
+             */
         }
     }
     return XF_OK;

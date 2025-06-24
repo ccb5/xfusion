@@ -38,7 +38,15 @@ typedef uint8_t xf_ps_subscr_id_t;
 typedef struct xf_ps_subscriber xf_ps_subscr_t;
 typedef xf_ps_subscr_t xf_subscr_t;
 
-/* 订阅者回调 */
+/**
+ * @brief 订阅者回调.
+ *
+ * @note 目前不支持多个订阅者订阅同一个事件时，在回调函数中订阅或取消订阅。
+ *
+ * @param s         当前订阅者对象.
+ * @param ref_cnt   剩余订阅者引用计数，调回调前会预先减 1.
+ * @param arg       事件参数
+ */
 typedef void (*xf_ps_subscr_cb_t)(xf_subscr_t *s, uint8_t ref_cnt, void *arg);
 
 struct xf_ps_subscriber {
