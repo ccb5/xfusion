@@ -58,6 +58,11 @@ enum _xf_event_id_t {
     XF_EVENT_ID_MAX = (xf_event_id_t)~((xf_event_id_t)0),  /*!< 最大事件 ID （不含） */
 };
 
+typedef struct xf_event_msg {
+    xf_event_id_t           id;         /*!< 事件 ID */
+    void                   *arg;        /*!< 事件参数 */
+} xf_event_msg_t;
+
 /* ==================== [Global Prototypes] ================================= */
 
 /* 获取唯一事件 id */
