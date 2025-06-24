@@ -18,28 +18,40 @@
 
 #define TAG "xf_task"
 
+#define XF_TASK_EVENT_MSG_NUM_MAX   (4)
+
 /* ==================== [Typedefs] ========================================== */
 
 /* 内部循环变量均使用 uint8_t */
 STATIC_ASSERT(XF_TASK_NUM_MAX < ((uint8_t)~(uint8_t)0));
 
+typedef struct xf_task_event_msg {
+    xf_task_id_t    id;
+    xf_event_msg_t  msg;
+} xf_task_event_msg_t;
+
 /* ==================== [Static Prototypes] ================================= */
 
-static xf_err_t xf_task_sched(void *arg);
-static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg);
+static xf_err_t xf_task_set_event_msg(const xf_task_t *me, xf_event_msg_t *p_msg);
 
 static void xf_task_sched_resume(void);
 static void xf_task_sched_suspend(void);
 
+static xf_err_t xf_task_resume_root(xf_task_t *task, void *arg);
+static xf_err_t xf_task_sched(void *arg);
+
 /* ==================== [Static Variables] ================================== */
 
-/* 协程池 */
+/* 任务池 */
 static xf_task_t s_task_pool[XF_TASK_NUM_MAX] = {0};
+
+/* 事件消息池 */
+static xf_task_event_msg_t s_msg_pool[XF_TASK_EVENT_MSG_NUM_MAX] = {0};
 
 /* 嵌套深度 */
 static volatile int8_t s_nest_depth = 0;
 
-/* 调度器定时任务 */
+/* 给调度器用的定时任务 */
 static xf_stimer_t *s_sched_stimer = NULL;
 
 /* ==================== [Macros] ============================================ */
@@ -120,6 +132,7 @@ xf_err_t xf_task_destroy_(xf_task_t *task)
     if (task == NULL) {
         return XF_ERR_INVALID_ARG;
     }
+    xf_task_teardown_wait_until(task);
     xf_task_deinit(task);
     xf_task_release(task);
     return XF_OK;
@@ -130,7 +143,7 @@ xf_task_id_t xf_task_to_id(const xf_task_t *task)
     if ((task == NULL)
             || (task < &s_task_pool[0])
             || (task > &s_task_pool[XF_TASK_NUM_MAX - 1])) {
-        return XF_STIMER_ID_INVALID;
+        return XF_TASK_ID_INVALID;
     }
     return (xf_task_id_t)(task - &s_task_pool[0]);
 }
@@ -143,8 +156,41 @@ xf_task_t *xf_task_id_to_task(xf_task_id_t id)
     return &s_task_pool[id];
 }
 
+void xf_task_get_wait_until_result(const xf_task_t *me, xf_err_t *p_xf_ret)
+{
+    if (me && p_xf_ret) {
+        *p_xf_ret = (me->id_subscr == XF_PS_ID_INVALID) ? XF_OK : XF_ERR_TIMEOUT;
+    }
+}
+
+xf_err_t xf_task_get_event_msg(const xf_task_t *me, xf_event_msg_t *p_msg)
+{
+    XF_CRIT_STAT();
+    uint8_t i;
+    xf_task_id_t id;
+    id = xf_task_to_id(me);
+    if (id == XF_TASK_ID_INVALID) {
+        return XF_ERR_INVALID_ARG;
+    }
+    XF_CRIT_ENTRY();
+    for (i = 0; i < XF_TASK_EVENT_MSG_NUM_MAX; ++i) {
+        if (s_msg_pool[i].id == id) {
+            if (p_msg != NULL) {
+                *p_msg = s_msg_pool[i].msg;
+            }
+            s_msg_pool[i].id = XF_TASK_ID_INVALID;
+            XF_CRIT_EXIT();
+            return XF_OK;
+        }
+    }
+    XF_CRIT_EXIT();
+    return XF_FAIL;
+}
+
 xf_err_t xf_task_sched_init(void)
 {
+    uint8_t i;
+    XF_CRIT_STAT();
     if (s_sched_stimer == NULL) {
         s_sched_stimer = xf_stimer_create(
                              XF_STIMER_INFINITY,
@@ -153,6 +199,11 @@ xf_err_t xf_task_sched_init(void)
         if (s_sched_stimer == NULL) {
             XF_FATAL_ERROR();
         }
+        XF_CRIT_ENTRY();
+        for (i = 0; i < XF_TASK_EVENT_MSG_NUM_MAX; ++i) {
+            s_msg_pool[i].id = XF_TASK_ID_INVALID;
+        }
+        XF_CRIT_EXIT();
     }
     return XF_OK;
 }
@@ -246,8 +297,19 @@ void xf_resume_task_subscr_cb(xf_subscr_t *s, uint8_t ref_cnt, void *arg)
 {
     UNUSED(ref_cnt);
     UNUSED(arg);
+    xf_err_t xf_ret;
     xf_task_t *task = xf_task_cast(s->user_data);
+    xf_event_msg_t msg = {0};
+    if (task == NULL) {
+        return;
+    }
     if (task->id_subscr != xf_ps_subscr_to_id(s)) {
+        XF_FATAL_ERROR();
+    }
+    msg.id = s->event_id;
+    msg.arg = arg;
+    xf_ret = xf_task_set_event_msg(task, &msg);
+    if (xf_ret != XF_OK) {
         XF_FATAL_ERROR();
     }
     xf_task_release_subscr(task);
@@ -303,6 +365,26 @@ int8_t xf_task_get_nest_depth(void)
 }
 
 /* ==================== [Static Functions] ================================== */
+
+static xf_err_t xf_task_set_event_msg(const xf_task_t *me, xf_event_msg_t *p_msg)
+{
+    XF_CRIT_STAT();
+    uint8_t i;
+    if (me == NULL) {
+        return XF_ERR_INVALID_ARG;
+    }
+    XF_CRIT_ENTRY();
+    for (i = 0; i < XF_TASK_EVENT_MSG_NUM_MAX; ++i) {
+        if (s_msg_pool[i].id == XF_TASK_ID_INVALID) {
+            s_msg_pool[i].id = xf_task_to_id(me);
+            s_msg_pool[i].msg = *p_msg;
+            XF_CRIT_EXIT();
+            return XF_OK;
+        }
+    }
+    XF_CRIT_EXIT();
+    return XF_FAIL;
+}
 
 static void xf_task_sched_resume(void)
 {

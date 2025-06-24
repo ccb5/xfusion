@@ -53,6 +53,9 @@ xf_err_t xf_task_teardown_wait_until(xf_task_t *me);
 xf_task_t *xf_task_create_(xf_task_t *parent, xf_task_cb_t cb_func, void *user_data);
 xf_err_t xf_task_destroy_(xf_task_t *task);
 
+void xf_task_get_wait_until_result(const xf_task_t *me, xf_err_t *p_xf_ret);
+xf_err_t xf_task_get_event_msg(const xf_task_t *me, xf_event_msg_t *p_msg);
+
 /* ==================== [Macros] ============================================ */
 
 #define xf_task_create_i(_cb_func, _user_data) \
@@ -63,16 +66,16 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                         xf_task_create_(xf_task_cast(_me), xf_task_cb_cast(_cb_func), \
                                                         ((void *)(uintptr_t)(_user_data)))
 
-#define xf_task_destroy_i(_task)        xf_task_destroy_(xf_task_cast(_task))
+#define xf_task_destroy_i(_p_task)      xf_task_destroy_(xf_task_cast(_p_task))
 
-#define xf_task_run_i(_task, _arg)      (xf_task_attr_set_state(xf_task_cast(_task), XF_TASK_READY), \
-                                            xf_task_run_direct((_task), (_arg)))
+#define xf_task_run_i(_p_task, _arg)    (xf_task_attr_set_state(xf_task_cast(_p_task), XF_TASK_READY), \
+                                            xf_task_run_direct((_p_task), (_arg)))
 
-#define xf_task_start_i(_task, _cb_func, _user_data, _arg) \
-                                        ((_task) = xf_task_create_i((_cb_func), (_user_data)), \
-                                            xf_task_run_i((_task), (_arg)))
+#define xf_task_start_i(_cb_func, _user_data, _arg, _pp_task) \
+                                        (*(_pp_task) = xf_task_create_i((_cb_func), (_user_data)), \
+                                            xf_task_run_i(*(_pp_task), (_arg)))
 
-#define xf_task_begin_i(_me)            { \
+#define xf_task_begin_i(_me)            {   /*!< 在 c89 条件下此括号用于声明 task 内部变量 */ \
                                             xf_task_state_t __task_state = XF_TASK_READY; \
                                             xf_task_t *__task; \
                                             UNUSED(me); /*!< 仅用于规定参数名必须为 me */ \
@@ -82,9 +85,12 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
                                             xf_task_nest_depth_inc(); \
                                             xf_task_lc_resume(xf_task_cast(_me)->lc) \
 
+/*
+    不需要反初始化， xf_task_destroy_i 清会空。
+    xf_task_lc_init(xf_task_cast(_me)->lc); \
+    xf_task_attr_set_state((_me), XF_TASK_TERMINATED); \
+ */
 #define xf_task_end_i(_me)                  xf_task_lc_end(xf_task_cast(_me)->lc); \
-                                            xf_task_lc_init(xf_task_cast(_me)->lc); \
-                                            xf_task_attr_set_state((_me), XF_TASK_TERMINATED); \
                                             xf_task_destroy_i((_me)); \
                                             xf_task_nest_depth_dec(); \
                                             return XF_TASK_TERMINATED; \
@@ -155,22 +161,19 @@ xf_err_t xf_task_destroy_(xf_task_t *task);
 
 #define xf_task_delay_ms_i(_me, _ms)    xf_task_delay_i((_me), xf_tick_to_ms(_ms))
 
-#define xf_task_wait_until_i(_me, _id, _tick, _xf_err) \
+#define xf_task_wait_until_i(_me, _id, _tick, _p_xf_err, _p_e_msg) \
                                         do { \
                                             xf_task_setup_wait_until(xf_task_cast(_me), (_id), (_tick)); \
                                             xf_task_block_i((_me)); \
+                                            xf_task_get_wait_until_result(xf_task_cast(_me), (_p_xf_err)); \
                                             if (xf_task_cast(_me)->id_subscr == XF_PS_ID_INVALID) { \
-                                                /* 事件到达 */ \
-                                                (_xf_err) = XF_OK; \
-                                            } else { \
-                                                /* 超时 */ \
-                                                (_xf_err) = XF_ERR_TIMEOUT; \
+                                                xf_task_get_event_msg(xf_task_cast(_me), (_p_e_msg)); \
                                             } \
                                             xf_task_teardown_wait_until(xf_task_cast(_me)); \
                                         } while (0)
 
-#define xf_task_wait_until_ms_i(_me, _id, _ms, _xf_err) \
-                                        xf_task_wait_until_i((_me), (_id), xf_tick_to_ms(_ms), (_xf_err))
+#define xf_task_wait_until_ms_i(_me, _id, _ms, _p_xf_err, _p_e_msg) \
+                                        xf_task_wait_until_i((_me), (_id), xf_tick_to_ms(_ms), (_p_xf_err), (_p_e_msg))
 
 #ifdef __cplusplus
 } /* extern "C" */
