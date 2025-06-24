@@ -61,8 +61,8 @@ xf_stimer_t *xf_stimer_acquire(void)
     }
     XF_CRIT_ENTRY();
     XF_BITMAP32_SET1(s_stimer_bm, idx);
-    XF_CRIT_EXIT();
     sb_stimer_created = TRUE;
+    XF_CRIT_EXIT();
     return &sp_pool[idx];
 }
 
@@ -83,8 +83,8 @@ xf_err_t xf_stimer_release(xf_stimer_t *stimer)
     XF_CRIT_ENTRY();
     XF_BITMAP32_SET0(s_stimer_bm, idx);
     xf_memset(stimer, 0, sizeof(xf_stimer_t));
-    XF_CRIT_EXIT();
     sb_stimer_deleted = TRUE;
+    XF_CRIT_EXIT();
     return XF_OK;
 }
 
