@@ -15,7 +15,6 @@ idf_component_register(
     INCLUDE_DIRS 
         "."
         "xtiny"
-        "osal"
     # REQUIRES
     WHOLE_ARCHIVE
 )

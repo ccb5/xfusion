@@ -9,8 +9,8 @@ idf_component_register(
         "${CMAKE_CURRENT_LIST_DIR}/CMSIS/RTOS2/FreeRTOS/Source/cmsis_os2.c"
     INCLUDE_DIRS
         "${CMAKE_CURRENT_LIST_DIR}/CMSIS/RTOS2/FreeRTOS/Include"
+        "osal"
     REQUIRES
         "freertos"
-        "xfusion"
     WHOLE_ARCHIVE
 )

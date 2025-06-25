@@ -15,16 +15,8 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-
-#define XF_ENABLE_OSAL                      1
-#define XF_OSAL_OS_TICK_HEADER_PATH         "cmsis_rtos2/os_tick.h"
-#define XF_OSAL_CMSIS_OS2_HEADER_PATH       "cmsis_rtos2/cmsis_os2.h"
-
-#if XF_ENABLE_OSAL
-
-#include XF_OSAL_OS_TICK_HEADER_PATH
-#include XF_OSAL_CMSIS_OS2_HEADER_PATH
+#include "cmsis_rtos2/os_tick.h"
+#include "cmsis_rtos2/cmsis_os2.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,17 +28,17 @@ extern "C" {
 
 /* ==================== [Global Prototypes] ================================= */
 
-__STATIC_INLINE uint32_t osKernelTickToMs(uint32_t ticks)
+static inline uint32_t osKernelTickToMs(uint32_t ticks)
 {
     return osKernelGetTickFreq() * ticks / 1000;
 }
 
-__STATIC_INLINE uint32_t osKernelMsToTick(uint32_t ms)
+static inline uint32_t osKernelMsToTick(uint32_t ms)
 {
     return osKernelGetTickFreq() * ms / 1000;
 }
 
-__STATIC_INLINE osStatus_t osDelayMs(uint32_t ms)
+static inline osStatus_t osDelayMs(uint32_t ms)
 {
     return osDelay(osKernelMsToTick(ms));
 }
@@ -56,7 +48,5 @@ __STATIC_INLINE osStatus_t osDelayMs(uint32_t ms)
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
-#endif /* XF_ENABLE_OSAL */
 
 #endif /* __XF_OSAL_H__ */
