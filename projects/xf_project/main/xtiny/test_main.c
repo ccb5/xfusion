@@ -18,20 +18,12 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "xf_common.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
-#include "xf_algo.h"
+#include "xtiny.h"
 
 #include "xf_osal.h"
 
 #include <unistd.h>
 #include <stdio.h>
-
-#include "xf_ps.h"
-#include "xf_stimer.h"
-#include "xf_tick.h"
-#include "xf_task.h"
 
 /* ==================== [Defines] =========================================== */
 

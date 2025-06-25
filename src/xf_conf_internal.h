@@ -285,6 +285,54 @@
     #endif
 #endif
 
+/* -------------------- components/system/check ----------------------------- */
+
+#ifndef XF_ENABLE_CHECK
+    #ifdef XF_KCONFIG_PRESENT
+        #ifdef CONFIG_XF_ENABLE_CHECK
+            #define XF_ENABLE_CHECK CONFIG_XF_ENABLE_CHECK
+        #else
+            #define XF_ENABLE_CHECK 0
+        #endif
+    #else
+        #define XF_ENABLE_CHECK                     1
+    #endif
+#endif
+
+#ifndef XF_CHECK_ENABLE_CHECK
+    #ifdef XF_KCONFIG_PRESENT
+        #ifdef CONFIG_XF_CHECK_ENABLE_CHECK
+            #define XF_CHECK_ENABLE_CHECK CONFIG_XF_CHECK_ENABLE_CHECK
+        #else
+            #define XF_CHECK_ENABLE_CHECK 0
+        #endif
+    #else
+        #define XF_CHECK_ENABLE_CHECK               1
+    #endif
+#endif
+#ifndef XF_CHECK_ENABLE_ASSERT
+    #ifdef XF_KCONFIG_PRESENT
+        #ifdef CONFIG_XF_CHECK_ENABLE_ASSERT
+            #define XF_CHECK_ENABLE_ASSERT CONFIG_XF_CHECK_ENABLE_ASSERT
+        #else
+            #define XF_CHECK_ENABLE_ASSERT 0
+        #endif
+    #else
+        #define XF_CHECK_ENABLE_ASSERT              1
+    #endif
+#endif
+#ifndef XF_CHECK_ENABLE_ERROR_CHECK
+    #ifdef XF_KCONFIG_PRESENT
+        #ifdef CONFIG_XF_CHECK_ENABLE_ERROR_CHECK
+            #define XF_CHECK_ENABLE_ERROR_CHECK CONFIG_XF_CHECK_ENABLE_ERROR_CHECK
+        #else
+            #define XF_CHECK_ENABLE_ERROR_CHECK 0
+        #endif
+    #else
+        #define XF_CHECK_ENABLE_ERROR_CHECK         1
+    #endif
+#endif
+
 /* -------------------- components/system/event ----------------------------- */
 
 #ifndef XF_ENABLE_EVENT
@@ -296,34 +344,6 @@
         #endif
     #else
         #define XF_ENABLE_EVENT                     1
-    #endif
-#endif
-
-/* -------------------- components/system/osal ------------------------------ */
-
-#ifndef XF_ENABLE_OSAL
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_OSAL
-            #define XF_ENABLE_OSAL CONFIG_XF_ENABLE_OSAL
-        #else
-            #define XF_ENABLE_OSAL 0
-        #endif
-    #else
-        #define XF_ENABLE_OSAL                      1
-    #endif
-#endif
-#ifndef XF_OSAL_OS_TICK_HEADER_PATH
-    #ifdef CONFIG_XF_OSAL_OS_TICK_HEADER_PATH
-        #define XF_OSAL_OS_TICK_HEADER_PATH CONFIG_XF_OSAL_OS_TICK_HEADER_PATH
-    #else
-        #define XF_OSAL_OS_TICK_HEADER_PATH         "cmsis_rtos2/os_tick.h"
-    #endif
-#endif
-#ifndef XF_OSAL_CMSIS_OS2_HEADER_PATH
-    #ifdef CONFIG_XF_OSAL_CMSIS_OS2_HEADER_PATH
-        #define XF_OSAL_CMSIS_OS2_HEADER_PATH CONFIG_XF_OSAL_CMSIS_OS2_HEADER_PATH
-    #else
-        #define XF_OSAL_CMSIS_OS2_HEADER_PATH       "cmsis_rtos2/cmsis_os2.h"
     #endif
 #endif
 
@@ -496,40 +516,6 @@
         #endif
     #else
         #define XF_ENABLE_UTILS                     1
-    #endif
-#endif
-
-#ifndef XF_CHECK_ENABLE_CHECK
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_CHECK_ENABLE_CHECK
-            #define XF_CHECK_ENABLE_CHECK CONFIG_XF_CHECK_ENABLE_CHECK
-        #else
-            #define XF_CHECK_ENABLE_CHECK 0
-        #endif
-    #else
-        #define XF_CHECK_ENABLE_CHECK               1
-    #endif
-#endif
-#ifndef XF_CHECK_ENABLE_ASSERT
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_CHECK_ENABLE_ASSERT
-            #define XF_CHECK_ENABLE_ASSERT CONFIG_XF_CHECK_ENABLE_ASSERT
-        #else
-            #define XF_CHECK_ENABLE_ASSERT 0
-        #endif
-    #else
-        #define XF_CHECK_ENABLE_ASSERT              1
-    #endif
-#endif
-#ifndef XF_CHECK_ENABLE_ERROR_CHECK
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_CHECK_ENABLE_ERROR_CHECK
-            #define XF_CHECK_ENABLE_ERROR_CHECK CONFIG_XF_CHECK_ENABLE_ERROR_CHECK
-        #else
-            #define XF_CHECK_ENABLE_ERROR_CHECK 0
-        #endif
-    #else
-        #define XF_CHECK_ENABLE_ERROR_CHECK         1
     #endif
 #endif
 

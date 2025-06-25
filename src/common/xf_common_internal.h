@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_conf_internal.h"
+#include "../xf_conf_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

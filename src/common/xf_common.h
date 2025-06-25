@@ -22,7 +22,6 @@
 #include "xf_err.h"
 #include "xf_macro_definition.h"
 #include "xf_types.h"
-#include "xf_version.h"
 
 #ifdef __cplusplus
 extern "C" {

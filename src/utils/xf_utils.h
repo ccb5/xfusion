@@ -15,13 +15,13 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-#include "xf_algo.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
-#include "xf_safe.h"
-#include "xf_std.h"
-#include "xf_check.h"
+#include "../common/xf_common.h"
+#include "../algo/xf_algo.h"
+#include "../dstruct/xf_dstruct.h"
+#include "../log/xf_log.h"
+#include "../system/safe/xf_safe.h"
+#include "../std/xf_std.h"
+#include "../system/check/xf_check.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -15,8 +15,9 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_utils.h"
-#include "xf_event.h"
+#include "../../utils/xf_utils.h"
+
+#include "../event/xf_event.h"
 
 #ifdef __cplusplus
 extern "C" {

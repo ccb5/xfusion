@@ -16,10 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xf_common.h"
-#include "xf_dstruct.h"
-#include "xf_log.h"
-
 #include "xf_osal.h"
 
 /* ==================== [Defines] =========================================== */

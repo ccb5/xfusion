@@ -18,7 +18,7 @@ import re
 
 SCRIPT_DIR = os.path.dirname(__file__)
 XF_CONF_TEMPLATE = os.path.join(SCRIPT_DIR, "..", "xf_conf_template.h")
-XF_CONF_INTERNAL = os.path.join(SCRIPT_DIR, "..", "xf_conf_internal.h")
+XF_CONF_INTERNAL = os.path.join(SCRIPT_DIR, "..", "src", "xf_conf_internal.h")
 
 if sys.version_info < (3,6,0):
   print("Python >=3.6 is required", file=sys.stderr)

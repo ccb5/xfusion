@@ -15,8 +15,8 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-#include "xf_algo.h"
+#include "../common/xf_common.h"
+#include "../algo/xf_algo.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -43,8 +43,8 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-#include "xf_std.h"
+#include "../common/xf_common.h"
+#include "../std/xf_std.h"
 
 #ifdef __cplusplus
 extern "C" {

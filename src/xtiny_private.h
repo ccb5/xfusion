@@ -1,21 +1,21 @@
 /**
- * @file xf_safe.h
+ * @file xtiny_private.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief
+ * @brief 
  * @version 1.0
- * @date 2025-06-20
- *
+ * @date 2025-06-25
+ * 
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
- *
+ * 
  */
 
-#ifndef __XF_SAFE_H__
-#define __XF_SAFE_H__
+#ifndef __XTINY_PRIVATE_SRC_H__
+#define __XTINY_PRIVATE_SRC_H__
 
 /* ==================== [Includes] ========================================== */
 
-#include "../../utils/xf_utils.h"
+#include "../xtiny_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,28 +23,14 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#define XF_CRIT_PTR_UNINIT              ((void *)(uintptr_t)0xDEADBEEF)
-
 /* ==================== [Typedefs] ========================================== */
 
 /* ==================== [Global Prototypes] ================================= */
 
 /* ==================== [Macros] ============================================ */
 
-#if !defined(XF_CRIT_STAT)
-#   define XF_CRIT_STAT()               ((void)0)
-#endif
-
-#if !defined(XF_CRIT_ENTRY)
-#   define XF_CRIT_ENTRY()              ((void)0)
-#endif
-
-#if !defined(XF_CRIT_EXIT)
-#   define XF_CRIT_EXIT()               ((void)0)
-#endif
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* __XF_SAFE_H__ */
+#endif /* __XTINY_PRIVATE_SRC_H__ */

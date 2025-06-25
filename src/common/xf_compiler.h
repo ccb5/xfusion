@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common_internal.h"
+#include "xf_common.h"
 #include "xf_types.h"
 #include "xf_macro_definition.h"
 

@@ -15,13 +15,11 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
+#include "../../utils/xf_utils.h"
 
-#include "xf_utils.h"
-
-#include "xf_event.h"
-#include "xf_ps.h"
-#include "xf_stimer.h"
+#include "../ps/xf_ps.h"
+#include "../stimer/xf_stimer.h"
+#include "../event/xf_event.h"
 
 #ifdef __cplusplus
 extern "C" {

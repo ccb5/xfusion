@@ -15,8 +15,8 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-#include "xf_log.h"
+#include "../../common/xf_common.h"
+#include "../../log/xf_log.h"
 
 /**
  * @cond XFAPI_USER

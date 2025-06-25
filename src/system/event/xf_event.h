@@ -15,9 +15,10 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
-#include "xf_dstruct.h"
-#include "xf_safe.h"
+#include "../../common/xf_common.h"
+#include "../../dstruct/xf_dstruct.h"
+#include "../../log/xf_log.h"
+#include "../safe/xf_safe.h"
 
 #ifdef __cplusplus
 extern "C" {
