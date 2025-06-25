@@ -61,31 +61,7 @@
 
 /* -------------------- components/algo ------------------------------------- */
 
-#ifndef XF_ENABLE_ALGO
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_ALGO
-            #define XF_ENABLE_ALGO CONFIG_XF_ENABLE_ALGO
-        #else
-            #define XF_ENABLE_ALGO 0
-        #endif
-    #else
-        #define XF_ENABLE_ALGO                      1
-    #endif
-#endif
-
 /* -------------------- components/common ----------------------------------- */
-
-#ifndef XF_ENABLE_COMMON
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_COMMON
-            #define XF_ENABLE_COMMON CONFIG_XF_ENABLE_COMMON
-        #else
-            #define XF_ENABLE_COMMON 0
-        #endif
-    #else
-        #define XF_ENABLE_COMMON                    1
-    #endif
-#endif
 
 #ifndef XF_COMMON_ENABLE_64BITS
     #ifdef XF_KCONFIG_PRESENT
@@ -133,18 +109,6 @@
 #endif
 
 /* -------------------- components/dstruct ---------------------------------- */
-
-#ifndef XF_ENABLE_DSTRUCT
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_DSTRUCT
-            #define XF_ENABLE_DSTRUCT CONFIG_XF_ENABLE_DSTRUCT
-        #else
-            #define XF_ENABLE_DSTRUCT 0
-        #endif
-    #else
-        #define XF_ENABLE_DSTRUCT                   1
-    #endif
-#endif
 
 /* 目前禁止开启 XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS 和关闭 XF_DEQUE_ENABLE_BUFFER_POINTER */
 #ifndef XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
@@ -239,18 +203,6 @@
 
 /* -------------------- components/std -------------------------------------- */
 
-#ifndef XF_ENABLE_STD
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_STD
-            #define XF_ENABLE_STD CONFIG_XF_ENABLE_STD
-        #else
-            #define XF_ENABLE_STD 0
-        #endif
-    #else
-        #define XF_ENABLE_STD                       1
-    #endif
-#endif
-
 /* XF_STD_STRING_* 只能二选一 */
 #ifndef XF_STRING_ENABLE_BUILTIN
     #ifdef CONFIG_XF_STRING_ENABLE_BUILTIN
@@ -273,31 +225,7 @@
 
 /* -------------------- components/system ----------------------------------- */
 
-#ifndef XF_ENABLE_SYSTEM
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_SYSTEM
-            #define XF_ENABLE_SYSTEM CONFIG_XF_ENABLE_SYSTEM
-        #else
-            #define XF_ENABLE_SYSTEM 0
-        #endif
-    #else
-        #define XF_ENABLE_SYSTEM                    1
-    #endif
-#endif
-
 /* -------------------- components/system/check ----------------------------- */
-
-#ifndef XF_ENABLE_CHECK
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_CHECK
-            #define XF_ENABLE_CHECK CONFIG_XF_ENABLE_CHECK
-        #else
-            #define XF_ENABLE_CHECK 0
-        #endif
-    #else
-        #define XF_ENABLE_CHECK                     1
-    #endif
-#endif
 
 #ifndef XF_CHECK_ENABLE_CHECK
     #ifdef XF_KCONFIG_PRESENT
@@ -335,31 +263,7 @@
 
 /* -------------------- components/system/event ----------------------------- */
 
-#ifndef XF_ENABLE_EVENT
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_EVENT
-            #define XF_ENABLE_EVENT CONFIG_XF_ENABLE_EVENT
-        #else
-            #define XF_ENABLE_EVENT 0
-        #endif
-    #else
-        #define XF_ENABLE_EVENT                     1
-    #endif
-#endif
-
 /* -------------------- components/system/ps -------------------------------- */
-
-#ifndef XF_ENABLE_PS
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_PS
-            #define XF_ENABLE_PS CONFIG_XF_ENABLE_PS
-        #else
-            #define XF_ENABLE_PS 0
-        #endif
-    #else
-        #define XF_ENABLE_PS                        1
-    #endif
-#endif
 
 /* 内置消息队列中最大消息数量 */
 #ifndef XF_PS_MSG_NUM_MAX
@@ -380,33 +284,10 @@
 
 /* -------------------- components/system/safe ------------------------------ */
 
-#ifndef XF_ENABLE_SAFE
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_SAFE
-            #define XF_ENABLE_SAFE CONFIG_XF_ENABLE_SAFE
-        #else
-            #define XF_ENABLE_SAFE 0
-        #endif
-    #else
-        #define XF_ENABLE_SAFE                      1
-    #endif
-#endif
-
 /* !!! For configuration details, please refer to xf_conf_extended. !!! */
 
 /* -------------------- components/system/stimer ---------------------------- */
 
-#ifndef XF_ENABLE_STIMER
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_STIMER
-            #define XF_ENABLE_STIMER CONFIG_XF_ENABLE_STIMER
-        #else
-            #define XF_ENABLE_STIMER 0
-        #endif
-    #else
-        #define XF_ENABLE_STIMER                    1
-    #endif
-#endif
 /* 定时器数量 */
 #ifndef XF_STIMER_NUM_MAX
     #ifdef CONFIG_XF_STIMER_NUM_MAX
@@ -425,18 +306,6 @@
 #endif
 
 /* -------------------- components/system/task ------------------------------ */
-
-#ifndef XF_ENABLE_TASK
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_TASK
-            #define XF_ENABLE_TASK CONFIG_XF_ENABLE_TASK
-        #else
-            #define XF_ENABLE_TASK 0
-        #endif
-    #else
-        #define XF_ENABLE_TASK                      1
-    #endif
-#endif
 
 /* XF_TASK_ENABLE_LC_* 二选一 */
 #ifndef XF_TASK_ENABLE_LC_LABEL
@@ -485,18 +354,6 @@
 
 /* -------------------- components/system/tick ------------------------------ */
 
-#ifndef XF_ENABLE_TICK
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_TICK
-            #define XF_ENABLE_TICK CONFIG_XF_ENABLE_TICK
-        #else
-            #define XF_ENABLE_TICK 0
-        #endif
-    #else
-        #define XF_ENABLE_TICK                      1
-    #endif
-#endif
-
 #ifndef XF_TICK_FREQ
     #ifdef CONFIG_XF_TICK_FREQ
         #define XF_TICK_FREQ CONFIG_XF_TICK_FREQ
@@ -505,19 +362,9 @@
     #endif
 #endif
 
-/* -------------------- components/utils ----------------------------------- */
+/* -------------------- components/utils ------------------------------------ */
 
-#ifndef XF_ENABLE_UTILS
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_UTILS
-            #define XF_ENABLE_UTILS CONFIG_XF_ENABLE_UTILS
-        #else
-            #define XF_ENABLE_UTILS 0
-        #endif
-    #else
-        #define XF_ENABLE_UTILS                     1
-    #endif
-#endif
+/* -------------------- examples -------------------------------------------- */
 
 /* -------------------- Extended Configuration ------------------------------ */
 

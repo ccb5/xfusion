@@ -30,25 +30,9 @@ menu "XFusion"
 
     endmenu # Extended
 
-    config XF_ENABLE_COMPONENTS
-        bool
-        default y
-
     menu "Components"
 
-        depends on XF_ENABLE_COMPONENTS
-
-        config XF_ENABLE_ALGO
-            bool "algo"
-            default y
-
-        config XF_ENABLE_COMMON
-            bool "common"
-            default y
-
         menu "common"
-
-            depends on XF_ENABLE_COMMON
 
             config XF_COMMON_ENABLE_64BITS
                 bool "Enable 64 bits"
@@ -68,13 +52,7 @@ menu "XFusion"
 
         endmenu # common
 
-        config XF_ENABLE_DSTRUCT
-            bool "dstruct"
-            default y
-
         menu "dstruct"
-
-            depends on XF_ENABLE_DSTRUCT
 
             config XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
                 bool "Enable DEQUE Zero Length Arrays"
@@ -112,13 +90,7 @@ menu "XFusion"
 
         endmenu # log
 
-        config XF_ENABLE_STD
-            bool "std"
-            default y
-
         menu "std"
-
-            depends on XF_ENABLE_STD
 
             choice
                 prompt "String functions source"
@@ -131,21 +103,9 @@ menu "XFusion"
 
         endmenu # std
 
-        config XF_ENABLE_SYSTEM
-            bool "system"
-            default y
-
         menu "system"
 
-            depends on XF_ENABLE_SYSTEM
-
-            config XF_ENABLE_CHECK
-                bool "check"
-                default y
-
             menu "check"
-
-                depends on XF_ENABLE_CHECK
 
                 config XF_CHECK_ENABLE_CHECK
                     bool "check"
@@ -161,17 +121,7 @@ menu "XFusion"
 
             endmenu # check
 
-            config XF_ENABLE_EVENT
-                bool "event"
-                default y
-
-            config XF_ENABLE_PS
-                bool "ps"
-                default y
-
             menu "ps"
-
-                depends on XF_ENABLE_PS
 
                 config XF_PS_MSG_NUM_MAX
                     int "max number of messages"
@@ -183,17 +133,7 @@ menu "XFusion"
 
             endmenu # ps
 
-            config XF_ENABLE_SAFE
-                bool "safe"
-                default y
-
-            config XF_ENABLE_STIMER
-                bool "stimer"
-                default y
-
             menu "stimer"
-
-                depends on XF_ENABLE_STIMER
 
                 config XF_STIMER_NUM_MAX
                     int "max number of timers"
@@ -205,13 +145,7 @@ menu "XFusion"
 
             endmenu # stimer
 
-            config XF_ENABLE_TASK
-                bool "task"
-                default y
-
             menu "task"
-
-                depends on XF_ENABLE_TASK
 
                 choice
                     prompt "Local continuation type"
@@ -236,13 +170,7 @@ menu "XFusion"
 
             endmenu # task
 
-            config XF_ENABLE_TICK
-                bool "tick"
-                default y
-
             menu "tick"
-
-                depends on XF_ENABLE_TICK
 
                 config XF_TICK_FREQ
                     int "tick frequency, in units of Hz"
@@ -251,10 +179,6 @@ menu "XFusion"
             endmenu # tick
 
         endmenu # system
-
-        config XF_ENABLE_UTILS
-            bool "utils"
-            default y
 
     endmenu # Components
 

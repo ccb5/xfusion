@@ -28,11 +28,7 @@
 
 /* -------------------- components/algo ------------------------------------- */
 
-#define XF_ENABLE_ALGO                      1
-
 /* -------------------- components/common ----------------------------------- */
-
-#define XF_ENABLE_COMMON                    1
 
 #define XF_COMMON_ENABLE_64BITS             1
 #define XF_COMMON_ENABLE_GNU                1
@@ -40,8 +36,6 @@
 #define XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP 1
 
 /* -------------------- components/dstruct ---------------------------------- */
-
-#define XF_ENABLE_DSTRUCT                   1
 
 /* 目前禁止开启 XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS 和关闭 XF_DEQUE_ENABLE_BUFFER_POINTER */
 #define XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS  0
@@ -60,19 +54,13 @@
 
 /* -------------------- components/std -------------------------------------- */
 
-#define XF_ENABLE_STD                       1
-
 /* XF_STD_STRING_* 只能二选一 */
 #define XF_STRING_ENABLE_BUILTIN            0
 #define XF_STRING_ENABLE_LIBC               1
 
 /* -------------------- components/system ----------------------------------- */
 
-#define XF_ENABLE_SYSTEM                    1
-
 /* -------------------- components/system/check ----------------------------- */
-
-#define XF_ENABLE_CHECK                     1
 
 #define XF_CHECK_ENABLE_CHECK               1
 #define XF_CHECK_ENABLE_ASSERT              1
@@ -80,11 +68,7 @@
 
 /* -------------------- components/system/event ----------------------------- */
 
-#define XF_ENABLE_EVENT                     1
-
 /* -------------------- components/system/ps -------------------------------- */
-
-#define XF_ENABLE_PS                        1
 
 /* 内置消息队列中最大消息数量 */
 #define XF_PS_MSG_NUM_MAX                   16
@@ -93,21 +77,16 @@
 
 /* -------------------- components/system/safe ------------------------------ */
 
-#define XF_ENABLE_SAFE                      1
-
 /* !!! For configuration details, please refer to xf_conf_extended. !!! */
 
 /* -------------------- components/system/stimer ---------------------------- */
 
-#define XF_ENABLE_STIMER                    1
 /* 定时器数量 */
 #define XF_STIMER_NUM_MAX                   16
 /* 没有定时器就绪时的延时时间，单位 tick */
 #define XF_STIMER_NO_READY_DELAY            1000
 
 /* -------------------- components/system/task ------------------------------ */
-
-#define XF_ENABLE_TASK                      1
 
 /* XF_TASK_ENABLE_LC_* 二选一 */
 #define XF_TASK_ENABLE_LC_LABEL             1
@@ -122,13 +101,11 @@
 
 /* -------------------- components/system/tick ------------------------------ */
 
-#define XF_ENABLE_TICK                      1
-
 #define XF_TICK_FREQ                        1000
 
-/* -------------------- components/utils ----------------------------------- */
+/* -------------------- components/utils ------------------------------------ */
 
-#define XF_ENABLE_UTILS                     1
+/* -------------------- examples -------------------------------------------- */
 
 /* -------------------- Extended Configuration ------------------------------ */
 
