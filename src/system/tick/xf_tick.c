@@ -17,10 +17,6 @@
 
 #include "xf_tick.h"
 
-#if XF_TICK_ENABLE_CUSTOM
-#include XF_TICK_CUSTOM_INCLUDE
-#endif
-
 /* ==================== [Defines] =========================================== */
 
 /* ==================== [Typedefs] ========================================== */
