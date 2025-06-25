@@ -16,31 +16,51 @@ menu "XFusion"
         bool "Check this to not use custom xf_conf.h"
         default y
 
-    config XF_ENABLE_components
+    config XF_ENABLE_EXTENDED
+        bool "Extended configuration"
+        default n
+
+    menu "Extended"
+
+        depends on XF_ENABLE_EXTENDED
+
+        config XF_CONF_EXTENDED_PATH
+            string "Extended configuration path"
+            default "xf_conf_extended.h"
+
+    endmenu # Extended
+
+    config XF_ENABLE_COMPONENTS
         bool
         default y
 
     menu "Components"
 
-        depends on XF_ENABLE_components
+        depends on XF_ENABLE_COMPONENTS
 
-        config XF_ENABLE_algo
+        config XF_ENABLE_ALGO
             bool "algo"
             default y
 
-        menu "algo"
-
-            depends on XF_ENABLE_algo
-
-        endmenu # common
-
-        config XF_ENABLE_common
+        config XF_ENABLE_COMMON
             bool "common"
             default y
 
         menu "common"
 
-            depends on XF_ENABLE_common
+            depends on XF_ENABLE_COMMON
+
+            config XF_COMMON_ENABLE_64BITS
+                bool "Enable 64 bits"
+                default y
+
+            config XF_COMMON_ENABLE_GNU
+                bool "Enable GNU"
+                default y
+
+            config XF_COMMON_ENABLE_BUILTIN
+                bool "Enable GNU Builtin"
+                default y
 
             config XF_ENABLE_ERR_TO_NAME_LOOKUP
                 bool "Enable Error Code to Name Lookup"
@@ -48,23 +68,31 @@ menu "XFusion"
 
         endmenu # common
 
-        config XF_ENABLE_dstruct
+        config XF_ENABLE_DSTRUCT
             bool "dstruct"
             default y
 
         menu "dstruct"
 
-            depends on XF_ENABLE_dstruct
+            depends on XF_ENABLE_DSTRUCT
+
+            config XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
+                bool "Enable DEQUE Zero Length Arrays"
+                default n
+            
+            config XF_DEQUE_ENABLE_BUFFER_POINTER
+                bool "Enable DEQUE Buffer Pointer"
+                default y
 
         endmenu # dstruct
 
-        config XF_ENABLE_log
+        config XF_ENABLE_LOG
             bool "log"
             default y
 
         menu "log"
 
-            depends on XF_ENABLE_log
+            depends on XF_ENABLE_LOG
 
             config XF_LOG_ENABLE_ERROR
                 bool "Enable Error"
@@ -84,114 +112,173 @@ menu "XFusion"
 
         endmenu # log
 
-        config XF_ENABLE_std
+        config XF_ENABLE_STD
             bool "std"
             default y
 
         menu "std"
 
-            depends on XF_ENABLE_std
+            depends on XF_ENABLE_STD
 
             choice
                 prompt "String functions source"
-                default XF_STRING_LIBC
-                config XF_STRING_BUILTIN
+                default XF_STRING_ENABLE_LIBC
+                config XF_STRING_ENABLE_BUILTIN
                     bool "builtin"
-                config XF_STRING_LIBC
+                config XF_STRING_ENABLE_LIBC
                     bool "libc"
             endchoice
 
         endmenu # std
 
-        config XF_ENABLE_system
+        config XF_ENABLE_SYSTEM
             bool "system"
             default y
 
         menu "system"
 
-            depends on XF_ENABLE_system
+            depends on XF_ENABLE_SYSTEM
 
-            config XF_ENABLE_event
+            config XF_ENABLE_EVENT
                 bool "event"
                 default y
 
-            menu "event"
-
-                depends on XF_ENABLE_event
-
-            endmenu # event
-
-            config XF_ENABLE_osal
+            config XF_ENABLE_OSAL
                 bool "osal"
                 default y
 
             menu "osal"
 
-                depends on XF_ENABLE_osal
+                depends on XF_ENABLE_OSAL
+
+                config XF_OSAL_OS_TICK_HEADER_PATH
+                    string "os_tick.h path"
+                    default "cmsis_rtos2/os_tick.h"
+
+                config XF_OSAL_CMSIS_OS2_HEADER_PATH
+                    string "cmsis_os2.h path"
+                    default "cmsis_rtos2/cmsis_os2.h"
 
             endmenu # osal
 
-            config XF_ENABLE_ps
+            config XF_ENABLE_PS
                 bool "ps"
                 default y
 
             menu "ps"
 
-                depends on XF_ENABLE_ps
+                depends on XF_ENABLE_PS
+
+                config XF_PS_MSG_NUM_MAX
+                    int "max number of messages"
+                    default 16
+
+                config XF_PS_SUBSCRIBER_NUM_MAX
+                    int "max number of subscribers"
+                    default 16
 
             endmenu # ps
 
-            config XF_ENABLE_stimer
+            config XF_ENABLE_SAFE
+                bool "safe"
+                default y
+
+            config XF_ENABLE_STIMER
                 bool "stimer"
                 default y
 
             menu "stimer"
 
-                depends on XF_ENABLE_stimer
+                depends on XF_ENABLE_STIMER
+
+                config XF_STIMER_NUM_MAX
+                    int "max number of timers"
+                    default 16
+
+                config XF_STIMER_NO_READY_DELAY
+                    int "The delay time when the timer is not ready, in units of tick."
+                    default 1000
 
             endmenu # stimer
 
-            config XF_ENABLE_task
+            config XF_ENABLE_TASK
                 bool "task"
                 default y
 
             menu "task"
 
-                depends on XF_ENABLE_task
+                depends on XF_ENABLE_TASK
+
+                choice
+                    prompt "Local continuation type"
+                    default XF_TASK_ENABLE_LC_LABEL
+                    config XF_TASK_ENABLE_LC_LABEL
+                        bool "label"
+                    config XF_TASK_ENABLE_LC_SWITCH
+                        bool "switch"
+                endchoice
+
+                config XF_TASK_NUM_MAX
+                    int "max number of tasks"
+                    default 16
+
+                config XF_TASK_NEST_DEPTH_MAX
+                    int "max number of task nesting depth"
+                    default 6
+
+                config XF_TASK_EVENT_MSG_NUM_MAX
+                    int "max number of event messages caches"
+                    default 4
 
             endmenu # task
 
-            config XF_ENABLE_tick
+            config XF_ENABLE_TICK
                 bool "tick"
                 default y
 
             menu "tick"
 
-                depends on XF_ENABLE_tick
+                depends on XF_ENABLE_TICK
+
+                config XF_TICK_FREQ
+                    int "tick frequency, in units of Hz"
+                    default 1000
 
             endmenu # tick
 
         endmenu # system
 
-        config XF_ENABLE_utils
+        config XF_ENABLE_UTILS
             bool "utils"
             default y
 
         menu "utils"
 
-            depends on XF_ENABLE_utils
+            depends on XF_ENABLE_UTILS
+
+            config XF_CHECK_ENABLE_CHECK
+                bool "check"
+                default y
+
+            config XF_CHECK_ENABLE_ASSERT
+                bool "assert"
+                default y
+
+            config XF_CHECK_ENABLE_ERROR_CHECK
+                bool "error check(An error occurs when the return value is not XF_OK.)"
+                default y
 
         endmenu # utils
 
     endmenu # Components
 
-    config XF_ENABLE_examples
+    config XF_ENABLE_EXAMPLES
         bool "examples"
         default n
 
     menu "examples"
 
-        depends on XF_ENABLE_examples
+        depends on XF_ENABLE_EXAMPLES
 
     endmenu # examples
 

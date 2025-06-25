@@ -14,7 +14,7 @@
 
 #include "xf_string.h"
 
-#if CONFIG_XF_STRING_LIBC
+#if XF_STRING_ENABLE_LIBC
 
 #include <string.h>
 
@@ -110,4 +110,4 @@ char *xf_strncat(char *dst, const char *src, size_t src_len)
 
 /* ==================== [Static Functions] ================================== */
 
-#endif /* CONFIG_XF_STRING_LIBC */
+#endif /* XF_STRING_ENABLE_LIBC */

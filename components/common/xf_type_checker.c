@@ -35,6 +35,7 @@ STATIC_ASSERT(sizeof(uint16_t)      == 2);
 STATIC_ASSERT(sizeof(int32_t)       == 4);
 STATIC_ASSERT(sizeof(uint32_t)      == 4);
 
+
 STATIC_ASSERT(sizeof(int64_t)       == 8);
 STATIC_ASSERT(sizeof(uint64_t)      == 8);
 
@@ -48,6 +49,12 @@ STATIC_ASSERT(sizeof(uintptr_t)     == sizeof(void *));
 #endif /* XF_TODO */
 
 STATIC_ASSERT(sizeof(size_t)        != 0);
+
+STATIC_ASSERT(sizeof(1UL)           >= 4);
+
+#if XF_COMMON_ENABLE_64BITS
+STATIC_ASSERT(sizeof(1ULL)          >= 8);
+#endif
 
 #if XF_TODO
 /*

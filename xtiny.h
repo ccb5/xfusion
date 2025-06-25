@@ -1,13 +1,13 @@
 /**
  * @file xtiny.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
- * @date 2025-06-13
- * 
+ * @date 2025-06-25
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  */
 
 #ifndef __XTINY_H__
@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common.h"
+#include "xf_conf_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

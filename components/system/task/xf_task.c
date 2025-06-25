@@ -18,8 +18,6 @@
 
 #define TAG "xf_task"
 
-#define XF_TASK_EVENT_MSG_NUM_MAX   (4)
-
 /* ==================== [Typedefs] ========================================== */
 
 /* 内部循环变量均使用 uint8_t */

@@ -31,15 +31,7 @@ extern "C" {
 
 /* ==================== [Typedefs] ========================================== */
 
-/* 协程数量 */
-#define XF_TASK_NUM_MAX                   (16U)
-/*
-    maximum depth of state nesting in a coroutine (including the top level),
-    must be >= 3
- */
-#define XF_TASK_NEST_DEPTH_MAX            (6)
-
-#if 1 /* def XF_TASK_LC_INCLUDE */
+#if XF_TASK_ENABLE_LC_LABEL
 typedef void *xf_task_lc_t;
 #define XF_TASK_LC_INIT_VALUE   NULL
 #define xf_task_lc_init(s)      s = XF_TASK_LC_INIT_VALUE
@@ -49,7 +41,7 @@ typedef void *xf_task_lc_t;
                                     (s) = &&XCAT2(XF_TASK_LC_LABEL, __LINE__); \
                                 } while (0)
 #define xf_task_lc_end(s)
-#else
+#elif XF_TASK_ENABLE_LC_SWITCH
 // xf_task_lc_set 宏内添加 fall-through; FALLTHRU 注释不起作用，故使用 __fallthrough
 typedef uint16_t xf_task_lc_t;
 #define XF_TASK_LC_INIT_VALUE   0
@@ -57,6 +49,8 @@ typedef uint16_t xf_task_lc_t;
 #define xf_task_lc_resume(s)    switch(s) { case XF_TASK_LC_INIT_VALUE:
 #define xf_task_lc_set(s)       s = __LINE__; __fallthrough case __LINE__:
 #define xf_task_lc_end(s)       default:; break; }
+#else
+#error "please define XF_TASK_ENABLE_LC_LABEL or XF_TASK_ENABLE_LC_SWITCH"
 #endif
 
 /**

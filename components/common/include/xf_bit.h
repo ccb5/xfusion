@@ -1,7 +1,7 @@
 /**
  * @file xf_bit.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2025-05-14
  *
@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_conf_internal.h"
+#include "xf_common_internal.h"
 #include "xf_types.h"
 #include "xf_macro_definition.h"
 
@@ -26,41 +26,41 @@ extern "C" {
 /* ==================== [Defines] =========================================== */
 
 #if (!defined(BIT0))
-#define BIT0    0x00000001
-#define BIT1    0x00000002
-#define BIT2    0x00000004
-#define BIT3    0x00000008
-#define BIT4    0x00000010
-#define BIT5    0x00000020
-#define BIT6    0x00000040
-#define BIT7    0x00000080
-#define BIT8    0x00000100
-#define BIT9    0x00000200
-#define BIT10   0x00000400
-#define BIT11   0x00000800
-#define BIT12   0x00001000
-#define BIT13   0x00002000
-#define BIT14   0x00004000
-#define BIT15   0x00008000
-#define BIT16   0x00010000
-#define BIT17   0x00020000
-#define BIT18   0x00040000
-#define BIT19   0x00080000
-#define BIT20   0x00100000
-#define BIT21   0x00200000
-#define BIT22   0x00400000
-#define BIT23   0x00800000
-#define BIT24   0x01000000
-#define BIT25   0x02000000
-#define BIT26   0x04000000
-#define BIT27   0x08000000
-#define BIT28   0x10000000
-#define BIT29   0x20000000
-#define BIT30   0x40000000
-#define BIT31   0x80000000
+#define BIT0    0x00000001UL
+#define BIT1    0x00000002UL
+#define BIT2    0x00000004UL
+#define BIT3    0x00000008UL
+#define BIT4    0x00000010UL
+#define BIT5    0x00000020UL
+#define BIT6    0x00000040UL
+#define BIT7    0x00000080UL
+#define BIT8    0x00000100UL
+#define BIT9    0x00000200UL
+#define BIT10   0x00000400UL
+#define BIT11   0x00000800UL
+#define BIT12   0x00001000UL
+#define BIT13   0x00002000UL
+#define BIT14   0x00004000UL
+#define BIT15   0x00008000UL
+#define BIT16   0x00010000UL
+#define BIT17   0x00020000UL
+#define BIT18   0x00040000UL
+#define BIT19   0x00080000UL
+#define BIT20   0x00100000UL
+#define BIT21   0x00200000UL
+#define BIT22   0x00400000UL
+#define BIT23   0x00800000UL
+#define BIT24   0x01000000UL
+#define BIT25   0x02000000UL
+#define BIT26   0x04000000UL
+#define BIT27   0x08000000UL
+#define BIT28   0x10000000UL
+#define BIT29   0x20000000UL
+#define BIT30   0x40000000UL
+#define BIT31   0x80000000UL
 #endif /* (!defined(BIT0)) */
 
-#if (!defined(BIT32))
+#if (!defined(BIT32)) && XF_COMMON_ENABLE_64BITS
 #define BIT32   (0x00000001ULL << 32)
 #define BIT33   (0x00000002ULL << 32)
 #define BIT34   (0x00000004ULL << 32)
@@ -128,8 +128,7 @@ extern "C" {
  *       1. bitmask 中为 1 的 bit 表示当前操作的操作对象.
  */
 
-#define BIT_IE                          (1UL)   /*!< 或 (uint32_t)1 */
-#define BIT64_IE                        (1ULL)  /*!< 或 (uint64_t)1 */
+#define BIT_IE                          (1UL)  /*!< 或 (uint32_t)1 */
 
 #if defined(__ASSEMBLER__)
 #   undef  BIT_IE
@@ -469,6 +468,10 @@ extern "C" {
                                         ((src) = BITSn_GET_MDF((src), (n), (offset), (value)))
 #endif
 
+#if XF_COMMON_ENABLE_64BITS
+
+#define BIT64_IE                        (1ULL)  /*!< 或 (uint64_t)1 */
+
 #if !defined(BIT64)
 #   define BIT64(n)                     (BIT64_IE << (n))
 #endif
@@ -802,105 +805,7 @@ extern "C" {
                                         ((src) = BITSn64_GET_MDF((src), (n), (offset), (value)))
 #endif
 
-#if 0 /* TODO 这些应该移到 xf_arithmetic */
-
-#if !defined(FLS32) && XF_COM_USE_BUILTIN
-/**
- * @brief 找到 x 中为 1 的最高位所在位数.
- *
- * find last (most-significant) bit set.
- * 如: FLS32(0b0001010) == 4
- * 可以计算给定值所需的位数.
- *
- * @param x 待计算值.
- *
- * @return x 中为 1 的最高位所在的位数.
- */
-#   define FLS32(x)                     (32 - __builtin_clz(x))
-#elif !defined(FLS32)
-__STATIC_INLINE int __no_builtin_clz(uint32_t x)
-{
-/* *INDENT-OFF* */
-    int n = 0;
-    if (x == 0) { return 32; }
-    if (x <= 0x0000FFFF) { n += 16; x <<= 16; }
-    if (x <= 0x00FFFFFF) { n += 8; x <<= 8; }
-    if (x <= 0x0FFFFFFF) { n += 4; x <<= 4; }
-    if (x <= 0x3FFFFFFF) { n += 2; x <<= 2; }
-    if (x <= 0x7FFFFFFF) { n += 1; }
-/* *INDENT-ON* */
-    return n;
-}
-#   define FLS32(x)                     (32 - __no_builtin_clz(x))
-#endif
-
-#if !defined(FLS64) && XF_COM_USE_BUILTIN
-/**
- * @brief 找到 x 中为 1 的最高位所在位数.
- *
- * @param x 待计算值.
- *
- * @return x 中为 1 的最高位所在的位数.
- */
-#   define FLS64(x)                     (64 - __builtin_clzll(x))
-#elif !defined(FLS64)
-__STATIC_INLINE int __no_builtin_clzll(uint64_t x)
-{
-/* *INDENT-OFF* */
-    int n = 0;
-    if (x == 0) { return 64; }
-    if (x <= 0x00000000FFFFFFFF) { n += 32; x <<= 32; }
-    if (x <= 0x0000FFFFFFFFFFFF) { n += 16; x <<= 16; }
-    if (x <= 0x00FFFFFFFFFFFFFF) { n += 8; x <<= 8; }
-    if (x <= 0x0FFFFFFFFFFFFFFF) { n += 4; x <<= 4; }
-    if (x <= 0x3FFFFFFFFFFFFFFF) { n += 2; x <<= 2; }
-    if (x <= 0x7FFFFFFFFFFFFFFF) { n += 1; }
-/* *INDENT-ON* */
-    return n;
-}
-#   define FLS64(x)                     (64 - __no_builtin_clzll(x))
-#endif
-
-#if !defined(BIT_WIDTH) && XF_COM_USE_GNU && XF_COM_USE_BUILTIN
-/**
- * @brief 求表示某个值所需的最小位数.
- *
- * 例如, 给定 5 (0b101), 则返回 3, 因为它需要 3 个二进制位来表示值 5.
- *
- * @param x 32 位或者 64 位待计算值.
- *
- * @code{c}
- *  enum enum_type_0 {
- *      ENUM_0_0 = 0,
- *      ENUM_0_1,
- *      ENUM_0_MAX,
- *  };
- *  enum enum_type_1 {
- *      ENUM_1_0 = 0,
- *      ENUM_1_1,
- *      ENUM_1_2,
- *      ENUM_1_3,
- *      ENUM_1_4,
- *      ENUM_1_5,
- *      ENUM_1_MAX,
- *  };
- *  typedef struct {
- *      uint32_t num_0: BIT_WIDTH(ENUM_0_MAX - 1);
- *      uint32_t num_1: BIT_WIDTH(ENUM_1_MAX - 1);
- *  } test_t;
- * @endcode
- *
- * BIT_WIDTH(ENUM_0_MAX - 1) 返回 1；
- * BIT_WIDTH(ENUM_1_MAX - 1) 返回 3.
- *
- * @return 容纳 x 值所需要最小的二进制的位数.
- */
-#   define BIT_WIDTH(x)                 ((sizeof(__typeof__(x)) <= 4) ? FLS32(x) : FLS64(x))
-#elif !defined(BIT_WIDTH)
-#   define BIT_WIDTH(x)                 (((x) < (~(BIT_IE - 1))) ? FLS32(x) : FLS64(x))
-#endif
-
-#endif
+#endif /* XF_COMMON_ENABLE_64BITS */
 
 #ifdef __cplusplus
 } /*extern "C"*/

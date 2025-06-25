@@ -5,6 +5,9 @@
  * @version 1.0
  * @date 2025-06-04
  *
+ * SPDX-FileCopyrightText: 2025 LVGL LLC
+ * SPDX-License-Identifier: MIT licence
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -281,7 +284,7 @@ static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
     i = xf_bitmap32_fls(s_stimer_bm, XF_STIMER_NUM_MAX);
     XF_CRIT_EXIT();
     if (i < 0) {
-        return XF_STIMER_NO_READY;
+        return XF_STIMER_NO_READY_DELAY;
     }
     tick_min = xf_stimer_time_remaining(&sp_pool[i]);
     j = i;
@@ -301,7 +304,7 @@ static xf_tick_t xf_stimer_get_min(xf_stimer_t **pp_stimer)
         if (pp_stimer) {
             *pp_stimer = NULL;
         }
-        return XF_STIMER_NO_READY;
+        return XF_STIMER_NO_READY_DELAY;
     }
     if (pp_stimer) {
         *pp_stimer = &sp_pool[j];

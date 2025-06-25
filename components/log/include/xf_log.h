@@ -82,7 +82,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #define XF_MLOG_DEFINE_THIS_FILE()          static const char *const MTAG = (__FILENAME__)
 #define XF_MLOG_DEFINE()                    XF_MLOG_DEFINE_THIS_FILE()
 
-#if defined(CONFIG_XF_LOG_ENABLE_ERROR) && CONFIG_XF_LOG_ENABLE_ERROR
+#if XF_LOG_ENABLE_ERROR
 /**
  * @brief 错误等级日志。始终显示文件名、行号等信息。
  *
@@ -98,7 +98,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGE(format, ...)        UNUSED(MTAG)
 #endif
 
-#if defined(CONFIG_XF_LOG_ENABLE_WARN) && CONFIG_XF_LOG_ENABLE_WARN
+#if XF_LOG_ENABLE_WARN
 /**
  * @brief 警告等级日志。
  *
@@ -114,7 +114,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGW(format, ...)        UNUSED(MTAG)
 #endif
 
-#if defined(CONFIG_XF_LOG_ENABLE_INFO) && CONFIG_XF_LOG_ENABLE_INFO
+#if XF_LOG_ENABLE_INFO
 /**
  * @brief 信息等级日志。
  *
@@ -130,7 +130,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGI(format, ...)        UNUSED(MTAG)
 #endif
 
-#if defined(CONFIG_XF_LOG_ENABLE_DEBUG) && CONFIG_XF_LOG_ENABLE_DEBUG
+#if XF_LOG_ENABLE_DEBUG
 /**
  * @brief 调试等级日志。
  *
@@ -146,7 +146,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGD(format, ...)        UNUSED(MTAG)
 #endif
 
-#if defined(CONFIG_XF_LOG_ENABLE_VERBOSE) && CONFIG_XF_LOG_ENABLE_VERBOSE
+#if XF_LOG_ENABLE_VERBOSE
 /**
  * @brief 冗余等级日志。
  *

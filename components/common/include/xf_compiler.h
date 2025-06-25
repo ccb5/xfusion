@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_conf_internal.h"
+#include "xf_common_internal.h"
 #include "xf_types.h"
 #include "xf_macro_definition.h"
 
@@ -31,7 +31,7 @@ extern "C" {
  * - /usr/include/x86_64-linux-gnu/sys/cdefs.h
  */
 
-#if (XF_COM_USE_GNU)
+#if (XF_COMMON_ENABLE_GNU)
 
 #if !defined(__weak)
 /**
@@ -145,7 +145,7 @@ extern "C" {
 #   define __compiletime_error(message)     __attribute__((error(message)))
 #endif
 
-#if XF_COM_USE_BUILTIN
+#if XF_COMMON_ENABLE_BUILTIN
 #if !defined(likely)
 /**
  * @brief 分支预测, x 为真的可能性更大.
@@ -158,14 +158,14 @@ extern "C" {
  */
 #   define unlikely(x)                  __builtin_expect(!!(x), 0)
 #endif
-#else /* !XF_COM_USE_BUILTIN */
+#else /* !XF_COMMON_ENABLE_BUILTIN */
 #if !defined(likely)
 #   define likely(x)                    (x)
 #endif
 #if !defined(unlikely)
 #   define unlikely(x)                  (x)
 #endif
-#endif /* XF_COM_USE_BUILTIN */
+#endif /* XF_COMMON_ENABLE_BUILTIN */
 
 #if !defined(__format_attribute)
 /**
@@ -186,7 +186,7 @@ extern "C" {
 #   define __fallthrough                __attribute__((fallthrough));
 #endif
 
-#else /* !XF_COM_USE_GNU */
+#else /* !XF_COMMON_ENABLE_GNU */
 
 #if !defined(__weak)
 #   define __weak
@@ -256,7 +256,7 @@ extern "C" {
 #   define __fallthrough
 #endif
 
-#endif /* XF_COM_USE_GNU */
+#endif /* XF_COMMON_ENABLE_GNU */
 
 #if !defined(XF_ATTR_FAST_MEM)
 #   define XF_ATTR_FAST_MEM

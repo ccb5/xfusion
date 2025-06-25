@@ -53,14 +53,14 @@
 
 /* ==================== [Defines] =========================================== */
 
-#if 0 /* def CONFIG_XF_RINGBUF_EN_FILL */
+#if 0 /* def XF_RINGBUF_EN_FILL */
 #   define _EN_READ_AND_CLR             1
 #else
 #   define _EN_READ_AND_CLR             0
 #endif
 
-#ifdef CONFIG_XF_RINGBUF_FILL_VAL
-#   define _FILL_VAL                    CONFIG_XF_RINGBUF_FILL_VAL
+#ifdef XF_RINGBUF_FILL_VAL
+#   define _FILL_VAL                    XF_RINGBUF_FILL_VAL
 #else
 #   define _FILL_VAL                    0x00
 #endif
@@ -78,10 +78,21 @@
 xf_err_t xf_deque_init(xf_dq_t *p_dq, void *p_buf, xf_dq_size_t buf_size_bytes)
 {
     if ((!p_dq) || (!p_buf) || (buf_size_bytes == 0)) {
-        return XF_FAIL;
+        return XF_ERR_INVALID_ARG;
     }
-    p_dq->p_buf = (volatile uint8_t *)p_buf;
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+    if (buf_size_bytes > BIT_MASK((sizeof(xf_dq_size_t) * 8) - 1)) {
+        return XF_ERR_INVALID_ARG;
+    }
+#else
+    if (buf_size_bytes > BIT_MASK((sizeof(xf_dq_size_t) * 8))) {
+        return XF_ERR_INVALID_ARG;
+    }
+#endif
     p_dq->buf_size = buf_size_bytes;
+#if XF_DEQUE_ENABLE_BUFFER_POINTER
+    p_dq->p_buf = (volatile uint8_t *)p_buf;
+#endif
     xf_deque_reset(p_dq);
     return XF_OK;
 }
@@ -89,7 +100,7 @@ xf_err_t xf_deque_init(xf_dq_t *p_dq, void *p_buf, xf_dq_size_t buf_size_bytes)
 xf_err_t xf_deque_reset(xf_dq_t *p_dq)
 {
     if (!p_dq) {
-        return XF_FAIL;
+        return XF_ERR_INVALID_ARG;
     }
     p_dq->head = 0;
     p_dq->tail = 0;

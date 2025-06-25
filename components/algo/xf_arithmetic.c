@@ -67,7 +67,7 @@ uint32_t xf_am_popcount_u32_v2(uint32_t n)
 
 uint32_t xf_am_clz_u32(uint32_t n)
 {
-#if XF_COM_USE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
+#if XF_COMMON_ENABLE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
     if (!n) {
         return 32;
     }
@@ -91,7 +91,7 @@ uint32_t xf_am_clz_u32(uint32_t n)
 
 uint32_t xf_am_ctz_u32(uint32_t n)
 {
-#if XF_COM_USE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
+#if XF_COMMON_ENABLE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
     if (!n) {
         return 32;
     }
@@ -114,7 +114,7 @@ uint32_t xf_am_ctz_u32(uint32_t n)
 
 uint32_t xf_am_swap_u32(uint32_t n)
 {
-#if XF_COM_USE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
+#if XF_COMMON_ENABLE_GNU /* (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) */
     return __builtin_bswap32(n);
 #else
     n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4);
@@ -154,5 +154,22 @@ uint32_t xf_am_clp2_u32(uint32_t n)
     n = n | (n >> 16);
     return n + 1;
 }
+
+#if XF_COMMON_ENABLE_64BITS
+uint32_t xf_am_clz_u64(uint64_t x)
+{
+/* *INDENT-OFF* */
+    uint32_t n = 0U;
+    if (x == 0) { return 64; }
+    if (x <= 0x00000000FFFFFFFFULL) { n += 32; x <<= 32; }
+    if (x <= 0x0000FFFFFFFFFFFFULL) { n += 16; x <<= 16; }
+    if (x <= 0x00FFFFFFFFFFFFFFULL) { n +=  8; x <<=  8; }
+    if (x <= 0x0FFFFFFFFFFFFFFFULL) { n +=  4; x <<=  4; }
+    if (x <= 0x3FFFFFFFFFFFFFFFULL) { n +=  2; x <<=  2; }
+    if (x <= 0x7FFFFFFFFFFFFFFFULL) { n +=  1;           }
+/* *INDENT-ON* */
+    return n;
+}
+#endif /* XF_COMMON_ENABLE_64BITS */
 
 /* ==================== [Static Functions] ================================== */

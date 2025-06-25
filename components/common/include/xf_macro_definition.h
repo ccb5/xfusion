@@ -15,7 +15,7 @@
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_conf_internal.h"
+#include "xf_common_internal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,7 +66,7 @@ extern "C" {
 #   define __FILENAME__                 (__FILE__)
 #endif
 
-#if !defined(__FILENAME__) && XF_COM_USE_BUILTIN
+#if !defined(__FILENAME__) && XF_COMMON_ENABLE_BUILTIN
 /**
  * @brief 获取不含路径的文件名.
  */
@@ -383,6 +383,11 @@ static_assertion_failure \
 #if !defined(PTR_ALIGN)
 /**
  * @brief 将指针向上对齐到 a.
+ *
+ * @param p 需要被对齐的指针.
+ * @param a 必须是 2 的幂.
+ *
+ * @return 已对齐的指针.
  */
 #   define PTR_ALIGN(p, a)              ALIGN((uintptr_t)(p), (a))
 #endif
@@ -390,7 +395,11 @@ static_assertion_failure \
 #if !defined(IS_ALIGNED)
 /**
  * @brief 检查 x 是否对齐到 a.
- * @note a 必须是 2 的幂。
+ *
+ * @param x 需要被检查的数.
+ * @param a 必须是 2 的幂.
+ *
+ * @return 如果 x 对齐到 a，则返回 1，否则返回 0.
  */
 #   define IS_ALIGNED(x, a)             (((x) & ((a) - 1)) == 0)
 #endif
@@ -399,7 +408,10 @@ static_assertion_failure \
 /**
  * @brief 将 x 向上对齐到正整数 n.
  *
- * @param n 正整数.
+ * @param x 需要被对齐的数.
+ * @param n 必须为正整数.
+ *
+ * @return 已对齐的数.
  */
 #   define ALIGN_NUM(x, n)              ((!n) ? (0) : (((x) - 1) + (n) - (((x) - 1) % (n))))
 #endif
@@ -407,6 +419,10 @@ static_assertion_failure \
 #if !defined(IS_POWER_OF_TWO)
 /**
  * @brief 检查整数是否为 2 的幂。
+ *
+ * @param x 待检查的整数.
+ *
+ * @return 如果 x 是 2 的幂，则返回 1，否则返回 0.
  */
 #   define IS_POWER_OF_TWO(x)           (((x) != 0) && ((((x) - 1) & (x)) == 0))
 #endif

@@ -1,34 +1,33 @@
 /**
- * @file xf_common.h
+ * @file xf_common_internal.h
  * @author catcatBlue (catcatblue@qq.com)
- * @brief 
+ * @brief
  * @version 1.0
- * @date 2025-05-14
+ * @date 2025-06-25
  *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
  *
  */
 
-#ifndef __XF_COMMON_H__
-#define __XF_COMMON_H__
+#ifndef __XF_COMMON_INTERNAL_H__
+#define __XF_COMMON_INTERNAL_H__
 
 /* ==================== [Includes] ========================================== */
 
-#include "xf_common_internal.h"
-
-#include "xf_bit.h"
-#include "xf_compiler.h"
-#include "xf_err.h"
-#include "xf_macro_definition.h"
-#include "xf_types.h"
-#include "xf_version.h"
+#include "xf_conf_internal.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* ==================== [Defines] =========================================== */
+
+#define XF_TODO                         0
+
+#if !(defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+#   error "需要 C99 或以上版本的编译器"
+#endif
 
 /* ==================== [Typedefs] ========================================== */
 
@@ -40,4 +39,4 @@ extern "C" {
 } /* extern "C" */
 #endif
 
-#endif /* __XF_COMMON_H__ */
+#endif /* __XF_COMMON_INTERNAL_H__ */

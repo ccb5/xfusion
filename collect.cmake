@@ -9,6 +9,6 @@
 
 xf_collect_if_exists(components)
 
-if(CONFIG_XF_ENABLE_examples)
+if(CONFIG_XF_ENABLE_EXAMPLES)
     xf_collect_if_exists(examples)
 endif()

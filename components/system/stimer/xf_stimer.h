@@ -5,6 +5,9 @@
  * @version 1.0
  * @date 2025-06-04
  *
+ * SPDX-FileCopyrightText: 2025 LVGL LLC
+ * SPDX-License-Identifier: MIT licence
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -25,9 +28,7 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#define XF_STIMER_NUM_MAX               (16U)
-#define XF_STIMER_INFINITY              (0xFFFFFFFFU)
-#define XF_STIMER_NO_READY              (1000U)  /*!< 没有定时器时的延时间隔 */
+#define XF_STIMER_INFINITY              XF_TICK_MAX
 
 /* ==================== [Typedefs] ========================================== */
 

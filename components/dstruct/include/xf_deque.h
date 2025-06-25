@@ -8,9 +8,6 @@
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
  *
- * @note
- * - fifo: back_push + front_pop
- * - lifo: back_push + back_pop
  */
 
 /*
@@ -19,8 +16,8 @@
         暂不允许同时关闭以下两个配置。
         关闭这两个配置主要用于将 xf_dq_t 作为基类使用。
 
-    - CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
-    - CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER
+    - XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
+    - XF_DEQUE_ENABLE_BUFFER_POINTER
 
     不允许同时关闭的原因：
     如果外部：
@@ -55,9 +52,6 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-// #define CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS   0
-#define CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER       1
-
 /* ==================== [Typedefs] ========================================== */
 
 typedef uint16_t xf_dq_size_t;
@@ -68,15 +62,22 @@ typedef uint16_t xf_dq_size_t;
  * 支持从头部（front）和尾部（back）以字节单元进行入队/出队操作。
  */
 typedef struct xf_dq {
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+    volatile xf_dq_size_t   head        : (sizeof(xf_dq_size_t) * 8) - 1;
+    volatile bool_t         head_mirror : 1;
+    volatile xf_dq_size_t   tail        : (sizeof(xf_dq_size_t) * 8) - 1;
+    volatile bool_t         tail_mirror : 1;
+#else
     volatile xf_dq_size_t   head;
     volatile xf_dq_size_t   tail;
     volatile bool_t         head_mirror;
     volatile bool_t         tail_mirror;
+#endif
     xf_dq_size_t            buf_size;       /*!< 缓冲区总大小（字节） */
-#if CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
+#if XF_DEQUE_ENABLE_BUFFER_POINTER
+    volatile uint8_t       *p_buf;              /*!< 缓冲区指针 */
+#elif XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
     uint8_t                 p_buf[0];           /*!< 尾随的缓冲区 */
-#elif CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER
-    volatile void          *p_buf;              /*!< 缓冲区指针 */
 #endif
 } xf_dq_t;
 
@@ -89,6 +90,12 @@ bool_t xf_deque_is_full(const xf_dq_t *p_dq);
 xf_dq_size_t xf_deque_get_filled(const xf_dq_t *p_dq);
 xf_dq_size_t xf_deque_get_empty(const xf_dq_t *p_dq);
 xf_dq_size_t xf_deque_get_size(const xf_dq_t *p_dq);
+
+/**
+ * @note
+ * - fifo: back_push + front_pop 在单生产者单消费者情况下支持无锁操作
+ * - lifo: back_push + back_pop
+ */
 
 xf_dq_size_t xf_deque_front_push(xf_dq_t *p_dq, const void *src, xf_dq_size_t size_bytes);
 xf_dq_size_t xf_deque_front_push_force(xf_dq_t *p_dq, const void *src, xf_dq_size_t size_bytes);

@@ -24,12 +24,6 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#define CONFIG_XF_PS_MSG_NUM_MAX                (16U)   /*!< 最大事件数量 */
-#define CONFIG_XF_PS_SUBSCRIBER_NUM_MAX         (16U)   /*!< 订阅者数量 */
-
-#define XF_PS_MSG_NUM_MAX               CONFIG_XF_PS_MSG_NUM_MAX
-#define XF_PS_SUBSCRIBER_NUM_MAX        CONFIG_XF_PS_SUBSCRIBER_NUM_MAX
-
 /* ==================== [Typedefs] ========================================== */
 
 typedef uint8_t xf_ps_subscr_id_t;

@@ -44,7 +44,7 @@ typedef struct xf_err_msg {
 
 /* ==================== [Static Variables] ================================== */
 
-#if CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP
+#if XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP
 static const xf_err_msg_t xf_err_msg_table[] = {
     ERR_TBL_IT(XF_OK),
     ERR_TBL_IT(XF_FAIL),
@@ -64,9 +64,9 @@ static const xf_err_msg_t xf_err_msg_table[] = {
 
     ERR_TBL_IT(XF_ERR_MAX),
 };
-#endif /* CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP */
+#endif /* XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP */
 
-#if CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP
+#if XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP
 static const char xf_unknown_msg[] = "ERROR";
 #else
 static const char xf_unknown_msg[] = "UNKNOWN ERROR";
@@ -78,7 +78,7 @@ static const char xf_unknown_msg[] = "UNKNOWN ERROR";
 
 const char *xf_err_to_name(xf_err_t code)
 {
-#if CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP
+#if XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP
     unsigned int i = 0;
     for (i = 0; i < (unsigned int)ARRAY_SIZE(xf_err_msg_table); ++i) {
         if (xf_err_msg_table[i].code == -code) {
@@ -87,7 +87,7 @@ const char *xf_err_to_name(xf_err_t code)
     }
 #else
     UNUSED(code);
-#endif /* CONFIG_XF_ENABLE_ERR_TO_NAME_LOOKUP */
+#endif /* XF_COMMON_ENABLE_ERR_TO_NAME_LOOKUP */
     return xf_unknown_msg;
 }
 

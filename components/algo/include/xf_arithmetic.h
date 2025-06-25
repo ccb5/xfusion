@@ -36,19 +36,18 @@ extern "C" {
 #define XF_AM_POPCOUNT_U32_DEFAULT  XF_AM_POPCOUNT_U32_V2
 #endif
 
+/* ==================== [Typedefs] ========================================== */
+
+/* ==================== [Global Prototypes] ================================= */
+
 #if XF_AM_POPCOUNT_U32_ENABLE_MASK & BIT(XF_AM_POPCOUNT_U32_GUN)
 __STATIC_INLINE uint32_t xf_am_popcount_u32_gnu(uint32_t n)
 {
     return __builtin_popcount(n);
 }
 #endif
-
 uint32_t xf_am_popcount_u32_v1(uint32_t n);
 uint32_t xf_am_popcount_u32_v2(uint32_t n);
-
-/* ==================== [Typedefs] ========================================== */
-
-/* ==================== [Global Prototypes] ================================= */
 
 uint32_t xf_am_log2_u32(uint32_t n);
 
@@ -71,8 +70,11 @@ __STATIC_INLINE uint32_t xf_am_popcount_u32(uint32_t n)
 
 uint32_t xf_am_swap_u32(uint32_t n);
 uint32_t xf_am_reverse_u32(uint32_t n);
+
 uint32_t xf_am_clz_u32(uint32_t n);
 uint32_t xf_am_ctz_u32(uint32_t n);
+
+#define xf_am_fls_u32(_n)               (32U - xf_am_clz_u32(x))
 
 /**
  * @brief 向下取整到 2 的幂。(floor power of 2)
@@ -101,6 +103,10 @@ __STATIC_INLINE uint32_t xf_am_round_up_to_power_of_2_u32(uint32_t n)
 {
     return xf_am_clp2_u32(n);
 }
+
+#if XF_COMMON_ENABLE_64BITS
+uint32_t xf_am_clz_u64(uint64_t x);
+#endif /* XF_COMMON_ENABLE_64BITS */
 
 /* ==================== [Macros] ============================================ */
 

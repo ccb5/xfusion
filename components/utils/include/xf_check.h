@@ -68,7 +68,7 @@ __weak void xf_check_on_fatal_error(const char *file, int line);
 
 /* ==================== [Macros] ============================================ */
 
-#if 1 /* XF_CHECK_IS_ENABLE || XF_ASSERT_IS_ENABLE */
+#if XF_CHECK_ENABLE_CHECK
 /**
  * @brief 检查条件(condition)，成立则执行(action)，并 return (retval).
  *
@@ -88,7 +88,7 @@ __weak void xf_check_on_fatal_error(const char *file, int line);
 #   define XF_CHECK_ACTION_RETURN(condition, retval, action)
 #endif
 
-#if 1 /* XF_CHECK_IS_ENABLE || XF_ASSERT_IS_ENABLE */
+#if XF_CHECK_ENABLE_ASSERT
 /**
  * @brief 检查条件(condition)，成立则执行(action)，并跳转到(label).
  *
@@ -107,7 +107,7 @@ __weak void xf_check_on_fatal_error(const char *file, int line);
 #   define XF_CHECK_ACTION_GOTO(condition, retval, action)
 #endif
 
-#if 1 /* XF_CHECK_IS_ENABLE */
+#if XF_CHECK_ENABLE_CHECK
 /**
  * @brief xfusion 检查宏（条件 @b 成立 时则输出日志后返回）。
  *
@@ -145,7 +145,7 @@ __weak void xf_check_on_fatal_error(const char *file, int line);
 #   define XF_CHECK_GOTO(condition, label, tag, format, ...)   do { (void)tag; } while (0)
 #endif
 
-#if 1 /* XF_ASSERT_IS_ENABLE */
+#if XF_CHECK_ENABLE_ASSERT
 /**
  * @brief xfusion 断言宏（条件 @b 不成立 时则输出日志后返回）。
  *
@@ -183,7 +183,7 @@ __weak void xf_check_on_fatal_error(const char *file, int line);
 #   define XF_ASSERT_GOTO(condition, label, tag, format, ...)  do { (void)tag; } while (0)
 #endif
 
-#if 1 /* XF_ERROR_CHECK_IS_ENABLE */
+#if XF_CHECK_ENABLE_ERROR_CHECK
 /**
  * @brief xfusion 错误检查宏（表达式 @b 不等于 `XF_OK` 时则调用 `XF_CHECK_ERROR_HANDLER`）。
  *
