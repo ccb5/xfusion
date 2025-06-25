@@ -9,35 +9,38 @@ include("${CMAKE_CURRENT_LIST_DIR}/version.cmake")
 # 初始化以及包含必要脚本
 include("${XF_ROOT_DIR}/tools/cmake/xf_tools.cmake")
 
-# 收集/枚举所有组件
-xf_collect_if_exists("${XF_ROOT_DIR}")
+set(EXCLUDE_PATHS 
+    ".backup"
+    ".temp"
+    ".dummy"
+)
 
-message("XF_ROOT_DIR: ${XF_ROOT_DIR}")
-message("XF_COMPONENTS: ${XF_COMPONENTS}")
+file(GLOB_RECURSE ALL_SOURCES 
+    ${XF_ROOT_DIR}/src/*.c 
+    ${XF_ROOT_DIR}/src/*.cpp
+)
 
-foreach(xf_component ${XF_COMPONENTS})
-    add_subdirectory(${xf_component})
+set(XF_SRCS "")
+foreach(src ${ALL_SOURCES})
+    set(SHOULD_EXCLUDE FALSE)
+    foreach(exclude_path ${EXCLUDE_PATHS})
+        if(src MATCHES "/${exclude_path}/")
+            set(SHOULD_EXCLUDE TRUE)
+            break()
+        endif()
+    endforeach()
+    if(NOT SHOULD_EXCLUDE)
+        list(APPEND XF_SRCS ${src})
+    endif()
 endforeach()
-
-# 汇总所有 xf 组件的信息，当前做法是多个 xf 组件变一个 idf 组件
-xf_components_summary()
-
-message("XF_COMPONENTS_PATH_ALL: ${XF_COMPONENTS_PATH_ALL}")
-message("XF_SRCS_ALL: ${XF_SRCS_ALL}")
-message("XF_INCS_PUB_ALL: ${XF_INCS_PUB_ALL}")
-message("XF_DEFS_PRIV_ALL: ${XF_DEFS_PRIV_ALL}")
-message("XF_COMPILE_OPTS_PRIV_ALL: ${XF_COMPILE_OPTS_PRIV_ALL}")
-message("XF_LINK_OPTS_PRIV_ALL: ${XF_LINK_OPTS_PRIV_ALL}")
-message("XF_LIBS_ALL: ${XF_LIBS_ALL}")
-message("XF_REQS_PUB_ALL: ${XF_REQS_PUB_ALL}")
 
 idf_component_register(
     SRCS 
-        "${XF_SRCS_ALL}"
+        "${XF_SRCS}"
     INCLUDE_DIRS 
         "${XF_ROOT_DIR}"
         "${XF_ROOT_DIR}/../"
-        "${XF_INCS_PUB_ALL}"
+        "${XF_ROOT_DIR}/examples"
     # REQUIRES # TODO
     WHOLE_ARCHIVE
 )
