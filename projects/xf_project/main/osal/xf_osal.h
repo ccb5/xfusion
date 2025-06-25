@@ -17,6 +17,10 @@
 
 #include "xf_common.h"
 
+#define XF_ENABLE_OSAL                      1
+#define XF_OSAL_OS_TICK_HEADER_PATH         "cmsis_rtos2/os_tick.h"
+#define XF_OSAL_CMSIS_OS2_HEADER_PATH       "cmsis_rtos2/cmsis_os2.h"
+
 #if XF_ENABLE_OSAL
 
 #include XF_OSAL_OS_TICK_HEADER_PATH

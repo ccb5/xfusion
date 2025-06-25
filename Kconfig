@@ -143,24 +143,6 @@ menu "XFusion"
                 bool "event"
                 default y
 
-            config XF_ENABLE_OSAL
-                bool "osal"
-                default y
-
-            menu "osal"
-
-                depends on XF_ENABLE_OSAL
-
-                config XF_OSAL_OS_TICK_HEADER_PATH
-                    string "os_tick.h path"
-                    default "cmsis_rtos2/os_tick.h"
-
-                config XF_OSAL_CMSIS_OS2_HEADER_PATH
-                    string "cmsis_os2.h path"
-                    default "cmsis_rtos2/cmsis_os2.h"
-
-            endmenu # osal
-
             config XF_ENABLE_PS
                 bool "ps"
                 default y
