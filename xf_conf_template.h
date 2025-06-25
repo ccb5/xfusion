@@ -70,6 +70,14 @@
 
 #define XF_ENABLE_SYSTEM                    1
 
+/* -------------------- components/system/check ----------------------------- */
+
+#define XF_ENABLE_CHECK                     1
+
+#define XF_CHECK_ENABLE_CHECK               1
+#define XF_CHECK_ENABLE_ASSERT              1
+#define XF_CHECK_ENABLE_ERROR_CHECK         1
+
 /* -------------------- components/system/event ----------------------------- */
 
 #define XF_ENABLE_EVENT                     1
@@ -121,10 +129,6 @@
 /* -------------------- components/utils ----------------------------------- */
 
 #define XF_ENABLE_UTILS                     1
-
-#define XF_CHECK_ENABLE_CHECK               1
-#define XF_CHECK_ENABLE_ASSERT              1
-#define XF_CHECK_ENABLE_ERROR_CHECK         1
 
 /* -------------------- Extended Configuration ------------------------------ */
 

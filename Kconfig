@@ -139,6 +139,28 @@ menu "XFusion"
 
             depends on XF_ENABLE_SYSTEM
 
+            config XF_ENABLE_CHECK
+                bool "check"
+                default y
+
+            menu "check"
+
+                depends on XF_ENABLE_CHECK
+
+                config XF_CHECK_ENABLE_CHECK
+                    bool "check"
+                    default y
+
+                config XF_CHECK_ENABLE_ASSERT
+                    bool "assert"
+                    default y
+
+                config XF_CHECK_ENABLE_ERROR_CHECK
+                    bool "error check(An error occurs when the return value is not XF_OK.)"
+                    default y
+
+            endmenu # check
+
             config XF_ENABLE_EVENT
                 bool "event"
                 default y
@@ -233,24 +255,6 @@ menu "XFusion"
         config XF_ENABLE_UTILS
             bool "utils"
             default y
-
-        menu "utils"
-
-            depends on XF_ENABLE_UTILS
-
-            config XF_CHECK_ENABLE_CHECK
-                bool "check"
-                default y
-
-            config XF_CHECK_ENABLE_ASSERT
-                bool "assert"
-                default y
-
-            config XF_CHECK_ENABLE_ERROR_CHECK
-                bool "error check(An error occurs when the return value is not XF_OK.)"
-                default y
-
-        endmenu # utils
 
     endmenu # Components
 
