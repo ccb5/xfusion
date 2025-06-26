@@ -5,6 +5,9 @@
  * @version 1.0
  * @date 2025-06-24
  *
+ * SPDX-FileCopyrightText: 2025 LVGL LLC
+ * SPDX-License-Identifier: MIT licence
+ *
  * SPDX-FileCopyrightText: 2025 CompanyNameMagicTag
  * SPDX-License-Identifier: Apache-2.0
  *
