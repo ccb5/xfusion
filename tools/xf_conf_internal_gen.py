@@ -26,7 +26,7 @@ if sys.version_info < (3,6,0):
 
 def check_for_tabs(file_path):
     errors = []
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         for line_number, line in enumerate(file, 1):
             if '\t' in line:
                 errors.append(f" {file_path}:{line_number}")
@@ -40,8 +40,8 @@ def check_for_tabs(file_path):
 
 check_for_tabs(XF_CONF_TEMPLATE)
 
-fin = open(XF_CONF_TEMPLATE)
-fout = open(XF_CONF_INTERNAL, "w", newline='')
+fin = open(XF_CONF_TEMPLATE, encoding='utf-8')
+fout = open(XF_CONF_INTERNAL, "w", newline='', encoding='utf-8')
 
 fout.write(
 '''/**
