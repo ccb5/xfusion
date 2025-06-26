@@ -35,7 +35,7 @@
     #else
         #include "../../xf_conf.h"                /* Else assume xf_conf.h is next to the xtiny folder. */
     #endif
-    #if !defined(XF_CONF_H) && !defined(XF_CONF_SUPPRESS_DEFINE_CHECK)
+    #if !defined(__XF_CONF_H__) && !defined(XF_CONF_SUPPRESS_DEFINE_CHECK)
         /* #include will sometimes silently fail when __has_include is used */
         /* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80753 */
         #pragma message("Possible failure to include xf_conf.h, please read the comment in this file if you get errors")
@@ -340,7 +340,7 @@
 
 /* -------------------- examples -------------------------------------------- */
 
-/* -------------------- Extended Configuration ------------------------------ */
+/* -------------------- Porting --------------------------------------------- */
 
 /*  扩展配置存放 Kconfig 无法实现的功能，比如宏表达式。 */
 
