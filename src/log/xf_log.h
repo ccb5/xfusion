@@ -16,6 +16,7 @@
 /* ==================== [Includes] ========================================== */
 
 #include "../common/xf_common.h"
+#include "../system/tick/xf_tick.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,35 +47,12 @@ extern "C" {
  *      - XF_LOG_VERBOSE    详细
  * @return char 提示字符。
  */
-char xf_log_level_to_prompt(uint32_t level);
+char xf_log_level_to_prompt(uint8_t level);
 
 /* ==================== [Macros] ============================================ */
 
-#if !defined(xf_log_printf)
-/* cppcheck-suppress misra-c2012-20.1 */
-#include <stdio.h>
-#   define xf_log_printf(format, ...)   do { \
-                                            printf(format, ##__VA_ARGS__); \
-                                            fflush(stdout); \
-                                        } while (0)
-#endif
-
-#if !defined(xf_log_timestamp)
-#   define xf_log_timestamp()           ((uint64_t)0)
-#endif
-
-#if !defined(xf_log_level) && defined(xf_log_printf)
-/* cppcheck-suppress misra-c2012-20.1 */
-#include <inttypes.h>
-#   define xf_log_level(level, tag, format, ...) \
-        do { \
-            xf_log_printf( \
-                "%c (%" PRIu64 ")-%s: " format "\r\n", \
-                xf_log_level_to_prompt(level), xf_log_timestamp(), tag, \
-                ##__VA_ARGS__ \
-            ); \
-        } while (0)
-#endif
+__EXT_IMPL void xf_log_printf(const char *format, ...);
+__EXT_IMPL void xf_log_level(char level, const char *tag, const char *format, ...);
 
 /* MODULE TAG */
 #define MTAG                                xf_this_module
@@ -82,7 +60,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #define XF_MLOG_DEFINE_THIS_FILE()          static const char *const MTAG = (__FILENAME__)
 #define XF_MLOG_DEFINE()                    XF_MLOG_DEFINE_THIS_FILE()
 
-#if XF_LOG_ENABLE_ERROR
+#if XF_LOG_ENABLE_ERROR_LEVEL
 /**
  * @brief 错误等级日志。始终显示文件名、行号等信息。
  *
@@ -98,7 +76,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGE(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_ENABLE_WARN
+#if XF_LOG_ENABLE_WARN_LEVEL
 /**
  * @brief 警告等级日志。
  *
@@ -114,7 +92,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGW(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_ENABLE_INFO
+#if XF_LOG_ENABLE_INFO_LEVEL
 /**
  * @brief 信息等级日志。
  *
@@ -130,7 +108,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGI(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_ENABLE_DEBUG
+#if XF_LOG_ENABLE_DEBUG_LEVEL
 /**
  * @brief 调试等级日志。
  *
@@ -146,7 +124,7 @@ char xf_log_level_to_prompt(uint32_t level);
 #   define XF_MLOGD(format, ...)        UNUSED(MTAG)
 #endif
 
-#if XF_LOG_ENABLE_VERBOSE
+#if XF_LOG_ENABLE_VERBOSE_LEVEL
 /**
  * @brief 冗余等级日志。
  *
