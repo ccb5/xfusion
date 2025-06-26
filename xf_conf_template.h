@@ -14,7 +14,7 @@
  */
 
 /* clang-format off */
-#if 1 /* Set this to "1" to enable content */
+#if 0 /* Set this to "1" to enable content */
 
 #ifndef __XF_CONF_H__
 #define __XF_CONF_H__

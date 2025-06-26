@@ -4,7 +4,7 @@
  * Configuration file v1.0.0 for xtiny vx.x.x
  *
  * @note 此文件不独立存在，禁止直接使用，需配合 `xf_conf.h` 使用。
- *       如果 XF_ENABLE_EXTENDED 设为 1，则会在 xf_conf_internal.h 中
+ *       如果 XF_ENABLE_PORTING 设为 1，则会在 xf_conf_internal.h 中
  *       包含 XF_PORTING_PATH 。因此 `xf_conf.h` 内定义的宏可以直接使用。
  *
  * @note 此文件主要用于编写 Kconfig 无法覆盖的配置，例如：带参宏。

@@ -167,8 +167,8 @@ r'''/*----------------------------------
  * End of parsing xf_conf_template.h
  -----------------------------------*/
 
-#if XF_ENABLE_EXTENDED
-#include XF_CONF_EXTENDED_PATH
+#if XF_ENABLE_PORTING
+#include XF_PORTING_PATH
 #endif
 
 #endif /* __XF_CONF_INTERNAL_H__ */
