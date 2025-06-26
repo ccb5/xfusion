@@ -257,7 +257,7 @@ static xf_ps_subscr_t *xf_ps_acquire_subscriber(void)
     XF_CRIT_ENTRY();
     for (i = 0; i < XF_PS_SUBSCRIBER_NUM_MAX; i++) {
         if (s_subscr_pool[i].cb_func == NULL) {
-            s_subscr_pool[i].cb_func = XF_CRIT_PTR_UNINIT;
+            s_subscr_pool[i].cb_func = (xf_ps_subscr_cb_t)XF_CRIT_PTR_UNINIT;
             XF_CRIT_EXIT();
             return &s_subscr_pool[i];
         }
