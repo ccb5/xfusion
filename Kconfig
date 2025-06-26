@@ -52,18 +52,6 @@ menu "XFusion"
 
         endmenu # common
 
-        menu "dstruct"
-
-            config XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
-                bool "Enable DEQUE Zero Length Arrays"
-                default n
-            
-            config XF_DEQUE_ENABLE_BUFFER_POINTER
-                bool "Enable DEQUE Buffer Pointer"
-                default y
-
-        endmenu # dstruct
-
         config XF_ENABLE_LOG
             bool "log"
             default y

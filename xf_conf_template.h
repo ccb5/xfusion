@@ -37,10 +37,6 @@
 
 /* -------------------- components/dstruct ---------------------------------- */
 
-/* 目前禁止开启 XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS 和关闭 XF_DEQUE_ENABLE_BUFFER_POINTER */
-#define XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS  0
-#define XF_DEQUE_ENABLE_BUFFER_POINTER      1
-
 /* -------------------- components/log -------------------------------------- */
 
 #define XF_ENABLE_LOG                       1
