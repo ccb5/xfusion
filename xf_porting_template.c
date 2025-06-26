@@ -10,6 +10,8 @@
  *
  */
 
+#if 0 /* Set this to "1" to enable content */
+
 /* ==================== [Includes] ========================================== */
 
 #include <stdio.h>
@@ -54,3 +56,5 @@ __IMPL void xf_log_level(char level, const char *tag, const char *format, ...)
 }
 
 /* ==================== [Static Functions] ================================== */
+
+#endif /* End of "Content enable" */

@@ -63,7 +63,7 @@ xf_task_t *xf_task_acquire(void)
     XF_CRIT_ENTRY();
     for (i = 0; i < XF_TASK_NUM_MAX; ++i) {
         if (s_task_pool[i].cb_func == NULL) {
-            s_task_pool[i].cb_func = XF_CRIT_PTR_UNINIT;
+            s_task_pool[i].cb_func = (xf_task_cb_t)XF_CRIT_PTR_UNINIT;
             XF_CRIT_EXIT();
             return &s_task_pool[i];
         }

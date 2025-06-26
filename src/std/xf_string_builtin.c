@@ -137,7 +137,7 @@ void *XF_ATTR_FAST_MEM xf_memmove(void *dst, const void *src, size_t len)
 
     if (dst > src) {
         char *tmp = (char *)dst + len - 1;
-        char *s   = (const char *)src + len - 1;
+        const char *s = (const char *)src + len - 1;
 
         while (len--) {
             /* cppcheck-suppress misra-c2012-13.3 */
@@ -145,7 +145,7 @@ void *XF_ATTR_FAST_MEM xf_memmove(void *dst, const void *src, size_t len)
         }
     } else {
         char *tmp = (char *)dst;
-        char *s   = (const char *)src;
+        const char *s = (const char *)src;
 
         while (len--) {
             /* cppcheck-suppress misra-c2012-13.3 */
