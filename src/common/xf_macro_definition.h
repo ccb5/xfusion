@@ -23,26 +23,20 @@ extern "C" {
 
 /* ==================== [Defines] =========================================== */
 
-#if !defined(__ASM)
-#   define __ASM                        __asm
-#endif
-#if !defined(__STATIC)
-#   define __STATIC                     static
-#endif
 #if !defined(__INLINE)
 #   define __INLINE                     inline
 #endif
+
 #if !defined(__STATIC_INLINE)
 #   define __STATIC_INLINE              static inline
 #endif
-#if !defined(__VOLATILE)
-#   define __VOLATILE                   volatile
+
+#if !defined(__EXT_IMPL)
+#   define __EXT_IMPL                   /*!< 仅用于标记不在此处实现 */
 #endif
-#if !defined(__EXTERN)
-#   define __EXTERN                     extern
-#endif
-#if !defined(__API)
-#   define __API
+
+#if !defined(__IMPL)
+#   define __IMPL                       /*!< 仅用于标记在此处实现 */
 #endif
 
 #if !defined(NULL)
