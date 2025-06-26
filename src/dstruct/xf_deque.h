@@ -68,9 +68,9 @@ typedef uint16_t xf_dq_size_t;
 typedef struct xf_dq {
 #if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
     volatile xf_dq_size_t   head        : (sizeof(xf_dq_size_t) * 8) - 1;
-    volatile bool_t         head_mirror : 1;
+    volatile xf_dq_size_t   head_mirror : 1;
     volatile xf_dq_size_t   tail        : (sizeof(xf_dq_size_t) * 8) - 1;
-    volatile bool_t         tail_mirror : 1;
+    volatile xf_dq_size_t   tail_mirror : 1;
 #else
     volatile xf_dq_size_t   head;
     volatile xf_dq_size_t   tail;
