@@ -16,17 +16,17 @@ menu "XFusion"
         bool "Check this to not use custom xf_conf.h"
         default y
 
-    config XF_ENABLE_EXTENDED
-        bool "Extended configuration"
+    config XF_ENABLE_PORTING
+        bool "Porting"
         default n
 
-    menu "Extended"
+    menu "Porting"
 
-        depends on XF_ENABLE_EXTENDED
+        depends on XF_ENABLE_PORTING
 
-        config XF_CONF_EXTENDED_PATH
-            string "Extended configuration path"
-            default "xf_conf_extended.h"
+        config XF_PORTING_PATH
+            string "Porting Path"
+            default "xf_porting.h"
 
     endmenu # Extended
 
@@ -52,27 +52,25 @@ menu "XFusion"
 
         endmenu # common
 
-        config XF_ENABLE_LOG
-            bool "log"
-            default y
-
         menu "log"
 
-            depends on XF_ENABLE_LOG
+            config XF_LOG_ENABLE_CUSTOM_PORTING
+                bool "Enable Custom Porting"
+                default n
 
-            config XF_LOG_ENABLE_ERROR
+            config XF_LOG_ENABLE_ERROR_LEVEL
                 bool "Enable Error"
                 default y
-            config XF_LOG_ENABLE_WARN
+            config XF_LOG_ENABLE_WARN_LEVEL
                 bool "Enable Warning"
                 default y
-            config XF_LOG_ENABLE_INFO
+            config XF_LOG_ENABLE_INFO_LEVEL
                 bool "Enable Information"
                 default y
-            config XF_LOG_ENABLE_DEBUG
+            config XF_LOG_ENABLE_DEBUG_LEVEL
                 bool "Enable Debug"
                 default y
-            config XF_LOG_ENABLE_VERBOSE
+            config XF_LOG_ENABLE_VERBOSE_LEVEL
                 bool "Enable Verbose"
                 default y
 

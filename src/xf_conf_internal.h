@@ -110,94 +110,70 @@
 
 /* -------------------- components/dstruct ---------------------------------- */
 
-/* 目前禁止开启 XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS 和关闭 XF_DEQUE_ENABLE_BUFFER_POINTER */
-#ifndef XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
-    #ifdef CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
-        #define XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS CONFIG_XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS
-    #else
-        #define XF_DEQUE_ENABLE_ZERO_LENGTH_ARRAYS  0
-    #endif
-#endif
-#ifndef XF_DEQUE_ENABLE_BUFFER_POINTER
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER
-            #define XF_DEQUE_ENABLE_BUFFER_POINTER CONFIG_XF_DEQUE_ENABLE_BUFFER_POINTER
-        #else
-            #define XF_DEQUE_ENABLE_BUFFER_POINTER 0
-        #endif
-    #else
-        #define XF_DEQUE_ENABLE_BUFFER_POINTER      1
-    #endif
-#endif
-
 /* -------------------- components/log -------------------------------------- */
 
-#ifndef XF_ENABLE_LOG
-    #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_ENABLE_LOG
-            #define XF_ENABLE_LOG CONFIG_XF_ENABLE_LOG
-        #else
-            #define XF_ENABLE_LOG 0
-        #endif
+#ifndef XF_LOG_ENABLE_CUSTOM_PORTING
+    #ifdef CONFIG_XF_LOG_ENABLE_CUSTOM_PORTING
+        #define XF_LOG_ENABLE_CUSTOM_PORTING CONFIG_XF_LOG_ENABLE_CUSTOM_PORTING
     #else
-        #define XF_ENABLE_LOG                       1
+        #define XF_LOG_ENABLE_CUSTOM_PORTING        0
     #endif
 #endif
 
 /* 均可可独立开关 */
-#ifndef XF_LOG_ENABLE_ERROR
+#ifndef XF_LOG_ENABLE_ERROR_LEVEL
     #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_LOG_ENABLE_ERROR
-            #define XF_LOG_ENABLE_ERROR CONFIG_XF_LOG_ENABLE_ERROR
+        #ifdef CONFIG_XF_LOG_ENABLE_ERROR_LEVEL
+            #define XF_LOG_ENABLE_ERROR_LEVEL CONFIG_XF_LOG_ENABLE_ERROR_LEVEL
         #else
-            #define XF_LOG_ENABLE_ERROR 0
+            #define XF_LOG_ENABLE_ERROR_LEVEL 0
         #endif
     #else
-        #define XF_LOG_ENABLE_ERROR                 1
+        #define XF_LOG_ENABLE_ERROR_LEVEL           1
     #endif
 #endif
-#ifndef XF_LOG_ENABLE_WARN
+#ifndef XF_LOG_ENABLE_WARN_LEVEL
     #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_LOG_ENABLE_WARN
-            #define XF_LOG_ENABLE_WARN CONFIG_XF_LOG_ENABLE_WARN
+        #ifdef CONFIG_XF_LOG_ENABLE_WARN_LEVEL
+            #define XF_LOG_ENABLE_WARN_LEVEL CONFIG_XF_LOG_ENABLE_WARN_LEVEL
         #else
-            #define XF_LOG_ENABLE_WARN 0
+            #define XF_LOG_ENABLE_WARN_LEVEL 0
         #endif
     #else
-        #define XF_LOG_ENABLE_WARN                  1
+        #define XF_LOG_ENABLE_WARN_LEVEL            1
     #endif
 #endif
-#ifndef XF_LOG_ENABLE_INFO
+#ifndef XF_LOG_ENABLE_INFO_LEVEL
     #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_LOG_ENABLE_INFO
-            #define XF_LOG_ENABLE_INFO CONFIG_XF_LOG_ENABLE_INFO
+        #ifdef CONFIG_XF_LOG_ENABLE_INFO_LEVEL
+            #define XF_LOG_ENABLE_INFO_LEVEL CONFIG_XF_LOG_ENABLE_INFO_LEVEL
         #else
-            #define XF_LOG_ENABLE_INFO 0
+            #define XF_LOG_ENABLE_INFO_LEVEL 0
         #endif
     #else
-        #define XF_LOG_ENABLE_INFO                  1
+        #define XF_LOG_ENABLE_INFO_LEVEL            1
     #endif
 #endif
-#ifndef XF_LOG_ENABLE_DEBUG
+#ifndef XF_LOG_ENABLE_DEBUG_LEVEL
     #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_LOG_ENABLE_DEBUG
-            #define XF_LOG_ENABLE_DEBUG CONFIG_XF_LOG_ENABLE_DEBUG
+        #ifdef CONFIG_XF_LOG_ENABLE_DEBUG_LEVEL
+            #define XF_LOG_ENABLE_DEBUG_LEVEL CONFIG_XF_LOG_ENABLE_DEBUG_LEVEL
         #else
-            #define XF_LOG_ENABLE_DEBUG 0
+            #define XF_LOG_ENABLE_DEBUG_LEVEL 0
         #endif
     #else
-        #define XF_LOG_ENABLE_DEBUG                 1
+        #define XF_LOG_ENABLE_DEBUG_LEVEL           1
     #endif
 #endif
-#ifndef XF_LOG_ENABLE_VERBOSE
+#ifndef XF_LOG_ENABLE_VERBOSE_LEVEL
     #ifdef XF_KCONFIG_PRESENT
-        #ifdef CONFIG_XF_LOG_ENABLE_VERBOSE
-            #define XF_LOG_ENABLE_VERBOSE CONFIG_XF_LOG_ENABLE_VERBOSE
+        #ifdef CONFIG_XF_LOG_ENABLE_VERBOSE_LEVEL
+            #define XF_LOG_ENABLE_VERBOSE_LEVEL CONFIG_XF_LOG_ENABLE_VERBOSE_LEVEL
         #else
-            #define XF_LOG_ENABLE_VERBOSE 0
+            #define XF_LOG_ENABLE_VERBOSE_LEVEL 0
         #endif
     #else
-        #define XF_LOG_ENABLE_VERBOSE               1
+        #define XF_LOG_ENABLE_VERBOSE_LEVEL         1
     #endif
 #endif
 
@@ -284,8 +260,6 @@
 
 /* -------------------- components/system/safe ------------------------------ */
 
-/* !!! For configuration details, please refer to xf_conf_extended. !!! */
-
 /* -------------------- components/system/stimer ---------------------------- */
 
 /* 定时器数量 */
@@ -370,22 +344,22 @@
 
 /*  扩展配置存放 Kconfig 无法实现的功能，比如宏表达式。 */
 
-#ifndef XF_ENABLE_EXTENDED
-    #ifdef CONFIG_XF_ENABLE_EXTENDED
-        #define XF_ENABLE_EXTENDED CONFIG_XF_ENABLE_EXTENDED
+#ifndef XF_ENABLE_PORTING
+    #ifdef CONFIG_XF_ENABLE_PORTING
+        #define XF_ENABLE_PORTING CONFIG_XF_ENABLE_PORTING
     #else
-        #define XF_ENABLE_EXTENDED                  0
+        #define XF_ENABLE_PORTING                   0
     #endif
 #endif
-#if XF_ENABLE_EXTENDED
-#ifndef XF_CONF_EXTENDED_PATH
-    #ifdef CONFIG_XF_CONF_EXTENDED_PATH
-        #define XF_CONF_EXTENDED_PATH CONFIG_XF_CONF_EXTENDED_PATH
+#if XF_ENABLE_PORTING
+#ifndef XF_PORTING_PATH
+    #ifdef CONFIG_XF_PORTING_PATH
+        #define XF_PORTING_PATH CONFIG_XF_PORTING_PATH
     #else
-        #define XF_CONF_EXTENDED_PATH               "xf_conf_extended.h"
+        #define XF_PORTING_PATH                     "xf_porting.h"
     #endif
 #endif
-#endif /* XF_ENABLE_EXTENDED */
+#endif
 
 /*----------------------------------
  * End of parsing xf_conf_template.h

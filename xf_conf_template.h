@@ -1,6 +1,8 @@
 /**
  * @file xf_conf.h
+ *
  * Configuration file v1.0.0 for xtiny vx.x.x
+ *
  */
 
 /*
@@ -39,14 +41,14 @@
 
 /* -------------------- components/log -------------------------------------- */
 
-#define XF_ENABLE_LOG                       1
+#define XF_LOG_ENABLE_CUSTOM_PORTING        0
 
 /* 均可可独立开关 */
-#define XF_LOG_ENABLE_ERROR                 1
-#define XF_LOG_ENABLE_WARN                  1
-#define XF_LOG_ENABLE_INFO                  1
-#define XF_LOG_ENABLE_DEBUG                 1
-#define XF_LOG_ENABLE_VERBOSE               1
+#define XF_LOG_ENABLE_ERROR_LEVEL           1
+#define XF_LOG_ENABLE_WARN_LEVEL            1
+#define XF_LOG_ENABLE_INFO_LEVEL            1
+#define XF_LOG_ENABLE_DEBUG_LEVEL           1
+#define XF_LOG_ENABLE_VERBOSE_LEVEL         1
 
 /* -------------------- components/std -------------------------------------- */
 
@@ -72,8 +74,6 @@
 #define XF_PS_SUBSCRIBER_NUM_MAX            16
 
 /* -------------------- components/system/safe ------------------------------ */
-
-/* !!! For configuration details, please refer to xf_conf_extended. !!! */
 
 /* -------------------- components/system/stimer ---------------------------- */
 
@@ -103,14 +103,14 @@
 
 /* -------------------- examples -------------------------------------------- */
 
-/* -------------------- Extended Configuration ------------------------------ */
+/* -------------------- Porting --------------------------------------------- */
 
 /*  扩展配置存放 Kconfig 无法实现的功能，比如宏表达式。 */
 
-#define XF_ENABLE_EXTENDED                  0
-#if XF_ENABLE_EXTENDED
-#define XF_CONF_EXTENDED_PATH               "xf_conf_extended.h"
-#endif /* XF_ENABLE_EXTENDED */
+#define XF_ENABLE_PORTING                   0
+#if XF_ENABLE_PORTING
+#define XF_PORTING_PATH                     "xf_porting.h"
+#endif
 
 /* --END OF __XF_CONF_H__-- */
 
