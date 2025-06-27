@@ -92,9 +92,29 @@ typedef struct xf_task xf_task_t;
 typedef xf_task_async_t (*xf_task_cb_t)(xf_task_t *me, void *arg);
 
 /**
- * @brief 无栈协程属性。
+ * @brief 任务属性 (attribute)。
+ *
+ * @details
+ * 1. B0 ~ B1: 协程状态 (state).
+ *
+ *    类型见 @ref xf_task_state_t. 此处只可能是：
+ *    - XF_TASK_TERMINATED (默认)
+ *    - XF_TASK_READY
+ *    - XF_TASK_BLOCKED
+ *
+ * 2. B2 ~ B7: 保留位 (reserved).
+ *
+ *    系统保留。
+ *
+ * @note 后缀：
+ *      - S     起始位
+ *      - W     宽度
+ *      - B     位
  */
-typedef volatile uint8_t xf_task_attr_t;
+typedef struct xf_task_attr {
+    uint8_t state:          2;
+    uint8_t reserved:       6;
+} xf_task_attr_t;
 
 /**
  * @brief 无栈协程上下文（系统上下文）基类。
@@ -112,31 +132,7 @@ struct xf_task {
     xf_ps_subscr_id_t       id_subscr;      /*!< 发布订阅 id */
     xf_task_id_t            id_parent;      /*!< 父任务 id */
     xf_task_id_t            id_child;       /*!< 子任务 id ，此处决定一个任务只能等一个子任务 */
-    /**
-     * @brief 协程属性 (attribute)。
-     *
-     * @details
-     * 1. B0 ~ B1: 协程状态 (state).
-     *
-     *    类型见 @ref xf_task_state_t. 此处只可能是：
-     *    - XF_TASK_TERMINATED (默认)
-     *    - XF_TASK_READY
-     *    - XF_TASK_BLOCKED
-     *
-     * 2. B2 ~ B7: 保留位 (reserved).
-     *
-     *    系统保留。
-     *
-     * @note 后缀：
-     *      - S     起始位
-     *      - W     宽度
-     *      - B     位
-     */
-    xf_task_attr_t            attr;
-#define XF_TASK_ATTR_STATE_S          (0)     /*!< 状态起始位 */
-#define XF_TASK_ATTR_STATE_W          (2)     /*!< 状态宽度 */
-#define XF_TASK_ATTR_RESERVED_S       (2)     /*!< 保留位起始位 */
-#define XF_TASK_ATTR_RESERVED_W       (6)     /*!< 保留位宽度 */
+    xf_task_attr_t          attr;           /*!< 任务属性 */
 };
 
 /* ==================== [Global Prototypes] ================================= */
@@ -152,22 +148,10 @@ struct xf_task {
     NOTE 此处不使用 do {} while(0), 以便后续使用逗号表达式。
  */
 
-#define xf_task_attr_get_state(_task)   BITSn_GET_RSH(xf_task_cast(_task)->attr, \
-                                                      XF_TASK_ATTR_STATE_W, XF_TASK_ATTR_STATE_S)
+#define xf_task_attr_get_state(_task)   (xf_task_cast(_task)->attr.state)
 
 #define xf_task_attr_set_state(_task, _value) \
-                                        BITSn_SET(xf_task_cast(_task)->attr, \
-                                                  XF_TASK_ATTR_STATE_W, XF_TASK_ATTR_STATE_S, \
-                                                  (_value))
-
-#define xf_task_attr_get_reserved(_task) \
-                                        BITSn_GET_RSH(xf_task_cast(_task)->attr, \
-                                                      XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S)
-
-#define xf_task_attr_set_reserved(_task, _value) \
-                                        BITSn_SET(xf_task_cast(_task)->attr, \
-                                                  XF_TASK_ATTR_RESERVED_W, XF_TASK_ATTR_RESERVED_S, \
-                                                  (_value))
+                                        (xf_task_cast(_task)->attr.state = (_value))
 
 #ifdef __cplusplus
 } /* extern "C" */
