@@ -30,7 +30,7 @@ extern "C" {
  * @brief 通用错误码。
  * @attention 不要直接使用此错误码，使用 @ref xf_err_t 下方定义的.
  */
-typedef enum_packed xf_err_common_code {
+typedef enum xf_err_common_code {
     _XF_ERR_COM_FAIL = 0x01,            /*!< 通用错误 */
     _XF_ERR_COM_NO_MEM,                 /*!< 内存不足 */
     _XF_ERR_COM_INVALID_ARG,            /*!< 无效参数 */
